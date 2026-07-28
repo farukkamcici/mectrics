@@ -34,6 +34,9 @@ final class MetricStatusItem: NSObject {
         super.init()
         // Preserve position when the user ⌘-drags the item in the menu bar.
         item.autosaveName = "mectrics.\(id.rawValue)"
+        // Removing an autosave-named item persists a hidden flag; force visible so
+        // re-adding a module (menu bar rebuild) always shows it again.
+        item.isVisible = true
         if let button = item.button {
             button.target = self
             button.action = #selector(clicked)

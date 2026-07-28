@@ -1,22 +1,6 @@
 import AppKit
 import SwiftUI
 
-/// Menu bar density: `normal` shows sparklines next to values; `compact` is text-only,
-/// keeping every item as narrow as its reserved text slot.
-enum MenuBarStyle: String, CaseIterable, Identifiable {
-    case normal
-    case compact
-
-    var id: String { rawValue }
-
-    var localizedName: String {
-        switch self {
-        case .normal:  return String(localized: "style.normal", defaultValue: "Normal")
-        case .compact: return String(localized: "style.compact", defaultValue: "Compact")
-        }
-    }
-}
-
 /// Per-module menu bar item content: just the value, just the sparkline graph, or both.
 /// Only offered for modules whose menu bar item supports a sparkline.
 enum ModuleDisplayStyle: String, CaseIterable, Identifiable {

@@ -34,12 +34,10 @@ final class MenuBarController {
     /// Updates the live values of all items.
     func refresh() {
         let accent = model.accentNSColor
-        let compact = model.menuBarStyle == .compact
         for (id, statusItem) in items {
             guard let sample = model.latest[id] else { continue }
             let capable = MenuBarText.showsSparkline(id)
-            // Compact style forces value-only; otherwise the per-module choice wins.
-            let style: ModuleDisplayStyle = (compact || !capable) ? .value : model.displayStyle(for: id)
+            let style: ModuleDisplayStyle = capable ? model.displayStyle(for: id) : .value
             statusItem.update(
                 text: style == .graph ? "" : MenuBarText.string(for: id, sample: sample),
                 samples: model.history(id),

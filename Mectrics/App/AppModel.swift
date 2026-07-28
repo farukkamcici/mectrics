@@ -44,14 +44,6 @@ final class AppModel {
         didSet { defaults.set(hasCompletedOnboarding, forKey: Self.onboardingKey) }
     }
 
-    /// Menu bar density (normal = with sparklines, compact = text only).
-    var menuBarStyle: MenuBarStyle {
-        didSet {
-            defaults.set(menuBarStyle.rawValue, forKey: Self.styleKey)
-            if menuBarStyle != oldValue { onAppearanceChanged?() }
-        }
-    }
-
     /// Accent color for sparklines/charts (`.system` follows macOS accent).
     var accentChoice: AccentChoice {
         didSet {
@@ -82,7 +74,6 @@ final class AppModel {
     private static let enabledKey = "enabledModules"
     private static let floatingPanelKey = "showFloatingPanel"
     private static let onboardingKey = "hasCompletedOnboarding"
-    private static let styleKey = "menuBarStyle"
     private static let accentKey = "accentChoice"
     private static let alertsKey = "alertRules"
     private static let moduleStylesKey = "moduleStyles"
@@ -101,7 +92,6 @@ final class AppModel {
 
         self.showFloatingPanel = defaults.bool(forKey: Self.floatingPanelKey)
         self.hasCompletedOnboarding = defaults.bool(forKey: Self.onboardingKey)
-        self.menuBarStyle = MenuBarStyle(rawValue: defaults.string(forKey: Self.styleKey) ?? "") ?? .normal
         self.accentChoice = AccentChoice(rawValue: defaults.string(forKey: Self.accentKey) ?? "") ?? .system
         self.alertRules = Self.loadAlertRules(from: defaults, available: available)
         self.moduleStyles = Self.loadModuleStyles(from: defaults)

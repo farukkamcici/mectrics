@@ -22,7 +22,7 @@ struct MenuBarBuilderView: View {
 
             Text("Components")
                 .font(.headline)
-            Text("Click a component to add it — or drag it into the menu bar above. Clicking the highlighted one removes it.")
+            Text("Click a component (or drag it into the menu bar above) to add it or switch its look. Remove items with the ⓧ in the menu bar preview.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
 
@@ -127,16 +127,15 @@ struct MenuBarBuilderView: View {
         )
         .contentShape(RoundedRectangle(cornerRadius: 8))
         .onTapGesture {
-            if isActive {
-                model.setEnabled(false, for: id)
-            } else {
-                model.moduleStyles[id] = style
-                model.setEnabled(true, for: id)
-            }
+            // Tap only ever adds or switches the look — removal lives on the strip's ⓧ,
+            // so exploring tiles can never silently drop items from the menu bar.
+            guard !isActive else { return }
+            model.moduleStyles[id] = style
+            model.setEnabled(true, for: id)
         }
         .draggable("\(id.rawValue)|\(style.rawValue)")
         .help(isActive
-              ? String(localized: "builder.tile.remove", defaultValue: "Click to remove")
+              ? String(localized: "builder.tile.active", defaultValue: "In the menu bar")
               : String(localized: "builder.tile.add", defaultValue: "Click to add"))
     }
 

@@ -33,11 +33,6 @@ struct SettingsView: View {
                 LabeledContent("Panel hotkey", value: "⌃⌥M")
             }
             Section("Appearance") {
-                Picker("Menu bar style", selection: $model.menuBarStyle) {
-                    ForEach(MenuBarStyle.allCases) { style in
-                        Text(style.localizedName).tag(style)
-                    }
-                }
                 Picker("Accent color", selection: $model.accentChoice) {
                     ForEach(AccentChoice.allCases) { choice in
                         Text(choice.localizedName).tag(choice)
@@ -53,7 +48,7 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(height: 340)
+        .frame(height: 310)
     }
 
     private var modulesTab: some View {
