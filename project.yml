@@ -1,0 +1,38 @@
+# XcodeGen proje tanımı — `xcodegen generate` ile Mectrics.xcodeproj üretir.
+# Bu dosya git-dostu ve okunabilir; .xcodeproj üretilmiş çıktıdır (git'te tutulmaz).
+name: Mectrics
+
+options:
+  bundleIdPrefix: com.mectrics
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+
+packages:
+  MetricsKit:
+    path: Packages/MetricsKit
+
+targets:
+  Mectrics:
+    type: application
+    platform: macOS
+    sources:
+      - path: Mectrics
+    dependencies:
+      - package: MetricsKit
+        product: MetricsKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mectrics.app
+        PRODUCT_NAME: Mectrics
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        # Menü çubuğu ajanı: Dock'ta görünmez, ana pencere yok.
+        INFOPLIST_KEY_LSUIElement: YES
+        INFOPLIST_KEY_NSHumanReadableCopyright: "© 2026 Mectrics"
+        SWIFT_VERSION: "5.0"
+        DEVELOPMENT_TEAM: ""
+        CODE_SIGN_STYLE: Automatic
+        # Yerel geliştirmede IOKit erişimi için sandbox kapalı (dağıtımda hardened runtime).
+        ENABLE_HARDENED_RUNTIME: NO

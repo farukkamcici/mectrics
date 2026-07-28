@@ -1,0 +1,19 @@
+# Xcode / SwiftPM üretilmiş çıktılar
+# (.xcodeproj XcodeGen ile project.yml'den üretilir — git'te tutulmaz)
+*.xcodeproj/
+DerivedData/
+.build/
+.swiftpm/
+*.xcuserstate
+xcuserdata/
+
+# macOS
+.DS_Store
+
+# Dağıtım çıktıları
+build/
+dist/
+*.dmg
+
+# Ortam
+.env
