@@ -34,6 +34,12 @@ enum MenuBarText {
         case .bluetooth:
             let pct = Int((sample.value * 100).rounded())
             return "BT \(pct)%"
+        case .sensors:
+            // value is °C (not normalized); show the hottest CPU-cluster temp.
+            return "\(Int(sample.value.rounded()))°"
+        case .fans:
+            // Show the fastest fan's RPM compactly (e.g. "2.4K").
+            return MetricFormat.menuRate(sample.detail["maxRpm"] ?? 0)
         default:
             return MetricFormat.percent(sample.value, decimals: 0)
         }

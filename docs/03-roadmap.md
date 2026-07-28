@@ -49,8 +49,10 @@ popover on click; toggle modules in settings; launch at login.
 
 ## Phase 3 — Advanced modules & distribution (v1.0)
 **Goal:** hardware modules, widget, open-source release, DMG distribution.
-- [ ] Providers: **GPU**, **Sensors/Temperature (SMC)**, **Fans (SMC)** — Apple Silicon
-      (+ Intel if possible) testing.
+- [x] Provider: **GPU** (IOAccelerator PerformanceStatistics — Apple Silicon + Intel).
+- [x] Providers: **Sensors/Temperature (SMC)** (key enumeration, plausibility filter,
+      CPU/GPU cluster maxima) and **Fans (SMC)** (self-hides on fanless machines).
+      Verified on Apple Silicon; Intel uses the same key protocol (untested hardware).
 - [ ] **WidgetKit extension** (small/medium/large, App Group snapshot).
 - [ ] Advanced notifications, data history/export.
 - [ ] **Hardened Runtime + notarization**, **Sparkle** auto-update, DMG packaging.

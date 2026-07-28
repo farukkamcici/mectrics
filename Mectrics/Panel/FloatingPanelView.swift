@@ -56,6 +56,10 @@ struct FloatingPanelView: View {
             let down = sample.detail["down"] ?? 0
             let up = sample.detail["up"] ?? 0
             return "↓\(MetricFormat.menuRate(down)) ↑\(MetricFormat.menuRate(up))"
+        case .sensors:
+            return "\(Int(sample.value.rounded()))°"
+        case .fans:
+            return MetricFormat.menuRate(sample.detail["maxRpm"] ?? 0)
         default:
             return MetricFormat.percent(sample.value, decimals: 0)
         }

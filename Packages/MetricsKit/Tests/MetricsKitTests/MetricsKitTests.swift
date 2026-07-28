@@ -111,6 +111,28 @@ final class MetricsKitTests: XCTestCase {
         }
     }
 
+    func testSensorsProviderReportsPlausibleTemperatures() {
+        // Hardware-dependent: SMC may be absent in a VM. On real hardware the hottest
+        // sensor must stay in the plausible range the provider itself filters by.
+        let provider = SensorsProvider()
+        guard provider.isAvailable else { return }
+        let sample = provider.sample()
+        XCTAssertNotNil(sample)
+        if let sample {
+            XCTAssertEqual(sample.unit, .celsius)
+            XCTAssertTrue((1...125).contains(sample.value), "implausible temp \(sample.value)")
+            XCTAssertGreaterThanOrEqual(Int(sample.detail["sensorCount"] ?? 0), 1)
+        }
+    }
+
+    func testFansProviderIsCoherentWhenPresent() {
+        // Fanless machines legitimately report unavailable; only assert coherence.
+        let provider = FansProvider()
+        guard provider.isAvailable, let sample = provider.sample() else { return }
+        XCTAssertTrue((0...1).contains(sample.value))
+        XCTAssertGreaterThanOrEqual(Int(sample.detail["fanCount"] ?? 0), 1)
+    }
+
     func testMenuRateIsCompactAndBounded() {
         // Sub-KB/s collapses to "0".
         XCTAssertEqual(MetricFormat.menuRate(0), "0")

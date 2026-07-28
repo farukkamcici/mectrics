@@ -70,6 +70,8 @@ final class MetricStatusItem: NSObject {
         case .network:   return "↓999M"
         case .battery:   return "⚡100%"
         case .bluetooth: return "BT100%"
+        case .sensors:   return "100°"
+        case .fans:      return "9.9K"
         default:         return "100%"
         }
     }

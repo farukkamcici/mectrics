@@ -83,10 +83,12 @@ struct DetailPopoverView: View {
         switch moduleID {
         case .cpu, .memory, .disk, .gpu:
             return MetricFormat.percent(sample.value, decimals: 1)
-        case .battery, .bluetooth:
+        case .battery, .bluetooth, .fans:
             return "\(Int((sample.value * 100).rounded()))%"
         case .network:
             return MetricFormat.bytesPerSecond(sample.value)
+        case .sensors:
+            return String(format: "%.1f°C", sample.value)
         default:
             return MetricFormat.percent(sample.value, decimals: 0)
         }
@@ -155,6 +157,31 @@ struct DetailPopoverView: View {
             if let mem = d["inUseMemory"], mem > 0 {
                 r.append((String(localized: "gpu.memory", defaultValue: "In-use memory"),
                           MetricFormat.bytes(mem)))
+            }
+            return r
+        case .sensors:
+            var r: [(String, String)] = []
+            if let c = d["cpuMax"] {
+                r.append((String(localized: "sensors.cpu", defaultValue: "CPU (hottest)"),
+                          String(format: "%.1f°C", c)))
+            }
+            if let g = d["gpuMax"] {
+                r.append((String(localized: "sensors.gpu", defaultValue: "GPU (hottest)"),
+                          String(format: "%.1f°C", g)))
+            }
+            r.append((String(localized: "sensors.count", defaultValue: "Sensors"),
+                      "\(Int(d["sensorCount"] ?? 0))"))
+            return r
+        case .fans:
+            var r: [(String, String)] = [
+                (String(localized: "fans.count", defaultValue: "Fans"), "\(Int(d["fanCount"] ?? 0))")
+            ]
+            let count = Int(d["fanCount"] ?? 0)
+            for i in 0..<count {
+                if let rpm = d["fan\(i)Rpm"] {
+                    let label = String(localized: "fans.fan", defaultValue: "Fan \(i + 1)")
+                    r.append((label, "\(Int(rpm)) RPM"))
+                }
             }
             return r
         case .bluetooth:

@@ -63,6 +63,28 @@ func render(_ latest: [MetricID: MetricSample]) {
         print("BT      \(count) device(s)  lowest battery \(Int(bt.value * 100))%")
     }
 
+    // GPU
+    if let gpu = store.latest(.gpu) {
+        let hist = store.history(.gpu, count: 40).map(\.normalized)
+        print("GPU     \(MetricFormat.percent(gpu.value, decimals: 1).padding(toLength: 7, withPad: " ", startingAt: 0)) \(MetricFormat.sparkline(hist))")
+    }
+
+    // Sensors (temperatures)
+    if let temp = store.latest(.sensors) {
+        var extra = ""
+        if let cpu = temp.detail["cpuMax"] { extra += String(format: "  CPU %.1f°C", cpu) }
+        if let gpu = temp.detail["gpuMax"] { extra += String(format: "  GPU %.1f°C", gpu) }
+        print("Temp    \(String(format: "%.1f°C", temp.value).padding(toLength: 7, withPad: " ", startingAt: 0))\(extra)  [\(Int(temp.detail["sensorCount"] ?? 0)) sensors]")
+    }
+
+    // Fans
+    if let fans = store.latest(.fans) {
+        let count = Int(fans.detail["fanCount"] ?? 0)
+        print("Fans    \(count) fan(s)  fastest \(Int(fans.detail["maxRpm"] ?? 0)) RPM (\(MetricFormat.percent(fans.value, decimals: 0)))")
+    } else {
+        print("Fans    (fanless machine)")
+    }
+
     print("\nSampling: 1s · MetricsKit running ✓")
 }
 
