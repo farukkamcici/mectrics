@@ -1,46 +1,49 @@
 import SwiftUI
 import MetricsKit
 
-/// Content of the floating panel: one compact live row per enabled module
-/// (icon + name on the left, sparkline in the middle, current value on the right).
+/// Content of the floating panel: one compact chip per enabled module (icon + live
+/// value + mini sparkline where it makes sense), flowing into as many columns as the
+/// window width allows. Stretched wide the panel becomes a single thin strip; narrow,
+/// the chips wrap into rows. The window itself is user-resizable from any edge.
 struct FloatingPanelView: View {
     @Bindable var model: AppModel
 
+    private let columns = [
+        GridItem(.adaptive(minimum: 108, maximum: 220), spacing: 6, alignment: .leading)
+    ]
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        LazyVGrid(columns: columns, alignment: .leading, spacing: 6) {
             ForEach(model.orderedEnabledModules, id: \.self) { id in
-                row(id)
+                chip(id)
             }
         }
-        .padding(11)
-        .frame(width: 248)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .strokeBorder(.primary.opacity(0.08))
         )
     }
 
-    private func row(_ id: MetricID) -> some View {
-        HStack(spacing: 8) {
+    private func chip(_ id: MetricID) -> some View {
+        HStack(spacing: 5) {
             Image(systemName: Self.symbol(for: id))
-                .font(.system(size: 11, weight: .medium))
+                .font(.system(size: 10, weight: .medium))
                 .foregroundStyle(.secondary)
-                .frame(width: 16)
-            Text(id.localizedName)
-                .font(.callout)
-                .lineLimit(1)
-            Spacer(minLength: 8)
-            if Self.showsSparkline(id) {
-                SparklineView(values: model.history(id, count: 40), accent: model.accentColor)
-                    .frame(width: 52, height: 16)
-            }
+                .frame(width: 13)
             Text(valueString(id))
-                .font(.callout.weight(.semibold))
+                .font(.system(size: 11, weight: .semibold))
                 .monospacedDigit()
                 .lineLimit(1)
-                .frame(minWidth: 44, alignment: .trailing)
+            if Self.showsSparkline(id) {
+                SparklineView(values: model.history(id, count: 30), accent: model.accentColor)
+                    .frame(width: 26, height: 11)
+            }
         }
+        .help(id.localizedName)
     }
 
     // MARK: - Formatting

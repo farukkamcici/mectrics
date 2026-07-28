@@ -38,11 +38,15 @@ final class FloatingPanelController {
 
     private func makePanel() -> FloatingPanel {
         let panel = FloatingPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 260, height: 200),
-            styleMask: [.borderless, .nonactivatingPanel],
+            contentRect: NSRect(x: 0, y: 0, width: 420, height: 44),
+            styleMask: [.borderless, .nonactivatingPanel, .resizable],
             backing: .buffered,
             defer: false
         )
+        // Freely resizable: wide-and-thin (single strip along the screen top) up to a
+        // multi-row card. The grid content re-flows to whatever fits.
+        panel.contentMinSize = NSSize(width: 150, height: 36)
+        panel.contentMaxSize = NSSize(width: 1600, height: 600)
         panel.isFloatingPanel = true
         panel.level = .floating
         panel.isOpaque = false
@@ -54,9 +58,8 @@ final class FloatingPanelController {
         // Visible on every Space, including alongside full-screen apps.
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
+        // The user drives the window size (drag any edge); SwiftUI fills and re-flows.
         let host = NSHostingController(rootView: FloatingPanelView(model: model))
-        // Let SwiftUI drive the window size (module count changes the panel height).
-        host.sizingOptions = .preferredContentSize
         panel.contentViewController = host
 
         // Restore the previous position; first launch goes to the top-right corner.
