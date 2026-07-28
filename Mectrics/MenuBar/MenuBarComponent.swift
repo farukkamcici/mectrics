@@ -65,7 +65,7 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
         case .graph, .coreBars, .ring, .batteryIcon:
             return ""
         case .usedBytes, .freeBytes:
-            return "999G"
+            return "999GB"
         case .health:
             return "100%"
         case .cycles:
@@ -108,9 +108,9 @@ extension MenuBarText {
             let cores = Int(sample.detail["coreCount"] ?? 0)
             return .coreBars((0..<cores).compactMap { sample.detail["core\($0)"] })
         case .usedBytes:
-            return .text(MetricFormat.menuRate(sample.detail["used"] ?? 0))
+            return .text(MetricFormat.menuRate(sample.detail["used"] ?? 0) + "B")
         case .freeBytes:
-            return .text(MetricFormat.menuRate(sample.detail["free"] ?? 0))
+            return .text(MetricFormat.menuRate(sample.detail["free"] ?? 0) + "B")
         case .ring:
             return .ring(sample.value)
         case .batteryIcon:

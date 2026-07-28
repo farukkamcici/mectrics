@@ -60,6 +60,15 @@ final class AppModel {
         didSet { defaults.set(hasCompletedOnboarding, forKey: Self.onboardingKey) }
     }
 
+    /// Embed a small module icon at the leading edge of every menu bar item, so it's
+    /// clear which value belongs to which hardware. Off = values only.
+    var showMenuBarIcons: Bool {
+        didSet {
+            defaults.set(showMenuBarIcons, forKey: Self.menuBarIconsKey)
+            if showMenuBarIcons != oldValue { onAppearanceChanged?() }
+        }
+    }
+
     /// Accent color for sparklines/charts (`.system` follows macOS accent).
     var accentChoice: AccentChoice {
         didSet {
@@ -92,6 +101,7 @@ final class AppModel {
     private static let floatingPanelKey = "showFloatingPanel"
     private static let onboardingKey = "hasCompletedOnboarding"
     private static let accentKey = "accentChoice"
+    private static let menuBarIconsKey = "showMenuBarIcons"
     private static let alertsKey = "alertRules"
     private static let moduleComponentsKey = "moduleComponents"
     private static let legacyStylesKey = "moduleStyles"
@@ -111,6 +121,8 @@ final class AppModel {
         self.showFloatingPanel = defaults.bool(forKey: Self.floatingPanelKey)
         self.hasCompletedOnboarding = defaults.bool(forKey: Self.onboardingKey)
         self.accentChoice = AccentChoice(rawValue: defaults.string(forKey: Self.accentKey) ?? "") ?? .system
+        // Icons default to on; only an explicit user choice turns them off.
+        self.showMenuBarIcons = defaults.object(forKey: Self.menuBarIconsKey) as? Bool ?? true
         self.alertRules = Self.loadAlertRules(from: defaults, available: available)
         self.enabledComponents = Self.loadEnabledComponents(
             from: defaults, available: available.filter { $0 != .sensors })

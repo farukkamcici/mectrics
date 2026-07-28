@@ -33,6 +33,10 @@ struct SettingsView: View {
                 LabeledContent("Panel hotkey", value: "⌃⌥M")
             }
             Section("Appearance") {
+                Toggle(isOn: $model.showMenuBarIcons) {
+                    Text("Icons in menu bar items")
+                    Text("A small hardware icon at the start of each item.")
+                }
                 Picker("Accent color", selection: $model.accentChoice) {
                     ForEach(AccentChoice.allCases) { choice in
                         Text(choice.localizedName).tag(choice)

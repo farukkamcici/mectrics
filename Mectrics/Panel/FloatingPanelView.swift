@@ -7,25 +7,49 @@ import MetricsKit
 /// the chips wrap into rows. The window itself is user-resizable from any edge.
 struct FloatingPanelView: View {
     @Bindable var model: AppModel
+    /// Reports the content's natural height so the window can follow it as chips wrap.
+    var onHeightChange: (CGFloat) -> Void = { _ in }
 
     private let columns = [
         GridItem(.adaptive(minimum: 108, maximum: 220), spacing: 6, alignment: .leading)
     ]
 
     var body: some View {
-        LazyVGrid(columns: columns, alignment: .leading, spacing: 6) {
-            ForEach(model.orderedEnabledModules, id: \.self) { id in
-                chip(id)
+        VStack(spacing: 0) {
+            LazyVGrid(columns: columns, alignment: .leading, spacing: 6) {
+                ForEach(model.orderedEnabledModules, id: \.self) { id in
+                    chip(id)
+                }
             }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(
+                GeometryReader { geo in
+                    Color.clear.preference(key: PanelHeightKey.self, value: geo.size.height)
+                }
+            )
+            Spacer(minLength: 0)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .strokeBorder(.primary.opacity(0.08))
         )
+        // Resize affordance: a horizontal-arrows cursor on the left/right edges.
+        .overlay(alignment: .leading) { resizeHoverZone }
+        .overlay(alignment: .trailing) { resizeHoverZone }
+        .onPreferenceChange(PanelHeightKey.self) { onHeightChange($0) }
+    }
+
+    private var resizeHoverZone: some View {
+        Color.clear
+            .frame(width: 7)
+            .frame(maxHeight: .infinity)
+            .contentShape(Rectangle())
+            .onHover { inside in
+                if inside { NSCursor.resizeLeftRight.push() } else { NSCursor.pop() }
+            }
     }
 
     private func chip(_ id: MetricID) -> some View {
@@ -90,5 +114,13 @@ struct FloatingPanelView: View {
         case .fans:      return "fan"
         case .clock:     return "clock"
         }
+    }
+}
+
+/// Preference carrying the chip grid's natural height up to the window controller.
+private struct PanelHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 44
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }

@@ -9,16 +9,37 @@ final class FloatingPanel: NSPanel {
 }
 
 /// Owns the floating panel window: creates it lazily, shows/hides it, and persists its
-/// on-screen position across launches.
+/// on-screen position across launches. The user resizes the width only — the height
+/// follows the content (chips re-flow into rows as the width changes).
 @MainActor
-final class FloatingPanelController {
+final class FloatingPanelController: NSObject, NSWindowDelegate {
     private let model: AppModel
     private var panel: FloatingPanel?
+    /// Content-driven height, reported by SwiftUI as chips wrap.
+    private var autoHeight: CGFloat = 44
 
     private static let autosaveName = "mectrics.floatingPanel"
 
     init(model: AppModel) {
         self.model = model
+    }
+
+    /// Width is the user's; height always snaps back to the content's natural size.
+    func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
+        NSSize(width: max(frameSize.width, 150), height: autoHeight)
+    }
+
+    private func applyAutoHeight(_ height: CGFloat) {
+        let newHeight = max(ceil(height), 36)
+        guard abs(newHeight - autoHeight) > 0.5 || abs((panel?.frame.height ?? 0) - newHeight) > 0.5
+        else { return }
+        autoHeight = newHeight
+        guard let panel else { return }
+        var frame = panel.frame
+        // Keep the top edge anchored so a strip parked under the menu bar stays put.
+        frame.origin.y += frame.height - newHeight
+        frame.size.height = newHeight
+        panel.setFrame(frame, display: true)
     }
 
     func setVisible(_ visible: Bool) {
@@ -58,9 +79,13 @@ final class FloatingPanelController {
         // Visible on every Space, including alongside full-screen apps.
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
-        // The user drives the window size (drag any edge); SwiftUI fills and re-flows.
-        let host = NSHostingController(rootView: FloatingPanelView(model: model))
-        panel.contentViewController = host
+        // The user drives the width (drag left/right edges); SwiftUI re-flows and
+        // reports the resulting content height back so the window can follow it.
+        let view = FloatingPanelView(model: model) { [weak self] height in
+            self?.applyAutoHeight(height)
+        }
+        panel.contentViewController = NSHostingController(rootView: view)
+        panel.delegate = self
 
         // Restore the previous position; first launch goes to the top-right corner.
         let restored = panel.setFrameUsingName(Self.autosaveName)

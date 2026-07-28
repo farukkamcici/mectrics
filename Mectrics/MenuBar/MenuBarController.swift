@@ -41,7 +41,8 @@ final class MenuBarController {
             statusItem.update(
                 visual: MenuBarText.visual(for: id, component: statusItem.component, sample: sample),
                 samples: model.history(id),
-                accent: accent
+                accent: accent,
+                showIcon: model.showMenuBarIcons
             )
         }
     }

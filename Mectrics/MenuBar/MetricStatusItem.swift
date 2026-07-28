@@ -20,6 +20,8 @@ final class MetricStatusItem: NSObject {
 
     private let textFont: NSFont
     private let reservedTextWidth: CGFloat
+    /// Base (untinted) SF Symbol for the optional embedded module icon.
+    private let iconSymbol: NSImage?
 
     init(id: MetricID, component: MenuBarComponent) {
         self.id = id
@@ -32,6 +34,10 @@ final class MetricStatusItem: NSObject {
         let template = component.template(for: id)
         self.reservedTextWidth = template.isEmpty ? 0
             : ceil((template as NSString).size(withAttributes: [.font: textFont]).width)
+        self.iconSymbol = NSImage(
+            systemSymbolName: FloatingPanelView.symbol(for: id),
+            accessibilityDescription: nil
+        )?.withSymbolConfiguration(.init(pointSize: 9.5, weight: .semibold))
         super.init()
         // Preserve position when the user ⌘-drags the item in the menu bar.
         item.autosaveName = "mectrics.\(id.rawValue).\(component.rawValue)"
@@ -54,13 +60,14 @@ final class MetricStatusItem: NSObject {
     }
 
     /// Updates the live menu-bar indicator.
-    func update(visual: MenuBarVisual, samples: [Double], accent: NSColor) {
+    func update(visual: MenuBarVisual, samples: [Double], accent: NSColor, showIcon: Bool) {
         item.button?.image = Self.render(
             visual: visual,
             font: textFont,
             samples: samples,
             accent: accent,
             reservedTextWidth: reservedTextWidth,
+            icon: showIcon ? iconSymbol : nil,
             appearance: item.button?.effectiveAppearance ?? NSApp.effectiveAppearance
         )
     }
@@ -71,61 +78,81 @@ final class MetricStatusItem: NSObject {
     private static let sparkWidth: CGFloat = 20
     private static let gap: CGFloat = 4
 
+    /// Leading space taken by the embedded module icon (glyph + gap).
+    private static let iconSlot: CGFloat = 15
+
     private static func render(visual: MenuBarVisual, font: NSFont, samples: [Double],
                                accent: NSColor, reservedTextWidth: CGFloat,
-                               appearance: NSAppearance) -> NSImage {
+                               icon: NSImage?, appearance: NSAppearance) -> NSImage {
         let attrs: [NSAttributedString.Key: Any] = [
             .font: font,
             .foregroundColor: NSColor.labelColor
         ]
 
         // Resolve content width per visual.
-        let width: CGFloat
+        let contentWidth: CGFloat
         switch visual {
         case .text(let text):
-            width = textSlot(text, reservedTextWidth, attrs)
+            contentWidth = textSlot(text, reservedTextWidth, attrs)
         case .textGraph(let text):
-            width = textSlot(text, reservedTextWidth, attrs) + gap + sparkWidth
+            contentWidth = textSlot(text, reservedTextWidth, attrs) + gap + sparkWidth
         case .graph:
-            width = sparkWidth + 8
+            contentWidth = sparkWidth + 8
         case .coreBars(let values):
-            width = CGFloat(max(values.count, 2)) * 4
+            contentWidth = CGFloat(max(values.count, 2)) * 4
         case .battery:
-            width = 25
+            contentWidth = 25
         case .ring:
-            width = 16
+            contentWidth = 16
         }
+
+        let offset: CGFloat = icon != nil ? iconSlot : 0
+        let width = offset + contentWidth
 
         let image = NSImage(size: NSSize(width: max(width, 8), height: height))
         image.lockFocus()
         appearance.performAsCurrentDrawingAppearance {
+            if let icon { drawIcon(icon) }
             switch visual {
             case .text(let text):
-                drawTextBlock(text, attrs: attrs, slot: textSlot(text, reservedTextWidth, attrs))
+                drawTextBlock(text, attrs: attrs,
+                              slot: offset + textSlot(text, reservedTextWidth, attrs))
             case .textGraph(let text):
-                let slot = textSlot(text, reservedTextWidth, attrs)
+                let slot = offset + textSlot(text, reservedTextWidth, attrs)
                 drawTextBlock(text, attrs: attrs, slot: slot)
                 drawSparkline(samples, in: NSRect(x: slot + gap, y: 3,
                                                   width: sparkWidth, height: height - 6),
                               accent: accent)
             case .graph:
-                drawSparkline(samples, in: NSRect(x: 0, y: 3,
+                drawSparkline(samples, in: NSRect(x: offset, y: 3,
                                                   width: sparkWidth + 8, height: height - 6),
                               accent: accent)
             case .coreBars(let values):
-                drawCoreBars(values, in: NSRect(x: 0, y: 3, width: width, height: height - 6),
+                drawCoreBars(values, in: NSRect(x: offset, y: 3,
+                                                width: contentWidth, height: height - 6),
                              accent: accent)
             case .battery(let level, let charging):
                 drawBattery(level: level, charging: charging,
-                            in: NSRect(x: 0, y: 0, width: width, height: height))
+                            in: NSRect(x: offset, y: 0, width: contentWidth, height: height))
             case .ring(let fraction):
-                drawRing(fraction, in: NSRect(x: 1, y: (height - 14) / 2, width: 14, height: 14),
+                drawRing(fraction, in: NSRect(x: offset + 1, y: (height - 14) / 2,
+                                              width: 14, height: 14),
                          accent: accent)
             }
         }
         image.unlockFocus()
         image.isTemplate = false
         return image
+    }
+
+    /// Draws the module symbol tinted like secondary label text, vertically centered
+    /// at the leading edge.
+    private static func drawIcon(_ icon: NSImage) {
+        let size = icon.size
+        let origin = NSPoint(x: 0, y: (height - size.height) / 2)
+        icon.draw(at: origin, from: .zero, operation: .sourceOver, fraction: 1)
+        NSColor.secondaryLabelColor.set()
+        NSRect(origin: origin, size: size).fill(using: .sourceAtop)
     }
 
     /// Slot width for a text: the reserved template width, grown if the actual
