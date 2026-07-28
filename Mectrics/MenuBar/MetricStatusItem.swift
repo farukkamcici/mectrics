@@ -11,19 +11,26 @@ import MetricsKit
 /// template string, and the actual text is right-aligned inside that slot. This keeps
 /// the item's total width constant so items never shift as values change digits
 /// (e.g. "9%" -> "100%", or network rates growing/shrinking).
+///
+/// Compactness: the Network module renders as two stacked lines (down over up) in a
+/// small monospaced font, so it stays narrow instead of reserving room for a wide
+/// "↓999.9M ↑999.9M" single line.
 final class MetricStatusItem: NSObject {
     let id: MetricID
     let item: NSStatusItem
     var onClick: ((MetricID) -> Void)?
 
+    /// Font used for this module's live text (small for the two-line network item).
+    private let textFont: NSFont
     /// Fixed width reserved for the text slot, measured once from a worst-case template.
     private let reservedTextWidth: CGFloat
 
     init(id: MetricID) {
         self.id = id
         self.item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        self.textFont = Self.font(for: id)
         let template = Self.template(for: id) as NSString
-        self.reservedTextWidth = ceil(template.size(withAttributes: [.font: Self.font]).width)
+        self.reservedTextWidth = ceil(template.size(withAttributes: [.font: textFont]).width)
         super.init()
         // Preserve position when the user ⌘-drags the item in the menu bar.
         item.autosaveName = "mectrics.\(id.rawValue)"
@@ -46,6 +53,7 @@ final class MetricStatusItem: NSObject {
     func update(text: String, samples: [Double], accent: NSColor, showSparkline: Bool) {
         item.button?.image = Self.render(
             text: text,
+            font: textFont,
             samples: showSparkline ? samples : [],
             accent: accent,
             reservedTextWidth: reservedTextWidth,
@@ -55,57 +63,85 @@ final class MetricStatusItem: NSObject {
 
     // MARK: - Layout templates
 
-    /// Worst-case string per module, used to reserve a stable text width.
+    /// Worst-case string per module, used to reserve a stable text width. For the
+    /// two-line network item this is a single line (both lines are the same width).
     private static func template(for id: MetricID) -> String {
         switch id {
-        case .network:   return "↓999.9M ↑999.9M"
+        case .network:   return "↓999M"
         case .battery:   return "⚡100%"
-        case .bluetooth: return "BT 100%"
+        case .bluetooth: return "BT100%"
         default:         return "100%"
+        }
+    }
+
+    /// Font per module: a small semibold font for the two-line network item, the
+    /// standard menu-bar size for everything else.
+    private static func font(for id: MetricID) -> NSFont {
+        switch id {
+        case .network: return .monospacedDigitSystemFont(ofSize: 8.5, weight: .semibold)
+        default:       return .monospacedDigitSystemFont(ofSize: 12, weight: .medium)
         }
     }
 
     // MARK: - Drawing
 
-    private static let font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .medium)
-    private static let height: CGFloat = 18
-    private static let sparkWidth: CGFloat = 26
-    private static let gap: CGFloat = 5
+    private static let height: CGFloat = 20
+    private static let sparkWidth: CGFloat = 20
+    private static let gap: CGFloat = 4
 
-    private static func render(text: String, samples: [Double], accent: NSColor,
+    private static func render(text: String, font: NSFont, samples: [Double], accent: NSColor,
                                reservedTextWidth: CGFloat,
                                appearance: NSAppearance) -> NSImage {
         let attrs: [NSAttributedString.Key: Any] = [
             .font: font,
             .foregroundColor: NSColor.labelColor
         ]
-        let textSize = (text as NSString).size(withAttributes: attrs)
-        let hasSpark = !samples.isEmpty
-        // Text slot is fixed; the item width never depends on the current digit count.
-        let textSlot = max(reservedTextWidth, ceil(textSize.width))
+
+        let lines = text.components(separatedBy: "\n")
+        let isTwoLine = lines.count > 1
+
+        // Measure the widest line so the slot never shrinks below real content.
+        let lineWidths = lines.map { ceil(($0 as NSString).size(withAttributes: attrs).width) }
+        let contentWidth = lineWidths.max() ?? 0
+        let textSlot = max(reservedTextWidth, contentWidth)
+
+        let hasSpark = !samples.isEmpty && !isTwoLine
         let width = textSlot + (hasSpark ? gap + sparkWidth : 0)
 
         let image = NSImage(size: NSSize(width: max(width, 8), height: height))
         image.lockFocus()
         appearance.performAsCurrentDrawingAppearance {
-            // Right-align text within the reserved slot so the right edge (and the
-            // sparkline after it) stays put while leading digits grow leftward.
-            let textX = textSlot - ceil(textSize.width)
-            let textY = (height - textSize.height) / 2
-            (text as NSString).draw(at: NSPoint(x: textX, y: textY), withAttributes: attrs)
+            if isTwoLine {
+                // Two stacked lines, each right-aligned to the slot's right edge so the
+                // right side (and any following item) never moves as digits change.
+                drawRightAligned(lines[0], attrs: attrs, slot: textSlot, baselineY: height * 0.5)
+                drawRightAligned(lines[1], attrs: attrs, slot: textSlot, baselineY: 0)
+            } else {
+                let textSize = (text as NSString).size(withAttributes: attrs)
+                let textY = (height - textSize.height) / 2
+                drawRightAligned(text, attrs: attrs, slot: textSlot, baselineY: textY)
 
-            if hasSpark {
-                drawSparkline(samples, in: NSRect(
-                    x: textSlot + gap,
-                    y: 2,
-                    width: sparkWidth,
-                    height: height - 4
-                ), accent: accent)
+                if hasSpark {
+                    drawSparkline(samples, in: NSRect(
+                        x: textSlot + gap,
+                        y: 3,
+                        width: sparkWidth,
+                        height: height - 6
+                    ), accent: accent)
+                }
             }
         }
         image.unlockFocus()
         image.isTemplate = false
         return image
+    }
+
+    /// Draws `text` right-aligned so its right edge sits at `slot`.
+    private static func drawRightAligned(_ text: String, attrs: [NSAttributedString.Key: Any],
+                                         slot: CGFloat, baselineY: CGFloat) {
+        let size = (text as NSString).size(withAttributes: attrs)
+        let x = slot - ceil(size.width)
+        (text as NSString).draw(at: NSPoint(x: x, y: baselineY), withAttributes: attrs)
     }
 
     private static func drawSparkline(_ values: [Double], in rect: NSRect, accent: NSColor) {
@@ -131,6 +167,7 @@ final class MetricStatusItem: NSObject {
         // Line.
         let line = NSBezierPath()
         line.lineWidth = 1.2
+        line.lineJoinStyle = .round
         line.move(to: point(0))
         for i in 1..<values.count { line.line(to: point(i)) }
         accent.setStroke()

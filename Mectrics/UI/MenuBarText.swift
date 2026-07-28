@@ -24,9 +24,11 @@ enum MenuBarText {
             let charging = (sample.detail["charging"] ?? 0) > 0
             return "\(charging ? "⚡" : "")\(pct)%"
         case .network:
+            // Stacked two lines (down over up) so the item stays narrow. The renderer
+            // splits on the newline and draws each line right-aligned in a small font.
             let down = sample.detail["down"] ?? 0
             let up = sample.detail["up"] ?? 0
-            return "↓\(MetricFormat.compactRate(down)) ↑\(MetricFormat.compactRate(up))"
+            return "↓\(MetricFormat.menuRate(down))\n↑\(MetricFormat.menuRate(up))"
         case .disk:
             return MetricFormat.percent(sample.value, decimals: 0)
         case .bluetooth:

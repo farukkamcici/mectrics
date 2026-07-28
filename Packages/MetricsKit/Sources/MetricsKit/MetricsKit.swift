@@ -54,6 +54,24 @@ public enum MetricFormat {
         return String(format: "%.1f%@", v, units[i])
     }
 
+    /// Ultra-compact rate for the (narrow, stacked) menu-bar network item.
+    ///
+    /// Always ≤ 4 glyphs including the single-letter unit — e.g. `0`, `1.2K`, `35K`,
+    /// `999K`, `9.9M`, `120M`, `1.2G`. The value is scaled at 1000 so the mantissa is
+    /// always < 1000, and sub-KB/s traffic collapses to `0`. The widest output
+    /// (`999K` / `9.9M`) bounds the reserved slot, keeping the item width stable.
+    public static func menuRate(_ value: Double) -> String {
+        guard value >= 1000 else { return "0" }
+        let units = ["K", "M", "G", "T"]
+        var v = value / 1000
+        var i = 0
+        // Scale at 999.5 (not 1000) so "%.0f" rounding can never produce "1000K".
+        while v >= 999.5 && i < units.count - 1 { v /= 1000; i += 1 }
+        // Mantissa is now in 1...999.
+        if v >= 10 { return String(format: "%.0f%@", v, units[i]) }   // 10–999 → "35K", "999K"
+        return String(format: "%.1f%@", v, units[i])                  // 1.0–9.9 → "1.2K", "9.9M"
+    }
+
     /// ASCII sparkline — used by the CLI demo and tests.
     public static func sparkline(_ values: [Double]) -> String {
         guard !values.isEmpty else { return "" }

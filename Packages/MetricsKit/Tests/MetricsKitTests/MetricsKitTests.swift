@@ -96,4 +96,21 @@ final class MetricsKitTests: XCTestCase {
         XCTAssertEqual(MetricFormat.compactRate(512), "512")
         XCTAssertEqual(MetricFormat.compactRate(2048), "2.0K")
     }
+
+    func testMenuRateIsCompactAndBounded() {
+        // Sub-KB/s collapses to "0".
+        XCTAssertEqual(MetricFormat.menuRate(0), "0")
+        XCTAssertEqual(MetricFormat.menuRate(500), "0")
+        // Small values keep one decimal; larger values drop it.
+        XCTAssertEqual(MetricFormat.menuRate(1200), "1.2K")
+        XCTAssertEqual(MetricFormat.menuRate(35_000), "35K")
+        XCTAssertEqual(MetricFormat.menuRate(999_000), "999K")
+        XCTAssertEqual(MetricFormat.menuRate(1_200_000), "1.2M")
+        XCTAssertEqual(MetricFormat.menuRate(120_000_000), "120M")
+        // Every output is at most 4 glyphs so the reserved slot stays narrow.
+        for v in stride(from: 0.0, through: 5_000_000_000, by: 137_113) {
+            XCTAssertLessThanOrEqual(MetricFormat.menuRate(v).count, 4,
+                                     "menuRate(\(v)) too wide")
+        }
+    }
 }
