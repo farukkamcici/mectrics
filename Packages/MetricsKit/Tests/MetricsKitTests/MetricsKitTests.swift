@@ -69,4 +69,31 @@ final class MetricsKitTests: XCTestCase {
             XCTAssertLessThanOrEqual(s.value, 1)
         }
     }
+
+    func testNetworkProviderProducesNonNegativeRates() {
+        let net = NetworkProvider()
+        _ = net.sample() // referans
+        let second = net.sample()
+        XCTAssertNotNil(second)
+        if let s = second {
+            XCTAssertGreaterThanOrEqual(s.detail["down"] ?? -1, 0)
+            XCTAssertGreaterThanOrEqual(s.detail["up"] ?? -1, 0)
+        }
+    }
+
+    func testDiskProviderReportsCapacity() {
+        let disk = DiskProvider()
+        let sample = disk.sample()
+        XCTAssertNotNil(sample)
+        if let s = sample {
+            XCTAssertGreaterThan(s.detail["total"] ?? 0, 0)
+            XCTAssertGreaterThanOrEqual(s.value, 0)
+            XCTAssertLessThanOrEqual(s.value, 1)
+        }
+    }
+
+    func testCompactRateFormat() {
+        XCTAssertEqual(MetricFormat.compactRate(512), "512")
+        XCTAssertEqual(MetricFormat.compactRate(2048), "2.0K")
+    }
 }

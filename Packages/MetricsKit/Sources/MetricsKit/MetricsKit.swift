@@ -2,13 +2,16 @@ import Foundation
 
 /// Paketin kamuya açık kolaylık yüzeyi.
 public enum MetricsKit {
-    /// v0.1 (MVP) çekirdek provider'ları. İleri modüller (network/disk/gpu/sensör/fan)
-    /// sonraki fazlarda eklenecek.
+    /// Uygulanmış tüm provider'lar. İleri modüller (gpu/sensör/fan) sonraki fazlarda.
+    /// Kullanılamayan modüller (ör. pilsiz masaüstü, BT cihazı yok) engine tarafından elenir.
     public static func coreProviders() -> [MetricProvider] {
         [
-            CPUProvider(),
-            MemoryProvider(),
-            BatteryProvider()
+            CPUProvider(),      // Faz 1
+            MemoryProvider(),   // Faz 1
+            BatteryProvider(),  // Faz 1
+            NetworkProvider(),  // Faz 2
+            DiskProvider(),     // Faz 2
+            BluetoothProvider() // Faz 2
         ]
     }
 
@@ -36,6 +39,16 @@ public enum MetricFormat {
 
     public static func bytesPerSecond(_ value: Double) -> String {
         bytes(value) + "/s"
+    }
+
+    /// Menü çubuğu için kompakt hız: 1.2M, 340K, 0. (Birim harfi tek karakter.)
+    public static func compactRate(_ value: Double) -> String {
+        let units = ["B", "K", "M", "G", "T"]
+        var v = value
+        var i = 0
+        while v >= 1024 && i < units.count - 1 { v /= 1024; i += 1 }
+        if i == 0 { return String(format: "%.0f", v) }
+        return String(format: "%.1f%@", v, units[i])
     }
 
     /// ASCII sparkline — CLI demosu ve testler için.

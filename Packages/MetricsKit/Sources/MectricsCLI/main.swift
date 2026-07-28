@@ -41,6 +41,28 @@ func render(_ latest: [MetricID: MetricSample]) {
         print("Pil     (bu makinede pil yok)")
     }
 
+    // Ağ
+    if let net = store.latest(.network) {
+        let down = net.detail["down"] ?? 0
+        let up = net.detail["up"] ?? 0
+        print("Ağ      ↓\(MetricFormat.compactRate(down))/s  ↑\(MetricFormat.compactRate(up))/s")
+    }
+
+    // Disk
+    if let disk = store.latest(.disk) {
+        let used = disk.detail["used"] ?? 0
+        let total = disk.detail["total"] ?? 0
+        let r = disk.detail["readRate"] ?? 0
+        let w = disk.detail["writeRate"] ?? 0
+        print("Disk    \(MetricFormat.percent(disk.value, decimals: 0).padding(toLength: 7, withPad: " ", startingAt: 0)) [\(MetricFormat.bytes(used)) / \(MetricFormat.bytes(total))]  R \(MetricFormat.compactRate(r))/s  W \(MetricFormat.compactRate(w))/s")
+    }
+
+    // Bluetooth
+    if let bt = store.latest(.bluetooth) {
+        let count = Int(bt.detail["deviceCount"] ?? 0)
+        print("BT      \(count) cihaz  en düşük pil \(Int(bt.value * 100))%")
+    }
+
     print("\nÖrnekleme: 1sn · MetricsKit çalışıyor ✓")
 }
 

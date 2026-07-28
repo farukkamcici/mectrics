@@ -68,10 +68,12 @@ struct DetailPopoverView: View {
     private var primaryValueString: String {
         guard let sample else { return "—" }
         switch moduleID {
-        case .cpu, .memory:
+        case .cpu, .memory, .disk:
             return MetricFormat.percent(sample.value, decimals: 1)
-        case .battery:
+        case .battery, .bluetooth:
             return "\(Int((sample.value * 100).rounded()))%"
+        case .network:
+            return MetricFormat.bytesPerSecond(sample.value)
         default:
             return MetricFormat.percent(sample.value, decimals: 0)
         }
@@ -103,6 +105,30 @@ struct DetailPopoverView: View {
             if let h = d["healthPercent"] { r.append(("Sağlık", "\(Int(h))%")) }
             if let c = d["cycleCount"] { r.append(("Şarj döngüsü", "\(Int(c))")) }
             if let t = d["temperature"] { r.append(("Sıcaklık", String(format: "%.1f°C", t))) }
+            return r
+        case .network:
+            return [
+                ("İndirme", MetricFormat.bytesPerSecond(d["down"] ?? 0)),
+                ("Yükleme", MetricFormat.bytesPerSecond(d["up"] ?? 0)),
+                ("Toplam indirilen", MetricFormat.bytes(d["downTotal"] ?? 0)),
+                ("Toplam yüklenen", MetricFormat.bytes(d["upTotal"] ?? 0))
+            ]
+        case .disk:
+            return [
+                ("Kullanılan", MetricFormat.bytes(d["used"] ?? 0)),
+                ("Boş", MetricFormat.bytes(d["free"] ?? 0)),
+                ("Toplam", MetricFormat.bytes(d["total"] ?? 0)),
+                ("Okuma", MetricFormat.bytesPerSecond(d["readRate"] ?? 0)),
+                ("Yazma", MetricFormat.bytesPerSecond(d["writeRate"] ?? 0))
+            ]
+        case .bluetooth:
+            var r: [(String, String)] = [("Cihaz sayısı", "\(Int(d["deviceCount"] ?? 0))")]
+            let count = Int(d["deviceCount"] ?? 0)
+            for i in 0..<count {
+                if let pct = d["device\(i)"] {
+                    r.append(("Cihaz \(i + 1)", "\(Int(pct))%"))
+                }
+            }
             return r
         default:
             return []

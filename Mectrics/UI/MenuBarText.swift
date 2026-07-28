@@ -20,6 +20,15 @@ enum MenuBarText {
             let pct = Int((sample.value * 100).rounded())
             let charging = (sample.detail["charging"] ?? 0) > 0
             return "\(charging ? "⚡" : "")\(pct)%"
+        case .network:
+            let down = sample.detail["down"] ?? 0
+            let up = sample.detail["up"] ?? 0
+            return "↓\(MetricFormat.compactRate(down)) ↑\(MetricFormat.compactRate(up))"
+        case .disk:
+            return MetricFormat.percent(sample.value, decimals: 0)
+        case .bluetooth:
+            let pct = Int((sample.value * 100).rounded())
+            return "BT \(pct)%"
         default:
             return MetricFormat.percent(sample.value, decimals: 0)
         }

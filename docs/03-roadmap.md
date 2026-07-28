@@ -31,7 +31,7 @@
 
 ## Faz 2 — Çekirdek genişleme (v0.5)
 **Hedef:** Free çekirdeğin tamamı + deneyim özellikleri.
-- [ ] Provider'lar: **Network** (getifaddrs Δ), **Disk** (statfs + throughput), **Bluetooth** (IORegistry pil), **Clock**.
+- [x] Provider'lar: **Network** (getifaddrs Δ), **Disk** (kapasite + IOKit throughput), **Bluetooth** (IORegistry pil). Menü çubuğu + popover entegrasyonu, testler. *(Clock sonraya)*
 - [ ] **Floating panel** (NSPanel canlı widget) — sürüklenebilir, always-on-top.
 - [ ] **Onboarding** (3 adım: profil / modül / izin).
 - [ ] **Temalar & accent**, compact/normal menü çubuğu modu.
