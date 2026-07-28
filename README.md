@@ -2,11 +2,18 @@
 
 A lightweight, private, modern macOS menu bar system monitor.
 Shows CPU, Memory, Battery and more as live **sparklines** in the menu bar, with an
-optional live floating panel and a WidgetKit widget.
+optional always-on-top floating panel.
 
-> Status: **v0.1 MVP + Phase 2 in progress** — the core engine (MetricsKit) and the menu
-> bar app work: CPU / Memory / Battery / Network / Disk (+ Bluetooth when a device with a
-> battery is connected), sparklines, a detail popover, settings, and launch-at-login.
+> Status: **v0.5 — Phases 1–2 complete, Phase 3 providers done.** Modules: CPU / Memory /
+> Battery / Network / Disk / GPU / Temperatures (SMC) / Fans (SMC) (+ Bluetooth when a
+> device with a battery is connected). Unavailable hardware hides itself (e.g. Fans on a
+> fanless MacBook Air). Plus: detail popovers, floating panel (global hotkey **⌃⌥M**),
+> three-step onboarding, accent themes + compact menu bar style, notification thresholds,
+> settings, launch-at-login. Remaining for v1.0: WidgetKit, notarized DMG distribution.
+
+**Lightweight & private by design:** ~25 MB memory, ~3% CPU with adaptive sampling
+(slower on battery), zero telemetry, and fixed-width menu bar items that never jitter
+as values change.
 
 ## Positioning
 *iStat's depth + Stats' open spirit + lighter and more modern than either.* See [`docs/`](docs/).
@@ -27,8 +34,12 @@ mectrics/
 ├── Mectrics/                # menu bar app (SwiftUI + AppKit)
 │   ├── App/                 # AppDelegate, AppModel, LoginItem
 │   ├── MenuBar/             # NSStatusItem controller + live sparkline drawing
-│   ├── UI/                  # popover, sparkline, formatting, localization
-│   ├── Settings/            # settings window
+│   ├── UI/                  # popover, sparkline, formatting, localization, themes
+│   ├── Panel/               # floating always-on-top live panel (NSPanel)
+│   ├── Onboarding/          # three-step first-launch flow
+│   ├── Alerts/              # notification threshold monitor
+│   ├── Hotkey/              # global hotkey (Carbon)
+│   ├── Settings/            # settings window (General / Modules / Alerts)
 │   └── Resources/           # Localizable.xcstrings (String Catalog)
 └── Packages/MetricsKit/     # UI-independent metric engine (SwiftPM)
     ├── Sources/MetricsKit/  # providers, scheduler, store, engine
@@ -45,7 +56,7 @@ mectrics/
 **Run the core engine in the terminal (no Xcode needed):**
 ```bash
 cd Packages/MetricsKit
-swift run mectrics-cli      # live CPU/Memory/Battery/Network/Disk
+swift run mectrics-cli      # live readout of every provider (incl. GPU/Temp/Fans)
 swift test                 # unit tests
 ```
 
@@ -63,7 +74,9 @@ English-first, fully localizable. User-facing strings use `String(localized:)` /
 `Mectrics/Resources/Localizable.xcstrings` in Xcode and translate.
 
 ## Privacy
-Zero telemetry. No usage or hardware data ever leaves the device.
+Zero telemetry. The app makes no network requests; no usage or hardware data ever
+leaves the device. All metrics come from local system interfaces (public APIs plus the
+same read-only SMC/IORegistry paths every open-source monitor uses).
 
 ## License
-Open source (license to be finalized at the distribution phase — proposal: MIT).
+[MIT](LICENSE)
