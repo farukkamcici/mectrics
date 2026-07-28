@@ -21,7 +21,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
 
     private static let initialContentSize = NSSize(width: 620, height: 480)
     private static let minimumContentSize = NSSize(width: 520, height: 480)
-    private static let tabContentHeights: [CGFloat] = [480, 680, 480]
+    private static let tabContentHeights: [CGFloat] = [570, 680, 480]
     private static let frameAutosaveName = "mectrics.settings"
     private static let selectedPaneKey = "settings.selectedPane"
     private static let toolbarIdentifier = NSToolbar.Identifier("mectrics.settings.toolbar")
@@ -101,7 +101,10 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         window.title = tabs.tabViewItems[selectedPane].label
         window.isReleasedWhenClosed = false
         window.contentMinSize = Self.minimumContentSize
-        window.setContentSize(Self.initialContentSize)
+        window.setContentSize(NSSize(
+            width: Self.initialContentSize.width,
+            height: Self.tabContentHeights[selectedPane]
+        ))
         window.delegate = self
         window.titleVisibility = .visible
         window.titlebarSeparatorStyle = .automatic
@@ -117,7 +120,13 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
 
         let restored = window.setFrameUsingName(Self.frameAutosaveName)
         window.setFrameAutosaveName(Self.frameAutosaveName)
-        if !restored {
+        if restored {
+            Self.resize(
+                window,
+                toContentHeight: Self.tabContentHeights[selectedPane],
+                animate: false
+            )
+        } else {
             window.center()
         }
 

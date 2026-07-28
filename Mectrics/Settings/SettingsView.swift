@@ -28,6 +28,14 @@ struct GeneralSettingsTab: View {
                     .foregroundStyle(.secondary)
             }
 
+            Section("Charts") {
+                Picker("Battery and disk history", selection: $model.detailHistoryRange) {
+                    ForEach(DetailHistoryRange.allCases) { range in
+                        Text(range.localizedName).tag(range)
+                    }
+                }
+            }
+
             Section("Data and privacy") {
                 LabeledContent("Version", value: Self.versionString)
                 Button("Export metric history…") {
@@ -46,6 +54,26 @@ struct GeneralSettingsTab: View {
 
     private static var versionString: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
+    }
+}
+
+enum DetailHistoryRange: Int, CaseIterable, Identifiable {
+    case day = 24
+    case week = 168
+    case month = 720
+
+    var id: Int { rawValue }
+    var duration: TimeInterval { TimeInterval(rawValue * 60 * 60) }
+
+    var localizedName: String {
+        switch self {
+        case .day:
+            return String(localized: "history.range.day", defaultValue: "24 hours")
+        case .week:
+            return String(localized: "history.range.week", defaultValue: "7 days")
+        case .month:
+            return String(localized: "history.range.month", defaultValue: "30 days")
+        }
     }
 }
 

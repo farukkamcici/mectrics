@@ -24,6 +24,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         if let window {
             NSApp.setActivationPolicy(.regular)
             NSApp.activate(ignoringOtherApps: true)
+            positionAtVisibleScreenCenter(window)
             window.makeKeyAndOrderFront(nil)
             return
         }
@@ -40,16 +41,33 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
             defaultValue: "Welcome to Mectrics"
         )
         window.isReleasedWhenClosed = false
+        window.setContentSize(NSSize(
+            width: OnboardingView.contentSize.width,
+            height: OnboardingView.contentSize.height
+        ))
         window.standardWindowButton(.miniaturizeButton)?.isEnabled = false
         window.standardWindowButton(.zoomButton)?.isEnabled = false
         window.isMovableByWindowBackground = true
         window.delegate = self
-        window.center()
         self.window = window
 
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
+        positionAtVisibleScreenCenter(window)
         window.makeKeyAndOrderFront(nil)
+    }
+
+    private func positionAtVisibleScreenCenter(_ window: NSWindow) {
+        guard let screen = NSScreen.main ?? window.screen ?? NSScreen.screens.first else {
+            window.center()
+            return
+        }
+        let visibleFrame = screen.visibleFrame
+        let frame = window.frame
+        window.setFrameOrigin(NSPoint(
+            x: visibleFrame.midX - frame.width / 2,
+            y: visibleFrame.midY - frame.height / 2
+        ))
     }
 
     func windowWillClose(_ notification: Notification) {

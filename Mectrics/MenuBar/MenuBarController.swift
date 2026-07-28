@@ -4,7 +4,7 @@ import MetricsKit
 
 /// Creates and updates the menu bar items and manages the detail popover on click.
 @MainActor
-final class MenuBarController {
+final class MenuBarController: NSObject, NSPopoverDelegate {
     private let model: AppModel
     /// One status item per enabled (module, component) pair, keyed "module|component".
     private var items: [String: MetricStatusItem] = [:]
@@ -13,9 +13,10 @@ final class MenuBarController {
 
     init(model: AppModel) {
         self.model = model
-        // Keep metric details visible while the user works in another app. The
-        // status item remains the explicit toggle that closes the popover.
-        popover.behavior = .applicationDefined
+        super.init()
+        // Native transient popovers close when the user clicks elsewhere.
+        popover.behavior = .transient
+        popover.delegate = self
         popover.animates = !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
     }
 
@@ -78,5 +79,9 @@ final class MenuBarController {
         popover.animates = !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         popover.contentViewController?.view.window?.makeKey()
+    }
+
+    func popoverDidClose(_ notification: Notification) {
+        popoverModuleID = nil
     }
 }

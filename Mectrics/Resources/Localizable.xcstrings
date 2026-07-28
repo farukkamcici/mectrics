@@ -23,19 +23,37 @@
     "5 minutes" : {
 
     },
+    "Add components" : {
+
+    },
     "An alert appears after the reading stays beyond its limit for the selected time. Each module alerts at most once every 15 minutes." : {
 
     },
     "Application" : {
 
     },
+    "Average" : {
+
+    },
     "Back" : {
 
     },
-    "Chart color" : {
+    "Baseline" : {
+
+    },
+    "Battery and disk history" : {
+
+    },
+    "Charts" : {
+
+    },
+    "Color" : {
 
     },
     "Continue" : {
+
+    },
+    "Current layout" : {
 
     },
     "Data and privacy" : {
@@ -51,6 +69,15 @@
 
     },
     "For" : {
+
+    },
+    "History builds hourly as Mectrics runs." : {
+
+    },
+    "Hourly average" : {
+
+    },
+    "Icons" : {
 
     },
     "Immediately" : {
@@ -86,16 +113,10 @@
     "Recommended" : {
 
     },
-    "Reorder items directly in the menu bar by holding ⌘ and dragging them." : {
-
-    },
     "Settings" : {
 
     },
     "Show floating panel" : {
-
-    },
-    "Show icons" : {
 
     },
     "Skip Setup" : {
@@ -105,6 +126,9 @@
 
     },
     "Start Monitoring" : {
+
+    },
+    "Time" : {
 
     },
     "Top processes" : {
@@ -460,6 +484,17 @@
         }
       }
     },
+    "builder.activeCount" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%lld active"
+          }
+        }
+      }
+    },
     "builder.component.accessibilityLabel" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -467,28 +502,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@, %2$@"
-          }
-        }
-      }
-    },
-    "builder.components.subtitle" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Click a component to add or remove it — a module can have several items at once. Dragging onto the menu bar above also adds."
-          }
-        }
-      }
-    },
-    "builder.components.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Components"
           }
         }
       }
@@ -515,17 +528,6 @@
         }
       }
     },
-    "builder.menuBar.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Menu bar"
-          }
-        }
-      }
-    },
     "builder.remove" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -544,6 +546,17 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Remove %1$@ for %2$@"
+          }
+        }
+      }
+    },
+    "builder.reorder.help" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Hold Command and drag a menu bar item to reorder it"
           }
         }
       }
@@ -988,6 +1001,28 @@
         }
       }
     },
+    "history.chart.accessibilityLabel" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ history, %2$@"
+          }
+        }
+      }
+    },
+    "history.chart.summary" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld hourly readings, minimum %2$.0f%%, maximum %3$.0f%%, latest %4$.0f%%"
+          }
+        }
+      }
+    },
     "history.export.failed" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -1006,6 +1041,39 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Export Metric History"
+          }
+        }
+      }
+    },
+    "history.range.day" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "24 hours"
+          }
+        }
+      }
+    },
+    "history.range.month" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "30 days"
+          }
+        }
+      }
+    },
+    "history.range.week" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "7 days"
           }
         }
       }

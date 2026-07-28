@@ -11,6 +11,7 @@ struct OnboardingView: View {
     @State private var step = 0
     @State private var launchAtLogin = LoginItem.isEnabled
 
+    static let contentSize = CGSize(width: 540, height: 430)
     private static let stepCount = 2
     private static let recommendedIDs: [MetricID] = [.cpu, .memory, .battery, .network]
 
@@ -28,7 +29,7 @@ struct OnboardingView: View {
             Divider()
             navigationBar
         }
-        .frame(width: 540, height: 430)
+        .frame(width: Self.contentSize.width, height: Self.contentSize.height)
     }
 
     private var welcomeStep: some View {

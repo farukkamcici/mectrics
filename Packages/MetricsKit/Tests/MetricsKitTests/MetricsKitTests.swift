@@ -215,6 +215,14 @@ final class MetricsKitTests: XCTestCase {
         archive.upsert(replacement, for: .cpu, now: now)
 
         XCTAssertEqual(archive.points[.cpu], [replacement])
+        XCTAssertEqual(
+            archive.points(for: .cpu, since: now.addingTimeInterval(-1_800)),
+            []
+        )
+        XCTAssertEqual(
+            archive.points(for: .cpu, since: now.addingTimeInterval(-7_200)),
+            [replacement]
+        )
         let csv = try XCTUnwrap(String(data: archive.csvData(), encoding: .utf8))
         XCTAssertTrue(csv.hasPrefix("hour,module,average,minimum,maximum,unit,samples\n"))
         XCTAssertTrue(csv.contains(",CPU,50.00,20.00,90.00,percent,240\n"))

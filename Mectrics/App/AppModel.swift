@@ -99,6 +99,13 @@ final class AppModel {
         }
     }
 
+    /// Time range used by the slow-changing battery and disk history charts.
+    var detailHistoryRange: DetailHistoryRange {
+        didSet {
+            defaults.set(detailHistoryRange.rawValue, forKey: Self.detailHistoryRangeKey)
+        }
+    }
+
     /// Embed a small module icon at the leading edge of every menu bar item, so it's
     /// clear which value belongs to which hardware. Off = values only.
     var showMenuBarIcons: Bool {
@@ -146,6 +153,7 @@ final class AppModel {
     private static let accentKey = "accentChoice"
     private static let menuBarIconsKey = "showMenuBarIcons"
     private static let panelLayoutKey = "panelLayout"
+    private static let detailHistoryRangeKey = "detailHistoryRange"
     private static let alertsKey = "alertRules"
     private static let moduleComponentsKey = "moduleComponents"
     private static let legacyStylesKey = "moduleStyles"
@@ -170,6 +178,9 @@ final class AppModel {
         // Icons default to on; only an explicit user choice turns them off.
         self.showMenuBarIcons = defaults.object(forKey: Self.menuBarIconsKey) as? Bool ?? true
         self.panelLayout = PanelLayout(rawValue: defaults.string(forKey: Self.panelLayoutKey) ?? "") ?? .vertical
+        self.detailHistoryRange = DetailHistoryRange(
+            rawValue: defaults.integer(forKey: Self.detailHistoryRangeKey)
+        ) ?? .day
         self.alertRules = Self.loadAlertRules(from: defaults, available: available)
         self.enabledComponents = Self.loadEnabledComponents(
             from: defaults, available: available.filter { $0 != .sensors })
@@ -196,6 +207,14 @@ final class AppModel {
     /// Normalized history for sparklines.
     func history(_ id: MetricID, count: Int = 40) -> [Double] {
         engine.store.history(id, count: count).map(\.normalized)
+    }
+
+    func historicalPoints(_ id: MetricID, now: Date = Date()) -> [HistoricalMetricPoint] {
+        historyRecorder.points(
+            for: id,
+            since: now.addingTimeInterval(-detailHistoryRange.duration),
+            now: now
+        )
     }
 
     /// Applies one engine pass while preserving the last valid sample across short

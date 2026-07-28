@@ -78,6 +78,14 @@ final class HistoryRecorder {
         materializedArchive(now: now).csvData()
     }
 
+    func points(
+        for id: MetricID,
+        since cutoff: Date,
+        now: Date = Date()
+    ) -> [HistoricalMetricPoint] {
+        materializedArchive(now: now).points(for: id, since: cutoff)
+    }
+
     private func materializedArchive(now: Date) -> MetricHistoryArchive {
         var snapshot = archive
         for (id, bucket) in buckets {

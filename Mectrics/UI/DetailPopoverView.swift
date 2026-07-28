@@ -41,13 +41,15 @@ struct DetailPopoverView: View {
     @ViewBuilder
     private var metricContent: some View {
         if moduleID == .disk {
-            // Capacity barely moves on a 60 s timeline — show the breakdown instead.
             CapacityBarView(
                 used: sample?.detail["used"] ?? 0,
                 purgeable: sample?.detail["purgeable"] ?? 0,
                 total: sample?.detail["total"] ?? 0,
                 accent: model.accentColor
             )
+            historicalTrend
+        } else if moduleID == .battery {
+            historicalTrend
         } else {
             SparklineView(values: model.history(moduleID, count: 60), accent: model.accentColor)
                 .frame(height: 40)
@@ -58,12 +60,21 @@ struct DetailPopoverView: View {
         }
         detailRows
         if moduleID == .cpu || moduleID == .memory {
-            Divider()
             TopProcessesView(
                 mode: moduleID == .cpu ? .cpu : .memory,
                 accent: model.accentColor
             )
+            .padding(.top, ExperienceSpacing.xSmall)
         }
+    }
+
+    private var historicalTrend: some View {
+        HistoricalTrendView(
+            points: model.historicalPoints(moduleID),
+            range: model.detailHistoryRange,
+            metricName: moduleID.localizedName,
+            accent: model.accentColor
+        )
     }
 
     /// Per-core usage fractions for the CPU core bars.

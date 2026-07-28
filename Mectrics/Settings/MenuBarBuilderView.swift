@@ -18,39 +18,42 @@ struct MenuBarBuilderView: View {
     )
 
     var body: some View {
-        VStack(alignment: .leading, spacing: ExperienceSpacing.medium) {
-            ExperienceSectionHeader(
-                title: String(localized: "builder.menuBar.title", defaultValue: "Menu bar")
-            )
-            currentStrip
+        VStack(alignment: .leading, spacing: ExperienceSpacing.large) {
             HStack {
-                Toggle("Show icons", isOn: $model.showMenuBarIcons)
+                Text("Current layout")
+                    .font(.headline)
+                Spacer()
+                Toggle("Icons", isOn: $model.showMenuBarIcons)
                     .toggleStyle(.checkbox)
                     .help(String(
                         localized: "builder.icons.help",
                         defaultValue: "Show a module symbol before each menu bar reading"
                     ))
-                Spacer()
-                Picker("Chart color", selection: $model.accentChoice) {
+                Picker("Color", selection: $model.accentChoice) {
                     ForEach(AccentChoice.allCases) { choice in
                         Text(choice.localizedName).tag(choice)
                     }
                 }
-                .frame(width: 180)
+                .frame(width: 138)
             }
-            Text("Reorder items directly in the menu bar by holding ⌘ and dragging them.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+            currentStrip
 
             Divider()
 
-            ExperienceSectionHeader(
-                title: String(localized: "builder.components.title", defaultValue: "Components"),
-                subtitle: String(
-                    localized: "builder.components.subtitle",
-                    defaultValue: "Click a component to add or remove it — a module can have several items at once. Dragging onto the menu bar above also adds."
+            HStack {
+                Text("Add components")
+                    .font(.headline)
+                Spacer()
+                Text(
+                    String(
+                        localized: "builder.activeCount",
+                        defaultValue: "\(model.orderedEnabledItems.count) active"
+                    )
                 )
-            )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+            }
 
             ScrollView {
                 VStack(alignment: .leading, spacing: ExperienceSpacing.medium) {
@@ -85,6 +88,10 @@ struct MenuBarBuilderView: View {
         .scrollIndicators(.hidden)
         .frame(height: 44)
         .frame(maxWidth: .infinity)
+        .help(String(
+            localized: "builder.reorder.help",
+            defaultValue: "Hold Command and drag a menu bar item to reorder it"
+        ))
         .background(
             RoundedRectangle(cornerRadius: ExperienceRadius.standard, style: .continuous)
                 .fill(.secondary.opacity(0.09))
