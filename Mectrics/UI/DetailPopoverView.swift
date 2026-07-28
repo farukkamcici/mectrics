@@ -188,13 +188,17 @@ struct DetailPopoverView: View {
             var r: [(String, String)] = [
                 (String(localized: "battery.status", defaultValue: "Status"), chargingLabel)
             ]
-            // Time estimates: -1 means "still calculating"; show whichever applies.
-            if charging, let t = d["timeToFull"], t > 0 {
-                r.append((String(localized: "battery.timeToFull", defaultValue: "Time to full"),
-                          Self.minutesString(t)))
-            } else if !charging, let t = d["timeToEmpty"], t > 0 {
-                r.append((String(localized: "battery.timeRemaining", defaultValue: "Time remaining"),
-                          Self.minutesString(t)))
+            // Time estimate: IOPS value first, AppleSmartBattery TimeRemaining as
+            // fallback; macOS sometimes has no estimate at all ("Calculating…").
+            let ips = charging ? d["timeToFull"] : d["timeToEmpty"]
+            let estimate = (ips ?? -1) > 0 ? ips : d["smartTimeRemaining"]
+            let label = charging
+                ? String(localized: "battery.timeToFull", defaultValue: "Time to full")
+                : String(localized: "battery.timeRemaining", defaultValue: "Time remaining")
+            if let estimate, estimate > 0 {
+                r.append((label, Self.minutesString(estimate)))
+            } else {
+                r.append((label, String(localized: "battery.calculating", defaultValue: "Calculating…")))
             }
             if let h = d["healthPercent"] {
                 r.append((String(localized: "battery.health", defaultValue: "Health"), "\(Int(h))%"))

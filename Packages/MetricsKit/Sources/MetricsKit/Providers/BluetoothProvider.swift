@@ -74,11 +74,24 @@ public final class BluetoothProvider: MetricProvider, @unchecked Sendable {
                   let dict = props?.takeRetainedValue() as? [String: Any]
             else { continue }
 
+            let name = (dict["Product"] as? String)
+                ?? (dict["DeviceName"] as? String)
+                ?? ""
+
+            // Single-cell devices (Magic Mouse/Keyboard, most headphones).
             if let pct = (dict["BatteryPercent"] as? NSNumber)?.doubleValue, pct > 0 {
-                let name = (dict["Product"] as? String)
-                    ?? (dict["DeviceName"] as? String)
-                    ?? ""
                 result.append((name: name, percent: pct))
+            }
+            // AirPods publish per-component keys instead of BatteryPercent.
+            let componentKeys: [(String, String)] = [
+                ("BatteryPercentLeft", "L"), ("BatteryPercentRight", "R"),
+                ("BatteryPercentCase", "Case")
+            ]
+            for (key, suffix) in componentKeys {
+                if let pct = (dict[key] as? NSNumber)?.doubleValue, pct > 0 {
+                    let label = name.isEmpty ? suffix : "\(name) (\(suffix))"
+                    result.append((name: label, percent: pct))
+                }
             }
         }
         return result

@@ -67,6 +67,11 @@ public final class BatteryProvider: MetricProvider, @unchecked Sendable {
 
         var out: [String: Double] = [:]
         if let cycle = dict["CycleCount"] as? Int { out["cycleCount"] = Double(cycle) }
+        // Fallback estimate when IOPS reports -1: minutes to empty (discharging) or
+        // to full (charging); 65535 means "no estimate".
+        if let remaining = dict["TimeRemaining"] as? Int, remaining > 0, remaining < 65535 {
+            out["smartTimeRemaining"] = Double(remaining)
+        }
         if let designCap = dict["DesignCapacity"] as? Int,
            let maxCap = dict["AppleRawMaxCapacity"] as? Int ?? dict["MaxCapacity"] as? Int,
            designCap > 0 {
