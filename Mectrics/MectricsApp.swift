@@ -13,5 +13,6 @@ struct MectricsApp: App {
         Settings {
             SettingsView(model: appDelegate.model)
         }
+        .windowResizability(.contentSize)
     }
 }

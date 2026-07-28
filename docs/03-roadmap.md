@@ -38,11 +38,13 @@ popover on click; toggle modules in settings; launch at login.
       **Bluetooth** (IORegistry battery). Menu bar + popover integration, tests. *(Clock later)*
 - [x] English-first + i18n architecture (String Catalog), CLAUDE.md/AGENTS.md conventions.
 - [x] Menu bar width stability (fixed reserved width, right-aligned text).
-- [ ] **Floating panel** (NSPanel live widget) — draggable, always-on-top.
-- [ ] **Onboarding** (3 steps: profile / modules / permissions).
-- [ ] **Themes & accent**, compact/normal menu bar mode.
-- [ ] **Notification thresholds** (basic rules).
-- [ ] **Global hotkey** (show/hide the panel).
+- [x] **Floating panel** (NSPanel live widget) — draggable, always-on-top, position
+      persistence, toggle from Settings/popover.
+- [x] **Onboarding** (3 steps: welcome / modules / setup), shown once on first launch.
+- [x] **Themes & accent** (9 accent choices incl. system), compact/normal menu bar mode.
+- [x] **Notification thresholds** (CPU/Memory/Disk above, Battery below; crossing-edge
+      trigger + 15 min cooldown per module).
+- [x] **Global hotkey** (⌃⌥M toggles the floating panel — Carbon, no permissions needed).
 - **Output:** a daily-usable, "beta-ready" product.
 
 ## Phase 3 — Advanced modules & distribution (v1.0)
@@ -86,5 +88,6 @@ popover on click; toggle modules in settings; launch at login.
 | Notarization/signing is new to you | I'll script it; you only need the Developer account + a one-time certificate setup. |
 
 ## Where we are now
-Phase 1 done; Phase 2 providers (Network/Disk/Bluetooth) done, plus English/i18n and menu
-bar width stability. Next high-impact item: the **floating panel (live, draggable widget)**.
+**Phase 2 is feature-complete** (v0.5): providers, floating panel, onboarding, themes &
+compact mode, notification thresholds, global hotkey. Next: Phase 3 — GPU/Sensors/Fans
+(SMC), WidgetKit, notarization + DMG, open-source release.

@@ -5,6 +5,7 @@ import MetricsKit
 struct DetailPopoverView: View {
     @Bindable var model: AppModel
     let moduleID: MetricID
+    @Environment(\.openSettings) private var openSettings
 
     private var sample: MetricSample? { model.latest[moduleID] }
 
@@ -12,7 +13,7 @@ struct DetailPopoverView: View {
         VStack(alignment: .leading, spacing: 12) {
             header
             Divider()
-            SparklineView(values: model.history(moduleID, count: 60))
+            SparklineView(values: model.history(moduleID, count: 60), accent: model.accentColor)
                 .frame(height: 44)
             detailRows
             Spacer(minLength: 0)
@@ -50,8 +51,20 @@ struct DetailPopoverView: View {
 
     private var footer: some View {
         HStack {
-            SettingsLink {
+            Button {
+                // Menu bar agent: activate the app first, otherwise the settings
+                // window opens behind the frontmost app (or not at all).
+                NSApp.activate(ignoringOtherApps: true)
+                openSettings()
+            } label: {
                 Label("Settings", systemImage: "gearshape")
+            }
+            Spacer()
+            Button {
+                model.showFloatingPanel.toggle()
+            } label: {
+                Label(model.showFloatingPanel ? "Hide panel" : "Show panel",
+                      systemImage: "rectangle.portrait.on.rectangle.portrait")
             }
             Spacer()
             Button(role: .destructive) {

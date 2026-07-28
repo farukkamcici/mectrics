@@ -1,5 +1,7 @@
+import AppKit
 import Foundation
 import Observation
+import SwiftUI
 import MetricsKit
 
 /// Bridge between the UI and the MetricsKit engine. `@Observable` → SwiftUI views update
@@ -26,11 +28,54 @@ final class AppModel {
     /// (wired by AppDelegate).
     @ObservationIgnored var onModulesChanged: (() -> Void)?
 
-    /// Accent color preference (system accent by default for simplicity).
-    var useSystemAccent = true
+    /// Whether the floating panel (always-on-top live widget) is visible.
+    var showFloatingPanel: Bool {
+        didSet {
+            defaults.set(showFloatingPanel, forKey: Self.floatingPanelKey)
+            if showFloatingPanel != oldValue { onFloatingPanelChanged?(showFloatingPanel) }
+        }
+    }
+
+    /// Called when the floating panel visibility changes (wired by AppDelegate).
+    @ObservationIgnored var onFloatingPanelChanged: ((Bool) -> Void)?
+
+    /// One-shot flag: the first-launch onboarding has been shown and dismissed.
+    var hasCompletedOnboarding: Bool {
+        didSet { defaults.set(hasCompletedOnboarding, forKey: Self.onboardingKey) }
+    }
+
+    /// Menu bar density (normal = with sparklines, compact = text only).
+    var menuBarStyle: MenuBarStyle {
+        didSet {
+            defaults.set(menuBarStyle.rawValue, forKey: Self.styleKey)
+            if menuBarStyle != oldValue { onAppearanceChanged?() }
+        }
+    }
+
+    /// Accent color for sparklines/charts (`.system` follows macOS accent).
+    var accentChoice: AccentChoice {
+        didSet {
+            defaults.set(accentChoice.rawValue, forKey: Self.accentKey)
+            if accentChoice != oldValue { onAppearanceChanged?() }
+        }
+    }
+
+    /// Called when a look-related setting changes so the menu bar redraws immediately
+    /// (SwiftUI views update on their own via observation).
+    @ObservationIgnored var onAppearanceChanged: (() -> Void)?
+
+    /// Per-module notification threshold rules.
+    var alertRules: [MetricID: AlertRule] {
+        didSet { persistAlertRules() }
+    }
 
     private let defaults = UserDefaults.standard
     private static let enabledKey = "enabledModules"
+    private static let floatingPanelKey = "showFloatingPanel"
+    private static let onboardingKey = "hasCompletedOnboarding"
+    private static let styleKey = "menuBarStyle"
+    private static let accentKey = "accentChoice"
+    private static let alertsKey = "alertRules"
 
     init() {
         let providers = MetricsKit.coreProviders()
@@ -40,6 +85,12 @@ final class AppModel {
         let engine = MetricsEngine()
         engine.register(providers)
         self.engine = engine
+
+        self.showFloatingPanel = defaults.bool(forKey: Self.floatingPanelKey)
+        self.hasCompletedOnboarding = defaults.bool(forKey: Self.onboardingKey)
+        self.menuBarStyle = MenuBarStyle(rawValue: defaults.string(forKey: Self.styleKey) ?? "") ?? .normal
+        self.accentChoice = AccentChoice(rawValue: defaults.string(forKey: Self.accentKey) ?? "") ?? .system
+        self.alertRules = Self.loadAlertRules(from: defaults, available: available)
 
         // If nothing was persisted, enable all available modules.
         if let raw = defaults.array(forKey: Self.enabledKey) as? [String] {
@@ -66,5 +117,56 @@ final class AppModel {
 
     private func persistEnabled() {
         defaults.set(enabledModules.map(\.rawValue), forKey: Self.enabledKey)
+    }
+
+    // MARK: - Appearance
+
+    /// Effective accent as an AppKit color (menu bar rendering).
+    var accentNSColor: NSColor { accentChoice.nsColor ?? .controlAccentColor }
+
+    /// Effective accent as a SwiftUI color (popover, floating panel).
+    var accentColor: Color { Color(nsColor: accentNSColor) }
+
+    // MARK: - Alerts
+
+    /// Modules that support threshold alerts, in display order.
+    var alertableModules: [MetricID] {
+        availableModules.filter { alertRules[$0] != nil }
+    }
+
+    private static func defaultAlertRules(available: [MetricID]) -> [MetricID: AlertRule] {
+        var rules: [MetricID: AlertRule] = [:]
+        for id in available {
+            switch id {
+            case .cpu, .memory, .disk:
+                rules[id] = AlertRule(enabled: false, thresholdPercent: 90)
+            case .battery:
+                rules[id] = AlertRule(enabled: false, thresholdPercent: 20)
+            default:
+                break
+            }
+        }
+        return rules
+    }
+
+    private static func loadAlertRules(from defaults: UserDefaults,
+                                       available: [MetricID]) -> [MetricID: AlertRule] {
+        var rules = defaultAlertRules(available: available)
+        if let data = defaults.data(forKey: Self.alertsKey),
+           let raw = try? JSONDecoder().decode([String: AlertRule].self, from: data) {
+            for (key, rule) in raw {
+                if let id = MetricID(rawValue: key), rules[id] != nil {
+                    rules[id] = rule
+                }
+            }
+        }
+        return rules
+    }
+
+    private func persistAlertRules() {
+        let raw = Dictionary(uniqueKeysWithValues: alertRules.map { ($0.key.rawValue, $0.value) })
+        if let data = try? JSONEncoder().encode(raw) {
+            defaults.set(data, forKey: Self.alertsKey)
+        }
     }
 }

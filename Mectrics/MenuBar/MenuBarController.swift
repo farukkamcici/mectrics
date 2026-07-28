@@ -33,14 +33,15 @@ final class MenuBarController {
 
     /// Updates the live values of all items.
     func refresh() {
-        let accent = NSColor.controlAccentColor
+        let accent = model.accentNSColor
+        let compact = model.menuBarStyle == .compact
         for (id, statusItem) in items {
             guard let sample = model.latest[id] else { continue }
             statusItem.update(
                 text: MenuBarText.string(for: id, sample: sample),
                 samples: model.history(id),
                 accent: accent,
-                showSparkline: MenuBarText.showsSparkline(id)
+                showSparkline: !compact && MenuBarText.showsSparkline(id)
             )
         }
     }
