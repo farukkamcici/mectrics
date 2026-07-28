@@ -8,56 +8,85 @@ import MetricsKit
 /// strip's ⓧ only.
 struct MenuBarBuilderView: View {
     @Bindable var model: AppModel
+    @Environment(\.colorSchemeContrast) private var contrast
+    private let componentColumns = Array(
+        repeating: GridItem(
+            .flexible(minimum: 88, maximum: 160),
+            spacing: ExperienceSpacing.small
+        ),
+        count: 4
+    )
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Menu bar")
-                .font(.headline)
+        VStack(alignment: .leading, spacing: ExperienceSpacing.medium) {
+            ExperienceSectionHeader(
+                title: String(localized: "builder.menuBar.title", defaultValue: "Menu bar")
+            )
             currentStrip
+            HStack {
+                Toggle("Show icons", isOn: $model.showMenuBarIcons)
+                    .toggleStyle(.checkbox)
+                    .help(String(
+                        localized: "builder.icons.help",
+                        defaultValue: "Show a module symbol before each menu bar reading"
+                    ))
+                Spacer()
+                Picker("Chart color", selection: $model.accentChoice) {
+                    ForEach(AccentChoice.allCases) { choice in
+                        Text(choice.localizedName).tag(choice)
+                    }
+                }
+                .frame(width: 180)
+            }
             Text("Reorder items directly in the menu bar by holding ⌘ and dragging them.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
 
             Divider()
 
-            Text("Components")
-                .font(.headline)
-            Text("Click a component to add or remove it — a module can have several items at once. Dragging onto the menu bar above also adds.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+            ExperienceSectionHeader(
+                title: String(localized: "builder.components.title", defaultValue: "Components"),
+                subtitle: String(
+                    localized: "builder.components.subtitle",
+                    defaultValue: "Click a component to add or remove it — a module can have several items at once. Dragging onto the menu bar above also adds."
+                )
+            )
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ExperienceSpacing.medium) {
                     ForEach(model.availableModules, id: \.self) { id in
                         moduleSection(id)
                     }
                 }
-                .padding(.vertical, 2)
+                .padding(.vertical, ExperienceSpacing.tiny)
             }
         }
-        .padding(14)
+        .padding(ExperienceSpacing.large)
     }
 
     // MARK: - Current menu bar strip
 
     private var currentStrip: some View {
-        HStack(spacing: 6) {
-            if model.orderedEnabledModules.isEmpty {
-                Text("Empty — add components below")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+        ScrollView(.horizontal) {
+            HStack(spacing: ExperienceSpacing.small) {
+                if model.orderedEnabledModules.isEmpty {
+                    Text("Empty — add components below")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                let entries = model.orderedEnabledItems
+                ForEach(entries.indices, id: \.self) { i in
+                    stripItem(entries[i].module, entries[i].component)
+                }
             }
-            let entries = model.orderedEnabledItems
-            ForEach(entries.indices, id: \.self) { i in
-                stripItem(entries[i].module, entries[i].component)
-            }
-            Spacer(minLength: 0)
+            .padding(.horizontal, ExperienceSpacing.medium)
+            .frame(minWidth: 1, minHeight: 44, alignment: .leading)
         }
-        .padding(.horizontal, 10)
+        .scrollIndicators(.hidden)
         .frame(height: 44)
         .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
+            RoundedRectangle(cornerRadius: ExperienceRadius.standard, style: .continuous)
                 .fill(.secondary.opacity(0.09))
         )
         .dropDestination(for: String.self) { payloads, _ in
@@ -67,7 +96,7 @@ struct MenuBarBuilderView: View {
     }
 
     private func stripItem(_ id: MetricID, _ component: MenuBarComponent) -> some View {
-        HStack(spacing: 5) {
+        HStack(spacing: ExperienceSpacing.xSmall) {
             preview(id, component)
             Button {
                 model.toggleComponent(component, for: id)
@@ -78,71 +107,140 @@ struct MenuBarBuilderView: View {
             }
             .buttonStyle(.plain)
             .help(String(localized: "builder.remove", defaultValue: "Remove from menu bar"))
+            .accessibilityLabel(
+                String(
+                    localized: "builder.remove.accessibilityLabel",
+                    defaultValue: "Remove \(component.localizedName) for \(id.localizedName)"
+                )
+            )
         }
-        .padding(.horizontal, 7)
-        .padding(.vertical, 5)
+        .padding(.horizontal, ExperienceSpacing.small)
+        .padding(.vertical, ExperienceSpacing.xSmall)
         .background(
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
+            RoundedRectangle(cornerRadius: ExperienceRadius.compact, style: .continuous)
                 .fill(.background.opacity(0.85))
-                .shadow(color: .black.opacity(0.12), radius: 1, y: 0.5)
         )
     }
 
     // MARK: - Component gallery
 
     private func moduleSection(_ id: MetricID) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Label(id.localizedName, systemImage: FloatingPanelView.symbol(for: id))
-                .font(.callout.weight(.medium))
-            HStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: ExperienceSpacing.small) {
+            HStack(spacing: ExperienceSpacing.small) {
+                Label(id.localizedName, systemImage: FloatingPanelView.symbol(for: id))
+                    .font(.callout.weight(.medium))
+                let state = previewState(id)
+                if state != .live {
+                    MetricStatusBadge(state: state)
+                }
+            }
+            LazyVGrid(
+                columns: componentColumns,
+                alignment: .leading,
+                spacing: ExperienceSpacing.small
+            ) {
                 ForEach(MenuBarComponent.available(for: id)) { component in
                     tile(id, component)
                 }
-                Spacer(minLength: 0)
             }
         }
     }
 
     private func tile(_ id: MetricID, _ component: MenuBarComponent) -> some View {
         let isActive = model.isComponentEnabled(component, for: id)
-        return VStack(spacing: 3) {
-            preview(id, component)
-                .frame(height: 20)
-            Text(component.localizedName)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-        }
-        .frame(width: 92, height: 48)
-        .background(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(isActive ? Color.accentColor.opacity(0.16) : Color.secondary.opacity(0.07))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .strokeBorder(isActive ? Color.accentColor : .clear, lineWidth: 1.5)
-        )
-        .contentShape(RoundedRectangle(cornerRadius: 8))
-        .onTapGesture {
+        return Button {
             // Multi-select: each tile toggles independently; a module can put several
             // components in the menu bar at once.
             model.toggleComponent(component, for: id)
+        } label: {
+            ZStack(alignment: .topTrailing) {
+                VStack(spacing: ExperienceSpacing.xSmall) {
+                    preview(id, component)
+                        .frame(height: 20)
+                    Text(component.localizedName)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, minHeight: 52)
+
+                if isActive {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.tint)
+                        .padding(ExperienceSpacing.xSmall)
+                        .accessibilityHidden(true)
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: ExperienceRadius.standard, style: .continuous)
+                    .fill(
+                        isActive
+                            ? Color.accentColor.opacity(ExperienceSurface.selectedFillOpacity)
+                            : Color.secondary.opacity(ExperienceSurface.subtleFillOpacity)
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: ExperienceRadius.standard, style: .continuous)
+                    .strokeBorder(
+                        isActive
+                            ? Color.accentColor
+                            : Color.primary.opacity(
+                                contrast == .increased
+                                    ? ExperienceSurface.increasedBorderOpacity
+                                    : 0
+                            ),
+                        lineWidth: ExperienceChart.compactStrokeWidth
+                    )
+            )
+            .contentShape(RoundedRectangle(cornerRadius: ExperienceRadius.standard))
         }
+        .buttonStyle(.plain)
         .draggable("\(id.rawValue)|\(component.rawValue)")
         .help(isActive
               ? String(localized: "builder.tile.remove", defaultValue: "Click to remove")
               : String(localized: "builder.tile.add", defaultValue: "Click to add"))
+        .accessibilityLabel(
+            String(
+                localized: "builder.component.accessibilityLabel",
+                defaultValue: "\(id.localizedName), \(component.localizedName)"
+            )
+        )
+        .accessibilityValue(isActive
+                            ? String(localized: "builder.active", defaultValue: "In menu bar")
+                            : String(localized: "builder.inactive", defaultValue: "Not in menu bar"))
     }
 
     // MARK: - Live previews (SwiftUI mirror of the menu bar renderer)
 
     @ViewBuilder
     private func preview(_ id: MetricID, _ component: MenuBarComponent) -> some View {
+        let state = previewState(id)
+        if showsSample(for: state), model.latest[id] != nil {
+            ZStack(alignment: .topTrailing) {
+                componentPreview(id, component)
+                if state != .live {
+                    Image(systemName: state.symbolName)
+                        .font(.system(size: 7, weight: .semibold))
+                        .foregroundStyle(state.tint)
+                        .accessibilityLabel(state.localizedName)
+                }
+            }
+        } else {
+            Image(systemName: state.symbolName)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(state.tint)
+                .accessibilityLabel(state.localizedName)
+        }
+    }
+
+    @ViewBuilder
+    private func componentPreview(_ id: MetricID, _ component: MenuBarComponent) -> some View {
         switch component {
         case .graph:
             SparklineView(values: previewSamples(id), accent: model.accentColor)
                 .frame(width: 28, height: 14)
         case .valueGraph:
-            HStack(spacing: 4) {
+            HStack(spacing: ExperienceSpacing.xSmall) {
                 previewLabel(id, component)
                 SparklineView(values: previewSamples(id), accent: model.accentColor)
                     .frame(width: 26, height: 13)
@@ -151,7 +249,9 @@ struct MenuBarBuilderView: View {
             CoreBarsView(values: coreValues(id), accent: model.accentColor)
                 .frame(width: 36, height: 14)
         case .ring:
-            ringPreview(fraction: model.latest[id]?.value ?? 0)
+            if let sample = model.latest[id] {
+                ringPreview(fraction: sample.value)
+            }
         case .batteryIcon:
             Image(systemName: batterySymbol(id))
                 .font(.system(size: 13))
@@ -178,20 +278,29 @@ struct MenuBarBuilderView: View {
 
     private func ringPreview(fraction: Double) -> some View {
         ZStack {
-            Circle().stroke(.secondary.opacity(0.25), lineWidth: 2.5)
+            Circle().stroke(
+                .secondary.opacity(0.25),
+                lineWidth: ExperienceChart.detailStrokeWidth
+            )
             Circle()
                 .trim(from: 0, to: min(max(fraction, 0), 1))
-                .stroke(model.accentColor, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                .stroke(
+                    model.accentColor,
+                    style: StrokeStyle(
+                        lineWidth: ExperienceChart.detailStrokeWidth,
+                        lineCap: .round
+                    )
+                )
                 .rotationEffect(.degrees(-90))
         }
         .frame(width: 14, height: 14)
     }
 
     private func batterySymbol(_ id: MetricID) -> String {
-        let sample = model.latest[id]
-        let charging = (sample?.detail["charging"] ?? 0) > 0
+        guard let sample = model.latest[id] else { return "battery.0percent" }
+        let charging = (sample.detail["charging"] ?? 0) > 0
         if charging { return "battery.100percent.bolt" }
-        let level = sample?.value ?? 1
+        let level = sample.value
         switch level {
         case ..<0.125:  return "battery.0percent"
         case ..<0.375:  return "battery.25percent"
@@ -202,16 +311,21 @@ struct MenuBarBuilderView: View {
     }
 
     private func coreValues(_ id: MetricID) -> [Double] {
-        guard let d = model.latest[id]?.detail else { return [0.3, 0.6, 0.4, 0.7] }
+        guard let d = model.latest[id]?.detail else { return [] }
         let cores = Int(d["coreCount"] ?? 0)
-        let values = (0..<cores).compactMap { d["core\($0)"] }
-        return values.isEmpty ? [0.3, 0.6, 0.4, 0.7] : values
+        return (0..<cores).compactMap { d["core\($0)"] }
     }
 
     private func previewSamples(_ id: MetricID) -> [Double] {
-        let history = model.history(id, count: 30)
-        // Placeholder wave until real samples arrive.
-        return history.count > 1 ? history : [0.3, 0.5, 0.35, 0.7, 0.5, 0.65, 0.45]
+        model.history(id, count: 30)
+    }
+
+    private func previewState(_ id: MetricID) -> MetricDataState {
+        model.metricState(for: id, isEnabled: model.enabledModules.contains(id))
+    }
+
+    private func showsSample(for state: MetricDataState) -> Bool {
+        state == .live || state == .stale || state == .error
     }
 
     // MARK: - Helpers

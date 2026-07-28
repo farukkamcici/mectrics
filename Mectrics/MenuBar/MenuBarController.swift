@@ -13,8 +13,10 @@ final class MenuBarController {
 
     init(model: AppModel) {
         self.model = model
-        popover.behavior = .transient
-        popover.animates = true
+        // Keep metric details visible while the user works in another app. The
+        // status item remains the explicit toggle that closes the popover.
+        popover.behavior = .applicationDefined
+        popover.animates = !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
     }
 
     /// Rebuilds the menu bar items from scratch based on the enabled modules.
@@ -37,9 +39,16 @@ final class MenuBarController {
         let accent = model.accentNSColor
         for statusItem in items.values {
             let id = statusItem.id
-            guard let sample = model.latest[id] else { continue }
+            let sample = model.latest[id]
             statusItem.update(
-                visual: MenuBarText.visual(for: id, component: statusItem.component, sample: sample),
+                visual: sample.map {
+                    MenuBarText.visual(
+                        for: id,
+                        component: statusItem.component,
+                        sample: $0
+                    )
+                },
+                state: model.metricState(for: id, isEnabled: true),
                 samples: model.history(id),
                 accent: accent,
                 showIcon: model.showMenuBarIcons
@@ -66,6 +75,7 @@ final class MenuBarController {
         host.sizingOptions = .preferredContentSize
         popover.contentViewController = host
         popoverModuleID = id
+        popover.animates = !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         popover.contentViewController?.view.window?.makeKey()
     }

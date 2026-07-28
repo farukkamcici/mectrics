@@ -53,10 +53,13 @@ popover on click; toggle modules in settings; launch at login.
 - [x] Providers: **Sensors/Temperature (SMC)** (key enumeration, plausibility filter,
       CPU/GPU cluster maxima) and **Fans (SMC)** (self-hides on fanless machines).
       Verified on Apple Silicon; Intel uses the same key protocol (untested hardware).
-- [ ] **WidgetKit extension** (small/medium/large, App Group snapshot).
-- [ ] Advanced notifications, data history/export.
-- [ ] **Hardened Runtime + notarization**, **Sparkle** auto-update, DMG packaging.
-- [ ] GitHub repo (open source, LICENSE), README, landing/privacy statement, GitHub Releases.
+- [x] **WidgetKit extension** (small/medium/large, App Group snapshot).
+- [x] Sustained-threshold notifications (configurable 0/30/60/120/300-second duration).
+- [x] Rolling 30-day hourly history with CSV export.
+- [x] **Hardened Runtime + notarized DMG packaging**.
+- [ ] **Sparkle** auto-update.
+- [x] LICENSE, README, and privacy statement.
+- [ ] Public GitHub repository, landing page, and GitHub Releases.
 - **Output:** a public, open-source v1.0.
 
 ## Phase 4 — v1.x+ (later)
@@ -72,9 +75,9 @@ Sources: iStat Menus 7 feature list, Stats (exelban) most-upvoted issues, MacRum
 **High value, medium effort**
 - [ ] **Combined mode** — one menu bar item opening an all-modules overview popover
       (top-voted Stats issue #1084; iStat 7 headline feature).
-- [ ] **Long history** — iStat keeps 30 days across restarts and users cite it as the
-      reason to pay; persist ring buffers to disk (hourly downsampling) + a history
-      window with time ranges (1h/24h/7d/30d).
+- [ ] **Long-history experience** — 30-day hourly persistence and CSV export are complete;
+      add the History window with time ranges (1h/24h/7d/30d), chart scrubbing, summaries,
+      and threshold annotations (tracked as PX-010).
 - [ ] **Per-app breakdowns** — top apps by network and disk I/O (iStat has both;
       `nettop`/`fs_usage`-style sampling on popover open, like our Top processes).
 - [ ] **Data Today** — daily network totals with per-day rollover (Usage), persisted.
@@ -104,9 +107,7 @@ Sources: iStat Menus 7 feature list, Stats (exelban) most-upvoted issues, MacRum
    simpler architecture.
 
 ## Still to finalize (small)
-- **Open-source license:** MIT (permissive) vs GPLv3 (like Stats, keeps derivatives open).
-  → Proposal: start with **MIT** (flexibility), change if desired.
-- **Bundle ID / brand:** `com.mectrics.app` (proposal). Name "mectrics" assumed final.
+- **Public brand review:** confirm final capitalization and copy before the public release.
 - **GitHub org/repo** and Sponsors (optional) — at the distribution phase.
 
 ## Risks & mitigations
@@ -116,9 +117,10 @@ Sources: iStat Menus 7 feature list, Stats (exelban) most-upvoted issues, MacRum
 | App Store sandbox blocks sensors | Direct distribution first; App Store as a separate, limited SKU later. |
 | The app itself eats battery/CPU (the iStat complaint) | Adaptive sampling + visibility-aware redraw baked into the architecture. |
 | Expectation that WidgetKit is real-time | Feature the floating panel as the "live widget"; position WidgetKit as "at a glance". |
-| Notarization/signing is new to you | I'll script it; you only need the Developer account + a one-time certificate setup. |
+| A broken update can damage release trust | Sign the Sparkle feed, publish from the same notarized artifact, and test upgrades on a clean account. |
 
 ## Where we are now
-**Phase 2 is feature-complete** (v0.5): providers, floating panel, onboarding, themes &
-compact mode, notification thresholds, global hotkey. Next: Phase 3 — GPU/Sensors/Fans
-(SMC), WidgetKit, notarization + DMG, open-source release.
+**Phase 3 product work is underway:** GPU/Sensors/Fans, WidgetKit, and sustained-threshold
+notifications, rolling history/CSV export, and notarized DMG packaging are complete.
+Next: the [premium experience pass](05-premium-experience-backlog.md), Sparkle, and the
+public open-source release.

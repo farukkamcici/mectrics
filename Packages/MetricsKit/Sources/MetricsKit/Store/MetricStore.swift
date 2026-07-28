@@ -4,19 +4,22 @@ import Foundation
 /// are read from here. Fixed capacity means near-zero allocation on the hot path (no heap
 /// allocation per sample), aligned with the lightweight goal.
 ///
-/// Access is assumed to happen from a single serial queue (the engine's sampling queue).
-/// UI reads are published to the main thread through that same queue.
+/// Access is synchronized because the engine writes on its sampling queue while app and
+/// CLI consumers may read history from another thread.
 public final class MetricStore: @unchecked Sendable {
     /// Samples kept per metric (e.g. 300 samples ≈ 5 min @1s).
     public let capacity: Int
 
     private var buffers: [MetricID: RingBuffer<MetricSample>] = [:]
+    private let lock = NSLock()
 
     public init(capacity: Int = 300) {
         self.capacity = capacity
     }
 
     public func append(_ sample: MetricSample, for id: MetricID) {
+        lock.lock()
+        defer { lock.unlock() }
         if buffers[id] == nil {
             buffers[id] = RingBuffer(capacity: capacity)
         }
@@ -25,11 +28,15 @@ public final class MetricStore: @unchecked Sendable {
 
     /// Most recent sample.
     public func latest(_ id: MetricID) -> MetricSample? {
-        buffers[id]?.last
+        lock.lock()
+        defer { lock.unlock() }
+        return buffers[id]?.last
     }
 
     /// The newest `count` samples, oldest-to-newest (for sparklines).
     public func history(_ id: MetricID, count: Int) -> [MetricSample] {
+        lock.lock()
+        defer { lock.unlock() }
         guard let buffer = buffers[id] else { return [] }
         let all = buffer.elements
         if all.count <= count { return all }
@@ -38,7 +45,9 @@ public final class MetricStore: @unchecked Sendable {
 
     /// Full history.
     public func history(_ id: MetricID) -> [MetricSample] {
-        buffers[id]?.elements ?? []
+        lock.lock()
+        defer { lock.unlock() }
+        return buffers[id]?.elements ?? []
     }
 }
 

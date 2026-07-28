@@ -1,71 +1,59 @@
 import SwiftUI
 import MetricsKit
 
-/// Settings window — module selection and general preferences. The window sizes itself
-/// to the content (`.windowResizability(.contentSize)` on the scene), so each tab sets
-/// its own natural height.
-struct SettingsView: View {
+/// General preferences tab of the settings window. Tabs are hosted individually by
+/// `SettingsWindowController`, which owns the per-tab window sizes.
+struct GeneralSettingsTab: View {
     @Bindable var model: AppModel
     @State private var launchAtLogin = LoginItem.isEnabled
 
     var body: some View {
-        TabView {
-            generalTab
-                .tabItem { Label("General", systemImage: "gearshape") }
-            modulesTab
-                .tabItem { Label("Modules", systemImage: "square.grid.2x2") }
-            alertsTab
-                .tabItem { Label("Alerts", systemImage: "bell.badge") }
-        }
-        .frame(width: 440)
-        // The toggle can be flipped elsewhere (onboarding); re-read on every appearance.
-        .onAppear { launchAtLogin = LoginItem.isEnabled }
-    }
-
-    private var generalTab: some View {
         Form {
-            Section {
+            Section("Application") {
                 Toggle("Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, newValue in
                         LoginItem.setEnabled(newValue)
                     }
+            }
+
+            Section("Floating panel") {
                 Toggle("Show floating panel", isOn: $model.showFloatingPanel)
                 Picker("Panel layout", selection: $model.panelLayout) {
                     ForEach(PanelLayout.allCases) { layout in
                         Text(layout.localizedName).tag(layout)
                     }
                 }
-                LabeledContent("Panel hotkey", value: "⌃⌥M")
+                Text("Press Control–Option–M to show or hide the panel.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
-            Section("Appearance") {
-                Toggle(isOn: $model.showMenuBarIcons) {
-                    Text("Icons in menu bar items")
-                    Text("A small hardware icon at the start of each item.")
-                }
-                Picker("Accent color", selection: $model.accentChoice) {
-                    ForEach(AccentChoice.allCases) { choice in
-                        Text(choice.localizedName).tag(choice)
-                    }
-                }
-            }
-            Section {
+
+            Section("Data and privacy") {
                 LabeledContent("Version", value: Self.versionString)
-                Label("Zero telemetry — no data ever leaves your device",
+                Button("Export metric history…") {
+                    model.exportHistoryCSV()
+                }
+                Label("Your readings stay on this Mac. Mectrics has no telemetry.",
                       systemImage: "lock.shield")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)
-        .frame(height: 310)
+        // The toggle can be flipped elsewhere (onboarding); re-read on every appearance.
+        .onAppear { launchAtLogin = LoginItem.isEnabled }
     }
 
-    private var modulesTab: some View {
-        MenuBarBuilderView(model: model)
-            .frame(height: 460)
+    private static var versionString: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
     }
+}
 
-    private var alertsTab: some View {
+/// Alert thresholds tab of the settings window.
+struct AlertsSettingsTab: View {
+    @Bindable var model: AppModel
+
+    var body: some View {
         Form {
             Section("Notify me when") {
                 ForEach(model.alertableModules, id: \.self) { id in
@@ -73,13 +61,12 @@ struct SettingsView: View {
                 }
             }
             Section {
-                Text("Alerts fire when a value crosses its threshold, at most once every 15 minutes per module.")
+                Text("An alert appears after the reading stays beyond its limit for the selected time. Each module alerts at most once every 15 minutes.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)
-        .frame(height: 300)
     }
 
     private func alertRow(_ id: MetricID) -> some View {
@@ -103,6 +90,16 @@ struct SettingsView: View {
                     .frame(minWidth: 40, alignment: .trailing)
             }
             .disabled(!rule.wrappedValue.enabled)
+            Picker("For", selection: rule.durationSeconds) {
+                Text("Immediately").tag(0)
+                Text("30 seconds").tag(30)
+                Text("1 minute").tag(60)
+                Text("2 minutes").tag(120)
+                Text("5 minutes").tag(300)
+            }
+            .labelsHidden()
+            .frame(width: 120)
+            .disabled(!rule.wrappedValue.enabled)
         }
     }
 
@@ -114,9 +111,5 @@ struct SettingsView: View {
                 model.alertRules[id] = newValue
             }
         )
-    }
-
-    private static var versionString: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
     }
 }

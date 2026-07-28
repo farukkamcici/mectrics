@@ -34,19 +34,24 @@ public final class DiskProvider: MetricProvider, @unchecked Sendable {
             let strictFree = Double(vals.volumeAvailableCapacity ?? 0)
             purgeable = max(free - strictFree, 0)
         }
+        guard total > 0 else { return nil }
         let used = max(total - free, 0)
-        let usage = total > 0 ? min(used / total, 1) : 0
+        let usage = min(used / total, 1)
 
         // Throughput
         let (read, write) = readBlockStats()
         let now = Date()
-        var readRate: Double = 0
-        var writeRate: Double = 0
+        var detail: [String: Double] = [
+            "total": total,
+            "free": free,
+            "used": used,
+            "purgeable": purgeable
+        ]
         if let last = prevTime {
             let dt = now.timeIntervalSince(last)
             if dt > 0 {
-                readRate = Double(read &- prevRead) / dt
-                writeRate = Double(write &- prevWrite) / dt
+                detail["readRate"] = Double(read &- prevRead) / dt
+                detail["writeRate"] = Double(write &- prevWrite) / dt
             }
         }
         prevRead = read; prevWrite = write; prevTime = now
@@ -54,8 +59,7 @@ public final class DiskProvider: MetricProvider, @unchecked Sendable {
         return MetricSample(
             value: usage,
             unit: .fraction,
-            detail: ["total": total, "free": free, "used": used, "purgeable": purgeable,
-                     "readRate": readRate, "writeRate": writeRate]
+            detail: detail
         )
     }
 

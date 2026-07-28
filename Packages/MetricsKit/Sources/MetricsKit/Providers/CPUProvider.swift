@@ -17,11 +17,11 @@ public final class CPUProvider: MetricProvider, @unchecked Sendable {
     public func sample() -> MetricSample? {
         guard let cores = readPerCoreTicks() else { return nil }
 
-        // First sample: store the reference, don't produce a ratio yet (return 0).
+        // First sample: store the reference. A ratio is not valid until the next
+        // counter delta, so keep the UI in its collecting state.
         guard previousTicks.count == cores.count, !previousTicks.isEmpty else {
             previousTicks = cores
-            return MetricSample(value: 0, unit: .fraction,
-                                detail: ["coreCount": Double(cores.count)])
+            return nil
         }
 
         var perCoreUsage: [Double] = []
@@ -46,8 +46,8 @@ public final class CPUProvider: MetricProvider, @unchecked Sendable {
         }
 
         previousTicks = cores
-
-        let aggregate = totalTickDelta > 0 ? totalBusyDelta / totalTickDelta : 0
+        guard totalTickDelta > 0 else { return nil }
+        let aggregate = totalBusyDelta / totalTickDelta
 
         var detail: [String: Double] = ["coreCount": Double(cores.count)]
         for (i, usage) in perCoreUsage.enumerated() {

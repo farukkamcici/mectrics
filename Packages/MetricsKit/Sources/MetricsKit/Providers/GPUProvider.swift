@@ -11,7 +11,7 @@ import IOKit
 /// use — treated as best-effort and hidden when nothing is published.
 public final class GPUProvider: MetricProvider, @unchecked Sendable {
     public let id: MetricID = .gpu
-    public let cost: SamplingCost = .medium
+    public let cost: SamplingCost = .heavy
 
     /// Utilization keys published by different driver generations, in priority order.
     private static let utilizationKeys = [

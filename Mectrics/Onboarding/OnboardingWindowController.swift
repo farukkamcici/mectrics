@@ -1,41 +1,61 @@
 import AppKit
 import SwiftUI
 
-/// Shows the onboarding window on first launch. The app is a menu bar agent, so the
-/// window is activated explicitly; closing it (by any means) marks onboarding complete
-/// so it never nags again.
+private final class OnboardingWindow: NSWindow {
+    override func cancelOperation(_ sender: Any?) {
+        performClose(sender)
+    }
+}
+
+/// Shows the onboarding window on first launch. Closing it (by any means) marks
+/// onboarding complete. It can be opened again later from Help.
 @MainActor
 final class OnboardingWindowController: NSObject, NSWindowDelegate {
     private let model: AppModel
+    private let onFinished: () -> Void
     private var window: NSWindow?
 
-    init(model: AppModel) {
+    init(model: AppModel, onFinished: @escaping () -> Void = {}) {
         self.model = model
+        self.onFinished = onFinished
     }
 
     func show() {
+        if let window {
+            NSApp.setActivationPolicy(.regular)
+            NSApp.activate(ignoringOtherApps: true)
+            window.makeKeyAndOrderFront(nil)
+            return
+        }
+
+        model.beginOnboardingPreview()
         let view = OnboardingView(model: model) { [weak self] in
             self?.window?.close()
         }
         let host = NSHostingController(rootView: view)
-        let window = NSWindow(contentViewController: host)
-        window.styleMask = [.titled, .closable, .fullSizeContentView]
-        window.titlebarAppearsTransparent = true
-        window.titleVisibility = .hidden
+        let window = OnboardingWindow(contentViewController: host)
+        window.styleMask = [.titled, .closable]
+        window.title = String(
+            localized: "onboarding.window.title",
+            defaultValue: "Welcome to Mectrics"
+        )
+        window.isReleasedWhenClosed = false
+        window.standardWindowButton(.miniaturizeButton)?.isEnabled = false
+        window.standardWindowButton(.zoomButton)?.isEnabled = false
         window.isMovableByWindowBackground = true
         window.delegate = self
         window.center()
         self.window = window
 
-        // Menu bar agent: force activation so the window actually comes to the front
-        // (cooperative activation is refused when another app is frontmost at launch).
+        NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
-        window.orderFrontRegardless()
     }
 
     func windowWillClose(_ notification: Notification) {
         model.hasCompletedOnboarding = true
+        model.endOnboardingPreview()
         window = nil
+        onFinished()
     }
 }

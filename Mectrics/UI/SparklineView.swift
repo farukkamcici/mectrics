@@ -14,15 +14,29 @@ struct SparklineView: View {
                     let path = linePath(in: geo.size, maxV: maxV, count: count)
                     path.fill(
                         LinearGradient(
-                            colors: [accent.opacity(0.25), accent.opacity(0.02)],
+                            colors: [
+                                accent.opacity(ExperienceChart.fillOpacity),
+                                accent.opacity(0.02)
+                            ],
                             startPoint: .top, endPoint: .bottom
                         )
                     )
                     strokePath(in: geo.size, maxV: maxV, count: count)
-                        .stroke(accent, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
+                        .stroke(
+                            accent,
+                            style: StrokeStyle(
+                                lineWidth: ExperienceChart.compactStrokeWidth,
+                                lineJoin: .round
+                            )
+                        )
                 }
             }
         }
+        .accessibilityElement()
+        .accessibilityLabel(
+            String(localized: "chart.recentTrend", defaultValue: "Recent trend")
+        )
+        .accessibilityValue(accessibilitySummary)
     }
 
     private func x(_ i: Int, width: CGFloat, count: Int) -> CGFloat {
@@ -50,5 +64,25 @@ struct SparklineView: View {
         p.addLine(to: CGPoint(x: 0, y: size.height))
         p.closeSubpath()
         return p
+    }
+
+    private var accessibilitySummary: String {
+        guard let minimum = values.min(),
+              let maximum = values.max(),
+              let latest = values.last
+        else {
+            return String(localized: "chart.noReadings", defaultValue: "No readings")
+        }
+        let format = String(
+            localized: "chart.summary",
+            defaultValue: "%lld readings, minimum %.0f%%, maximum %.0f%%, latest %.0f%%"
+        )
+        return String(
+            format: format,
+            Int64(values.count),
+            minimum * 100,
+            maximum * 100,
+            latest * 100
+        )
     }
 }

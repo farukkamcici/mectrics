@@ -15,10 +15,18 @@ public final class MetricsEngine: @unchecked Sendable {
     private var timer: DispatchSourceTimer?
     private var policy: SamplingPolicy
     private var cycleCount = 0
+    /// `nil` samples every registered provider. The app sets an explicit subset so
+    /// disabled modules do not consume power; the CLI keeps the default.
+    private var activeMetricIDs: Set<MetricID>?
 
     /// Called on the main thread after each sampling cycle.
     /// Parameter: the latest values of the metrics updated this cycle.
-    public var onCycle: (@Sendable ([MetricID: MetricSample]) -> Void)?
+    public var onCycle: (@MainActor @Sendable ([MetricID: MetricSample]) -> Void)?
+
+    /// Called on the main thread after every cycle that attempted at least one
+    /// provider. Unlike `onCycle`, this also reports failed attempts so clients can
+    /// distinguish collecting, stale, and error states.
+    public var onCycleReport: (@MainActor @Sendable (SamplingCycleReport) -> Void)?
 
     public init(store: MetricStore = MetricStore(),
                 policy: SamplingPolicy = .default) {
@@ -34,6 +42,13 @@ public final class MetricsEngine: @unchecked Sendable {
         }
     }
 
+    /// Restricts sampling to the supplied metrics. Pass `nil` to sample all providers.
+    public func setActiveMetrics(_ ids: Set<MetricID>?) {
+        queue.async { [weak self] in
+            self?.activeMetricIDs = ids
+        }
+    }
+
     public func start(onBattery: Bool = false) {
         queue.async { [weak self] in
             guard let self else { return }
@@ -45,6 +60,13 @@ public final class MetricsEngine: @unchecked Sendable {
         queue.async { [weak self] in
             self?.timer?.cancel()
             self?.timer = nil
+        }
+    }
+
+    /// Requests an immediate pass on the serial sampling queue.
+    public func requestRefresh() {
+        queue.async { [weak self] in
+            self?.tick()
         }
     }
 
@@ -72,17 +94,31 @@ public final class MetricsEngine: @unchecked Sendable {
         cycleCount &+= 1
         let runHeavy = cycleCount % max(1, policy.heavyEveryNCycles) == 0
         var updated: [MetricID: MetricSample] = [:]
+        var failed: Set<MetricID> = []
+        var attemptedAnyProvider = false
 
         for provider in providers {
+            if let activeMetricIDs, !activeMetricIDs.contains(provider.id) { continue }
             if provider.cost == .heavy && !runHeavy { continue }
+            attemptedAnyProvider = true
             if let sample = provider.sample() {
                 store.append(sample, for: provider.id)
                 updated[provider.id] = sample
+            } else {
+                failed.insert(provider.id)
             }
         }
 
-        DispatchQueue.main.async { [onCycle] in
-            onCycle?(updated)
+        guard attemptedAnyProvider else { return }
+        let report = SamplingCycleReport(
+            samples: updated,
+            failedMetricIDs: failed
+        )
+        Task { @MainActor [onCycle, onCycleReport] in
+            if !updated.isEmpty {
+                onCycle?(updated)
+            }
+            onCycleReport?(report)
         }
     }
 }

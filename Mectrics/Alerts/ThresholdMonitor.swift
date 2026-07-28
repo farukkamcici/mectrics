@@ -8,15 +8,39 @@ import MetricsKit
 struct AlertRule: Codable, Equatable {
     var enabled: Bool
     var thresholdPercent: Int
+    var durationSeconds: Int
+
+    init(enabled: Bool, thresholdPercent: Int, durationSeconds: Int = 30) {
+        self.enabled = enabled
+        self.thresholdPercent = thresholdPercent
+        self.durationSeconds = durationSeconds
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case enabled
+        case thresholdPercent
+        case durationSeconds
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        enabled = try container.decode(Bool.self, forKey: .enabled)
+        thresholdPercent = try container.decode(Int.self, forKey: .thresholdPercent)
+        durationSeconds = try container.decodeIfPresent(
+            Int.self,
+            forKey: .durationSeconds
+        ) ?? 30
+    }
 }
 
-/// Watches the latest samples and posts a local notification when a value crosses its
-/// threshold. Fires only on the crossing (not continuously) and at most once per
-/// cooldown window per module, so a pegged CPU doesn't spam the user.
+/// Watches the latest samples and posts a local notification after a value remains
+/// beyond its threshold for the configured duration. Fires once per violation and at
+/// most once per cooldown window per module, so a short spike or pegged CPU cannot spam.
 /// Always called from the main thread (the engine's cycle callback).
 final class ThresholdMonitor {
     private var lastFired: [MetricID: Date] = [:]
-    private var wasViolating: [MetricID: Bool] = [:]
+    private var violationStartedAt: [MetricID: Date] = [:]
+    private var firedForCurrentViolation: Set<MetricID> = []
     private let cooldown: TimeInterval = 15 * 60
 
     private static var authorizationRequested = false
@@ -28,7 +52,11 @@ final class ThresholdMonitor {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
 
-    func evaluate(latest: [MetricID: MetricSample], rules: [MetricID: AlertRule]) {
+    func evaluate(
+        latest: [MetricID: MetricSample],
+        rules: [MetricID: AlertRule],
+        now: Date = Date()
+    ) {
         for (id, rule) in rules where rule.enabled {
             guard let sample = latest[id] else { continue }
             // Sensors carry °C directly; everything else is a 0...1 fraction.
@@ -37,14 +65,26 @@ final class ThresholdMonitor {
                 ? measured <= Double(rule.thresholdPercent)
                 : measured >= Double(rule.thresholdPercent)
 
-            let crossed = violating && !(wasViolating[id] ?? false)
-            wasViolating[id] = violating
-            guard crossed else { continue }
+            guard violating else {
+                violationStartedAt[id] = nil
+                firedForCurrentViolation.remove(id)
+                continue
+            }
 
-            let now = Date()
+            let startedAt = violationStartedAt[id] ?? now
+            violationStartedAt[id] = startedAt
+            guard now.timeIntervalSince(startedAt) >= Double(rule.durationSeconds),
+                  !firedForCurrentViolation.contains(id) else { continue }
             guard now.timeIntervalSince(lastFired[id] ?? .distantPast) >= cooldown else { continue }
             lastFired[id] = now
+            firedForCurrentViolation.insert(id)
             post(for: id, rule: rule, measured: Int(measured.rounded()))
+        }
+
+        let disabled = Set(rules.compactMap { $0.value.enabled ? nil : $0.key })
+        for id in disabled {
+            violationStartedAt[id] = nil
+            firedForCurrentViolation.remove(id)
         }
     }
 

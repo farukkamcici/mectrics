@@ -5,41 +5,65 @@ import MetricsKit
 struct DetailPopoverView: View {
     @Bindable var model: AppModel
     let moduleID: MetricID
-    @Environment(\.openSettings) private var openSettings
 
     private var sample: MetricSample? { model.latest[moduleID] }
+    private var state: MetricDataState {
+        model.metricState(for: moduleID, isEnabled: true)
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
+        VStack(alignment: .leading, spacing: ExperienceSpacing.small) {
             header
             Divider()
-            if moduleID == .disk {
-                // Capacity barely moves on a 60 s timeline — show the breakdown instead.
-                CapacityBarView(
-                    used: sample?.detail["used"] ?? 0,
-                    purgeable: sample?.detail["purgeable"] ?? 0,
-                    total: sample?.detail["total"] ?? 0,
-                    accent: model.accentColor
+            if sample == nil {
+                MetricEmptyState(
+                    state: state,
+                    actionTitle: recoveryActionTitle,
+                    action: recoveryAction
                 )
             } else {
-                SparklineView(values: model.history(moduleID, count: 60), accent: model.accentColor)
-                    .frame(height: 40)
-            }
-            if moduleID == .cpu {
-                CoreBarsView(values: coreValues, accent: model.accentColor)
-                    .frame(height: 24)
-            }
-            detailRows
-            if moduleID == .cpu || moduleID == .memory {
-                Divider()
-                TopProcessesView(mode: moduleID == .cpu ? .cpu : .memory,
-                                 accent: model.accentColor)
+                if state != .live {
+                    InlineNotice(
+                        state: state,
+                        actionTitle: recoveryActionTitle,
+                        action: recoveryAction
+                    )
+                }
+                metricContent
             }
             Divider()
             footer
         }
-        .padding(11)
+        .padding(ExperienceSpacing.medium)
         .frame(width: 290)
+    }
+
+    @ViewBuilder
+    private var metricContent: some View {
+        if moduleID == .disk {
+            // Capacity barely moves on a 60 s timeline — show the breakdown instead.
+            CapacityBarView(
+                used: sample?.detail["used"] ?? 0,
+                purgeable: sample?.detail["purgeable"] ?? 0,
+                total: sample?.detail["total"] ?? 0,
+                accent: model.accentColor
+            )
+        } else {
+            SparklineView(values: model.history(moduleID, count: 60), accent: model.accentColor)
+                .frame(height: 40)
+        }
+        if moduleID == .cpu {
+            CoreBarsView(values: coreValues, accent: model.accentColor)
+                .frame(height: 24)
+        }
+        detailRows
+        if moduleID == .cpu || moduleID == .memory {
+            Divider()
+            TopProcessesView(
+                mode: moduleID == .cpu ? .cpu : .memory,
+                accent: model.accentColor
+            )
+        }
     }
 
     /// Per-core usage fractions for the CPU core bars.
@@ -50,30 +74,48 @@ struct DetailPopoverView: View {
     }
 
     private var header: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ExperienceSpacing.small) {
             Image(systemName: FloatingPanelView.symbol(for: moduleID))
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(model.accentColor)
             Text(moduleID.localizedName)
                 .font(.headline)
             Spacer()
-            if moduleID == .memory || moduleID == .disk {
-                headerRing
+            VStack(alignment: .trailing, spacing: ExperienceSpacing.xSmall) {
+                HStack(spacing: ExperienceSpacing.small) {
+                    if sample != nil && (moduleID == .memory || moduleID == .disk) {
+                        headerRing
+                    }
+                    MetricValueText(
+                        label: moduleID.localizedName,
+                        value: primaryValueString,
+                        state: state
+                    )
+                }
+                if state != .live {
+                    MetricStatusBadge(state: state)
+                }
             }
-            Text(primaryValueString)
-                .font(.system(.title3, design: .rounded).weight(.semibold))
-                .foregroundStyle(.primary)
-                .monospacedDigit()
         }
+        .accessibilityElement(children: .contain)
     }
 
     /// Small usage donut next to the value for capacity-style modules.
     private var headerRing: some View {
         ZStack {
-            Circle().stroke(.secondary.opacity(0.22), lineWidth: 3)
+            Circle().stroke(
+                .secondary.opacity(0.22),
+                lineWidth: ExperienceChart.ringStrokeWidth
+            )
             Circle()
                 .trim(from: 0, to: min(max(sample?.value ?? 0, 0), 1))
-                .stroke(model.accentColor, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                .stroke(
+                    model.accentColor,
+                    style: StrokeStyle(
+                        lineWidth: ExperienceChart.ringStrokeWidth,
+                        lineCap: .round
+                    )
+                )
                 .rotationEffect(.degrees(-90))
         }
         .frame(width: 18, height: 18)
@@ -81,7 +123,7 @@ struct DetailPopoverView: View {
 
     @ViewBuilder
     private var detailRows: some View {
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: ExperienceSpacing.xSmall) {
             ForEach(rows, id: \.0) { row in
                 HStack {
                     Text(row.0).foregroundStyle(.secondary)
@@ -96,19 +138,9 @@ struct DetailPopoverView: View {
     private var footer: some View {
         HStack {
             Button {
-                // Menu bar agent: activate the app first, otherwise the settings
-                // window opens behind the frontmost app (or not at all).
-                NSApp.activate(ignoringOtherApps: true)
-                openSettings()
+                model.onOpenSettings?()
             } label: {
                 Label("Settings", systemImage: "gearshape")
-            }
-            Spacer()
-            Button {
-                model.showFloatingPanel.toggle()
-            } label: {
-                Label(model.showFloatingPanel ? "Hide panel" : "Show panel",
-                      systemImage: "rectangle.portrait.on.rectangle.portrait")
             }
             Spacer()
             Button(role: .destructive) {
@@ -120,6 +152,40 @@ struct DetailPopoverView: View {
         .font(.callout)
     }
 
+    private var recoveryActionTitle: String? {
+        switch state {
+        case .collecting, .stale, .error:
+            return String(localized: "state.action.refresh", defaultValue: "Refresh")
+        case .permissionRequired:
+            return String(
+                localized: "state.action.openSystemSettings",
+                defaultValue: "Open System Settings"
+            )
+        case .disabled:
+            return String(localized: "state.action.enable", defaultValue: "Enable")
+        default:
+            return nil
+        }
+    }
+
+    private var recoveryAction: (() -> Void)? {
+        switch state {
+        case .collecting, .stale, .error:
+            return { model.refreshMetrics() }
+        case .permissionRequired:
+            return {
+                guard let url = URL(
+                    string: "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension"
+                ) else { return }
+                NSWorkspace.shared.open(url)
+            }
+        case .disabled:
+            return { model.setEnabled(true, for: moduleID) }
+        default:
+            return nil
+        }
+    }
+
     // MARK: - Value formatting
 
     private var primaryValueString: String {
@@ -127,8 +193,10 @@ struct DetailPopoverView: View {
         switch moduleID {
         case .cpu, .memory, .disk, .gpu:
             return MetricFormat.percent(sample.value, decimals: 1)
-        case .battery, .bluetooth, .fans:
+        case .battery, .bluetooth:
             return "\(Int((sample.value * 100).rounded()))%"
+        case .fans:
+            return "\(Int((sample.detail["maxRpm"] ?? 0).rounded())) RPM"
         case .network:
             return MetricFormat.bytesPerSecond(sample.value)
         case .sensors:
@@ -231,11 +299,26 @@ struct DetailPopoverView: View {
                 r.append((String(localized: "disk.purgeable", defaultValue: "Purgeable"),
                           MetricFormat.bytes(purgeable)))
             }
-            r += [
-                (String(localized: "disk.total", defaultValue: "Total"), MetricFormat.bytes(d["total"] ?? 0)),
-                (String(localized: "disk.read", defaultValue: "Read"), MetricFormat.bytesPerSecond(d["readRate"] ?? 0)),
-                (String(localized: "disk.write", defaultValue: "Write"), MetricFormat.bytesPerSecond(d["writeRate"] ?? 0))
-            ]
+            r.append(
+                (
+                    String(localized: "disk.total", defaultValue: "Total"),
+                    MetricFormat.bytes(d["total"] ?? 0)
+                )
+            )
+            if let readRate = d["readRate"], let writeRate = d["writeRate"] {
+                r.append(
+                    (
+                        String(localized: "disk.read", defaultValue: "Read"),
+                        MetricFormat.bytesPerSecond(readRate)
+                    )
+                )
+                r.append(
+                    (
+                        String(localized: "disk.write", defaultValue: "Write"),
+                        MetricFormat.bytesPerSecond(writeRate)
+                    )
+                )
+            }
             return r
         case .gpu:
             var r: [(String, String)] = [
@@ -332,21 +415,33 @@ private struct CapacityBarView: View {
     let purgeable: Double
     let total: Double
     var accent: Color
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
+    @Environment(\.colorSchemeContrast) private var contrast
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: ExperienceSpacing.small) {
             GeometryReader { geo in
-                HStack(spacing: 1) {
-                    segment(width: geo.size.width, fraction: usedStrict, color: accent)
+                HStack(spacing: ExperienceSpacing.hairline) {
+                    segment(
+                        width: geo.size.width,
+                        fraction: usedStrict,
+                        color: accent,
+                        outlined: false
+                    )
                     segment(width: geo.size.width, fraction: purgeableFraction,
-                            color: accent.opacity(0.35))
+                            color: accent.opacity(0.35), outlined: differentiateWithoutColor)
                     segment(width: geo.size.width, fraction: freeFraction,
-                            color: .secondary.opacity(0.15))
+                            color: .secondary.opacity(0.15), outlined: true)
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                .clipShape(
+                    RoundedRectangle(
+                        cornerRadius: ExperienceRadius.compact,
+                        style: .continuous
+                    )
+                )
             }
             .frame(height: 14)
-            HStack(spacing: 12) {
+            HStack(spacing: ExperienceSpacing.medium) {
                 legend(color: accent,
                        label: String(localized: "disk.legend.used", defaultValue: "Used"))
                 if purgeable > 0 {
@@ -359,6 +454,11 @@ private struct CapacityBarView: View {
             .font(.caption2)
             .foregroundStyle(.secondary)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            String(localized: "disk.capacityChart", defaultValue: "Disk capacity")
+        )
+        .accessibilityValue(accessibilitySummary)
     }
 
     // "Used" reported by the provider already excludes purgeable; draw the three
@@ -367,16 +467,50 @@ private struct CapacityBarView: View {
     private var purgeableFraction: Double { total > 0 ? min(purgeable / total, 1) : 0 }
     private var freeFraction: Double { max(1 - usedStrict - purgeableFraction, 0) }
 
-    private func segment(width: CGFloat, fraction: Double, color: Color) -> some View {
+    private func segment(
+        width: CGFloat,
+        fraction: Double,
+        color: Color,
+        outlined: Bool
+    ) -> some View {
         Rectangle()
             .fill(color)
-            .frame(width: max(width * CGFloat(fraction), fraction > 0 ? 2 : 0))
+            .overlay {
+                if outlined {
+                    Rectangle().strokeBorder(
+                        .primary.opacity(
+                            contrast == .increased
+                                ? ExperienceSurface.increasedBorderOpacity
+                                : ExperienceSurface.standardBorderOpacity
+                        )
+                    )
+                }
+            }
+            .frame(
+                width: max(
+                    width * CGFloat(fraction),
+                    fraction > 0 ? ExperienceSpacing.tiny : 0
+                )
+            )
     }
 
     private func legend(color: Color, label: String) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ExperienceSpacing.xSmall) {
             Circle().fill(color).frame(width: 6, height: 6)
             Text(label)
         }
+    }
+
+    private var accessibilitySummary: String {
+        let format = String(
+            localized: "disk.capacityChart.summary",
+            defaultValue: "Used %.0f%%, purgeable %.0f%%, free %.0f%%"
+        )
+        return String(
+            format: format,
+            usedStrict * 100,
+            purgeableFraction * 100,
+            freeFraction * 100
+        )
     }
 }

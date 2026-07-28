@@ -1,8 +1,8 @@
 import Foundation
 import MetricsKit
 
-/// One selectable menu bar look for a module. Each module offers a subset (see
-/// `available(for:)`); the user picks exactly one per module in the menu bar builder.
+/// One selectable menu bar component. Each module offers a subset (see
+/// `available(for:)`), and the user can enable several components for a module.
 enum MenuBarComponent: String, CaseIterable, Identifiable {
     // Generic
     case value, graph, valueGraph
@@ -57,9 +57,8 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
         }
     }
 
-    /// Common-worst-case template reserving the text slot width ("" = pictorial,
-    /// no text slot). Same philosophy as before: reserve the common case, let rare
-    /// wider values grow the item temporarily.
+    /// Worst-case template reserving a stable text slot ("" = pictorial, no text).
+    /// Real values must never exceed this width.
     func template(for module: MetricID) -> String {
         switch self {
         case .graph, .coreBars, .ring, .batteryIcon:
@@ -75,9 +74,9 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
         case .value, .valueGraph:
             switch module {
             case .battery:   return "100%"
-            case .bluetooth: return "BT99%"
+            case .bluetooth: return "BT 100%"
             case .fans:      return "9.9K"
-            default:         return "99%"
+            default:         return "100%"
             }
         }
     }

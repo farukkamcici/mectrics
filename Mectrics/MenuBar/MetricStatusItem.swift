@@ -7,10 +7,8 @@ import MetricsKit
 /// a similar approach). This gives pixel-precise drawing and correct light/dark
 /// menu-bar adaptation without any subview layout work.
 ///
-/// Width stability: text-bearing components reserve a FIXED text width derived from a
-/// common-worst-case template ("99%", not "100%"), and the actual text is
-/// right-aligned inside that slot. When a value does exceed the slot the item grows
-/// for those samples and shrinks back — rare jitter beats always-wasted width.
+/// Width stability: text-bearing components reserve a fixed text width derived from a
+/// worst-case template, and the actual text is right-aligned inside that slot.
 /// Pictorial components (battery glyph, ring, core bars) have inherently fixed sizes.
 final class MetricStatusItem: NSObject {
     let id: MetricID
@@ -59,17 +57,33 @@ final class MetricStatusItem: NSObject {
         NSStatusBar.system.removeStatusItem(item)
     }
 
-    /// Updates the live menu-bar indicator.
-    func update(visual: MenuBarVisual, samples: [Double], accent: NSColor, showIcon: Bool) {
-        item.button?.image = Self.render(
+    /// Updates the menu-bar indicator without changing its state-specific width.
+    func update(
+        visual: MenuBarVisual?,
+        state: MetricDataState,
+        samples: [Double],
+        accent: NSColor,
+        showIcon: Bool
+    ) {
+        guard let button = item.button else { return }
+        button.image = Self.render(
             visual: visual,
+            state: state,
+            component: component,
             font: textFont,
             samples: samples,
             accent: accent,
             reservedTextWidth: reservedTextWidth,
             icon: showIcon ? iconSymbol : nil,
-            appearance: item.button?.effectiveAppearance ?? NSApp.effectiveAppearance
+            appearance: button.effectiveAppearance
         )
+        button.setAccessibilityLabel(
+            String(
+                localized: "menuBar.component.accessibilityLabel",
+                defaultValue: "\(id.localizedName), \(component.localizedName)"
+            )
+        )
+        button.setAccessibilityValue(Self.accessibilityValue(for: visual, state: state))
     }
 
     // MARK: - Drawing
@@ -81,7 +95,8 @@ final class MetricStatusItem: NSObject {
     /// Leading space taken by the embedded module icon (glyph + gap).
     private static let iconSlot: CGFloat = 16
 
-    private static func render(visual: MenuBarVisual, font: NSFont, samples: [Double],
+    private static func render(visual: MenuBarVisual?, state: MetricDataState,
+                               component: MenuBarComponent, font: NSFont, samples: [Double],
                                accent: NSColor, reservedTextWidth: CGFloat,
                                icon: NSImage?, appearance: NSAppearance) -> NSImage {
         let attrs: [NSAttributedString.Key: Any] = [
@@ -91,19 +106,17 @@ final class MetricStatusItem: NSObject {
 
         // Resolve content width per visual.
         let contentWidth: CGFloat
-        switch visual {
-        case .text(let text):
-            contentWidth = textSlot(text, reservedTextWidth, attrs)
-        case .textGraph(let text):
-            contentWidth = textSlot(text, reservedTextWidth, attrs) + gap + sparkWidth
-        case .graph:
-            contentWidth = sparkWidth + 8
-        case .coreBars(let values):
-            contentWidth = CGFloat(max(values.count, 2)) * 4
-        case .battery:
-            contentWidth = 25
-        case .ring:
-            contentWidth = 16
+        if let visual {
+            contentWidth = width(
+                for: visual,
+                reservedTextWidth: reservedTextWidth,
+                attributes: attrs
+            )
+        } else {
+            contentWidth = fallbackWidth(
+                for: component,
+                reservedTextWidth: reservedTextWidth
+            )
         }
 
         let offset: CGFloat = icon != nil ? iconSlot : 0
@@ -113,36 +126,140 @@ final class MetricStatusItem: NSObject {
         image.lockFocus()
         appearance.performAsCurrentDrawingAppearance {
             if let icon { drawIcon(icon, accent: accent) }
-            switch visual {
-            case .text(let text):
-                drawTextBlock(text, attrs: attrs,
-                              slot: offset + textSlot(text, reservedTextWidth, attrs))
-            case .textGraph(let text):
-                let slot = offset + textSlot(text, reservedTextWidth, attrs)
-                drawTextBlock(text, attrs: attrs, slot: slot)
-                drawSparkline(samples, in: NSRect(x: slot + gap, y: 3,
-                                                  width: sparkWidth, height: height - 6),
-                              accent: accent)
-            case .graph:
-                drawSparkline(samples, in: NSRect(x: offset, y: 3,
-                                                  width: sparkWidth + 8, height: height - 6),
-                              accent: accent)
-            case .coreBars(let values):
-                drawCoreBars(values, in: NSRect(x: offset, y: 3,
-                                                width: contentWidth, height: height - 6),
+            if let visual {
+                switch visual {
+                case .text(let text):
+                    drawTextBlock(text, attrs: attrs,
+                                  slot: offset + textSlot(text, reservedTextWidth, attrs))
+                case .textGraph(let text):
+                    let slot = offset + textSlot(text, reservedTextWidth, attrs)
+                    drawTextBlock(text, attrs: attrs, slot: slot)
+                    drawSparkline(samples, in: NSRect(x: slot + gap, y: 3,
+                                                      width: sparkWidth, height: height - 6),
+                                  accent: accent)
+                case .graph:
+                    drawSparkline(samples, in: NSRect(x: offset, y: 3,
+                                                      width: sparkWidth + 8, height: height - 6),
+                                  accent: accent)
+                case .coreBars(let values):
+                    drawCoreBars(values, in: NSRect(x: offset, y: 3,
+                                                    width: contentWidth, height: height - 6),
+                                 accent: accent)
+                case .battery(let level, let charging):
+                    drawBattery(level: level, charging: charging,
+                                in: NSRect(x: offset, y: 0, width: contentWidth, height: height))
+                case .ring(let fraction):
+                    drawRing(fraction, in: NSRect(x: offset + 1, y: (height - 14) / 2,
+                                                  width: 14, height: 14),
                              accent: accent)
-            case .battery(let level, let charging):
-                drawBattery(level: level, charging: charging,
-                            in: NSRect(x: offset, y: 0, width: contentWidth, height: height))
-            case .ring(let fraction):
-                drawRing(fraction, in: NSRect(x: offset + 1, y: (height - 14) / 2,
-                                              width: 14, height: 14),
-                         accent: accent)
+                }
+            } else {
+                drawState(
+                    state,
+                    in: NSRect(x: offset, y: 0, width: contentWidth, height: height),
+                    compact: false
+                )
+            }
+            if visual != nil && state != .live {
+                drawState(
+                    state,
+                    in: NSRect(x: offset, y: 0, width: contentWidth, height: height),
+                    compact: true
+                )
             }
         }
         image.unlockFocus()
         image.isTemplate = false
         return image
+    }
+
+    private static func width(
+        for visual: MenuBarVisual,
+        reservedTextWidth: CGFloat,
+        attributes: [NSAttributedString.Key: Any]
+    ) -> CGFloat {
+        switch visual {
+        case .text(let text):
+            return textSlot(text, reservedTextWidth, attributes)
+        case .textGraph(let text):
+            return textSlot(text, reservedTextWidth, attributes) + gap + sparkWidth
+        case .graph:
+            return sparkWidth + 8
+        case .coreBars(let values):
+            return CGFloat(max(values.count, 2)) * 4
+        case .battery:
+            return 25
+        case .ring:
+            return 16
+        }
+    }
+
+    private static func fallbackWidth(
+        for component: MenuBarComponent,
+        reservedTextWidth: CGFloat
+    ) -> CGFloat {
+        switch component {
+        case .graph:
+            return sparkWidth + 8
+        case .valueGraph:
+            return reservedTextWidth + gap + sparkWidth
+        case .coreBars:
+            return CGFloat(max(ProcessInfo.processInfo.processorCount, 2)) * 4
+        case .batteryIcon:
+            return 25
+        case .ring:
+            return 16
+        default:
+            return max(reservedTextWidth, 12)
+        }
+    }
+
+    private static func accessibilityValue(
+        for visual: MenuBarVisual?,
+        state: MetricDataState
+    ) -> String {
+        let stateName = state.localizedName
+        guard let visual else { return stateName }
+        switch visual {
+        case .text(let text), .textGraph(let text):
+            return "\(text.replacingOccurrences(of: "\n", with: " ")), \(stateName)"
+        default:
+            return stateName
+        }
+    }
+
+    private static func drawState(
+        _ state: MetricDataState,
+        in rect: NSRect,
+        compact: Bool
+    ) {
+        let pointSize: CGFloat = compact ? 7 : 10
+        guard let image = NSImage(
+            systemSymbolName: state.symbolName,
+            accessibilityDescription: nil
+        )?.withSymbolConfiguration(.init(pointSize: pointSize, weight: .semibold))
+        else { return }
+
+        let size = image.size
+        let origin = compact
+            ? NSPoint(x: rect.maxX - size.width, y: rect.maxY - size.height)
+            : NSPoint(x: rect.midX - size.width / 2, y: rect.midY - size.height / 2)
+        image.draw(at: origin, from: .zero, operation: .sourceOver, fraction: 1)
+        stateNSColor(state).set()
+        NSRect(origin: origin, size: size).fill(using: .sourceAtop)
+    }
+
+    private static func stateNSColor(_ state: MetricDataState) -> NSColor {
+        switch state {
+        case .live:
+            return .systemGreen
+        case .stale, .permissionRequired:
+            return .systemOrange
+        case .error:
+            return .systemRed
+        case .collecting, .unavailable, .disabled:
+            return .secondaryLabelColor
+        }
     }
 
     /// Draws the module symbol tinted with the accent color, vertically centered at
@@ -155,14 +272,18 @@ final class MetricStatusItem: NSObject {
         NSRect(origin: origin, size: size).fill(using: .sourceAtop)
     }
 
-    /// Slot width for a text: the reserved template width, grown if the actual
-    /// content is wider (rare 100% moments).
+    /// Text remains inside the invariant slot. Templates are deliberately sized for
+    /// the widest output of each formatter.
     private static func textSlot(_ text: String, _ reserved: CGFloat,
                                  _ attrs: [NSAttributedString.Key: Any]) -> CGFloat {
         let widest = text.components(separatedBy: "\n")
             .map { ceil(($0 as NSString).size(withAttributes: attrs).width) }
             .max() ?? 0
-        return max(reserved, widest)
+        assert(
+            widest <= reserved + 0.5,
+            "Menu bar template is too narrow for \(text)"
+        )
+        return reserved
     }
 
     /// Single- or two-line right-aligned text (two-line = stacked network rates).

@@ -72,15 +72,18 @@ struct TopProcessesView: View {
 
     @AppStorage("topProcessesExpanded") private var expanded = true
     @State private var entries: [TopProcessEntry] = []
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: ExperienceSpacing.small) {
             // Custom collapsible header — DisclosureGroup's built-in chevron collides
             // with its label in this narrow layout.
             Button {
-                withAnimation(.easeInOut(duration: 0.15)) { expanded.toggle() }
+                withAnimation(ExperienceMotion.stateChange(reduceMotion: reduceMotion)) {
+                    expanded.toggle()
+                }
             } label: {
-                HStack(spacing: 5) {
+                HStack(spacing: ExperienceSpacing.xSmall) {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 9, weight: .semibold))
                         .rotationEffect(.degrees(expanded ? 90 : 0))
@@ -92,25 +95,32 @@ struct TopProcessesView: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .focusEffectDisabled()
+            .help(String(
+                localized: "topProcs.toggle.help",
+                defaultValue: "Show or hide the process list"
+            ))
 
             if expanded {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: ExperienceSpacing.xSmall) {
                     ForEach(entries) { entry in
-                        HStack {
-                            Text(entry.name)
-                                .lineLimit(1)
-                                .truncationMode(.tail)
-                            Spacer(minLength: 12)
-                            Text(mode == .cpu
-                                 ? String(format: "%.1f%%", entry.value)
-                                 : String(format: "%.0f MB", entry.value))
-                                .monospacedDigit()
-                                .foregroundStyle(.secondary)
+                        Button {
+                            TopProcesses.openActivityMonitor()
+                        } label: {
+                            HStack {
+                                Text(entry.name)
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                                Spacer(minLength: ExperienceSpacing.medium)
+                                Text(mode == .cpu
+                                     ? String(format: "%.1f%%", entry.value)
+                                     : String(format: "%.0f MB", entry.value))
+                                    .monospacedDigit()
+                                    .foregroundStyle(.secondary)
+                            }
+                            .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
                         .font(.caption)
-                        .contentShape(Rectangle())
-                        .onTapGesture { TopProcesses.openActivityMonitor() }
                         .help(String(localized: "topProcs.open", defaultValue: "Open Activity Monitor"))
                     }
                 }

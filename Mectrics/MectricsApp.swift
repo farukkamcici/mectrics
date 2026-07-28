@@ -1,18 +1,19 @@
-import SwiftUI
+import AppKit
 
-/// Mectrics — a menu bar system monitor.
+/// Mectrics — a system monitor with regular windows and menu bar indicators.
 ///
-/// The app runs as an "accessory" (menu bar agent): there is no Dock icon and no main
-/// window. Menu bar items are managed by `MenuBarController` inside `AppDelegate`. The
-/// `Settings` scene here only provides the settings window.
+/// The app boots into AppKit without SwiftUI scenes. Menu bar items are managed by
+/// `MenuBarController`, while settings, onboarding, and the floating panel are owned
+/// by their respective controllers inside `AppDelegate`.
 @main
-struct MectricsApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+@MainActor
+enum MectricsMain {
+    // NSApplication.delegate is unretained — keep the delegate alive here.
+    private static let delegate = AppDelegate()
 
-    var body: some Scene {
-        Settings {
-            SettingsView(model: appDelegate.model)
-        }
-        .windowResizability(.contentSize)
+    static func main() {
+        let app = NSApplication.shared
+        app.delegate = delegate
+        app.run()
     }
 }

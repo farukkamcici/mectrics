@@ -27,14 +27,16 @@ public final class NetworkProvider: MetricProvider, @unchecked Sendable {
         // First sample: store reference, don't produce a rate.
         guard let last = prevTime else {
             prevDown = down; prevUp = up; prevTime = now
-            return MetricSample(value: 0, unit: .bytesPerSecond,
-                                detail: ["down": 0, "up": 0,
-                                         "downTotal": Double(down), "upTotal": Double(up)])
+            return nil
         }
 
         let dt = now.timeIntervalSince(last)
-        let downRate = dt > 0 ? Double(down &- prevDown) / dt : 0
-        let upRate = dt > 0 ? Double(up &- prevUp) / dt : 0
+        guard dt > 0 else {
+            prevDown = down; prevUp = up; prevTime = now
+            return nil
+        }
+        let downRate = Double(down &- prevDown) / dt
+        let upRate = Double(up &- prevUp) / dt
 
         prevDown = down; prevUp = up; prevTime = now
 

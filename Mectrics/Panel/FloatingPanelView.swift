@@ -8,6 +8,8 @@ import MetricsKit
 /// The panel window sizes itself to this content; there is no manual resizing.
 struct FloatingPanelView: View {
     @Bindable var model: AppModel
+    @Environment(\.colorSchemeContrast) private var contrast
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     var body: some View {
         Group {
@@ -16,44 +18,66 @@ struct FloatingPanelView: View {
             case .vertical:   verticalCard
             }
         }
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .background {
+            let shape = RoundedRectangle(
+                cornerRadius: ExperienceRadius.panel,
+                style: .continuous
+            )
+            if reduceTransparency {
+                shape.fill(Color(nsColor: .windowBackgroundColor))
+            } else {
+                shape.fill(ExperienceSurface.floatingMaterial)
+            }
+        }
         .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(.primary.opacity(0.08))
+            RoundedRectangle(cornerRadius: ExperienceRadius.panel, style: .continuous)
+                .strokeBorder(
+                    .primary.opacity(
+                        contrast == .increased
+                            ? ExperienceSurface.increasedBorderOpacity
+                            : ExperienceSurface.standardBorderOpacity
+                    )
+                )
         )
     }
 
     // MARK: - Layouts
 
     private var horizontalStrip: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: ExperienceSpacing.medium) {
             ForEach(model.orderedEnabledModules, id: \.self) { id in
-                HStack(spacing: 6) {
+                HStack(spacing: ExperienceSpacing.small) {
                     icon(id)
                     // Window size is measured once per layout change, so values get a
                     // stable min width to avoid clipping as digits grow.
                     valueText(id, size: 11)
-                        .frame(minWidth: id == .network ? 78 : 32, alignment: .leading)
+                        .frame(
+                            minWidth: id == .network ? 78 : (id == .fans ? 64 : 32),
+                            alignment: .leading
+                        )
                     if Self.showsSparkline(id) {
                         SparklineView(values: model.history(id, count: 30), accent: model.accentColor)
                             .frame(width: 26, height: 12)
                     }
+                    stateIndicator(id)
                 }
                 .help(id.localizedName)
+                .accessibilityElement(children: .combine)
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
+        .padding(.horizontal, ExperienceSpacing.medium)
+        .padding(.vertical, ExperienceSpacing.small)
     }
 
     private var verticalCard: some View {
-        VStack(alignment: .leading, spacing: 9) {
+        VStack(alignment: .leading, spacing: ExperienceSpacing.small) {
             ForEach(model.orderedEnabledModules, id: \.self) { id in
-                HStack(spacing: 7) {
+                HStack(spacing: ExperienceSpacing.small) {
                     icon(id)
                     Text(id.localizedName)
                         .font(.callout)
                         .lineLimit(1)
+                    stateIndicator(id)
                     Spacer(minLength: 10)
                     if Self.showsSparkline(id) {
                         SparklineView(values: model.history(id, count: 40), accent: model.accentColor)
@@ -62,10 +86,11 @@ struct FloatingPanelView: View {
                     valueText(id, size: 12)
                         .frame(minWidth: 46, alignment: .trailing)
                 }
+                .accessibilityElement(children: .combine)
             }
         }
-        .padding(.horizontal, 13)
-        .padding(.vertical, 11)
+        .padding(.horizontal, ExperienceSpacing.medium)
+        .padding(.vertical, ExperienceSpacing.medium)
         .frame(width: 240)
     }
 
@@ -83,6 +108,21 @@ struct FloatingPanelView: View {
             .font(.system(size: size, weight: .semibold))
             .monospacedDigit()
             .lineLimit(1)
+            .accessibilityLabel(id.localizedName)
+            .accessibilityValue(valueString(id))
+            .accessibilityHint(model.metricState(for: id, isEnabled: true).localizedName)
+    }
+
+    @ViewBuilder
+    private func stateIndicator(_ id: MetricID) -> some View {
+        let state = model.metricState(for: id, isEnabled: true)
+        if state != .live {
+            Image(systemName: state.symbolName)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(state.tint)
+                .help(state.reason)
+                .accessibilityLabel(state.localizedName)
+        }
     }
 
     // MARK: - Formatting
@@ -101,7 +141,7 @@ struct FloatingPanelView: View {
         case .sensors:
             return "\(Int(sample.value.rounded()))°"
         case .fans:
-            return MetricFormat.menuRate(sample.detail["maxRpm"] ?? 0)
+            return "\(MetricFormat.menuRate(sample.detail["maxRpm"] ?? 0)) RPM"
         default:
             return MetricFormat.percent(sample.value, decimals: 0)
         }

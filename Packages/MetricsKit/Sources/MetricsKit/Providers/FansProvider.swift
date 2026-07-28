@@ -7,7 +7,7 @@ import Foundation
 /// `fan<i>Rpm`, `fan<i>MaxRpm` and `maxRpm` (the fastest fan's current RPM).
 public final class FansProvider: MetricProvider, @unchecked Sendable {
     public let id: MetricID = .fans
-    public let cost: SamplingCost = .medium
+    public let cost: SamplingCost = .heavy
 
     private let smc: SMCClient?
     private let fanCount: Int

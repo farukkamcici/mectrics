@@ -24,6 +24,202 @@ final class MetricsKitTests: XCTestCase {
         XCTAssertEqual(store.history(.memory, count: 3).map(\.value), [7, 8, 9])
     }
 
+    func testStoreSupportsConcurrentReadsAndWrites() {
+        let store = MetricStore(capacity: 64)
+        DispatchQueue.concurrentPerform(iterations: 1_000) { index in
+            store.append(MetricSample(value: Double(index)), for: .cpu)
+            _ = store.latest(.cpu)
+            _ = store.history(.cpu, count: 16)
+        }
+        XCTAssertEqual(store.history(.cpu).count, 64)
+    }
+
+    func testSharedSnapshotRoundTrip() throws {
+        let fileURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("json")
+        defer { try? FileManager.default.removeItem(at: fileURL) }
+
+        let snapshot = SharedMetricSnapshot(
+            generatedAt: Date(timeIntervalSince1970: 1_000),
+            orderedMetricIDs: [.cpu, .memory],
+            samples: [
+                .cpu: MetricSample(
+                    timestamp: Date(timeIntervalSince1970: 999),
+                    value: 0.42
+                )
+            ],
+            histories: [.cpu: [0.2, 0.3, 0.42]],
+            states: [.cpu: .live, .memory: .collecting]
+        )
+        let store = SharedMetricSnapshotStore(fileURL: fileURL)
+        try store.write(snapshot)
+
+        XCTAssertEqual(try store.read(), snapshot)
+    }
+
+    func testSharedSnapshotDecodesLegacyPayloadWithoutStates() throws {
+        let json = """
+        {
+          "generatedAt": 1000,
+          "orderedMetricIDs": ["cpu"],
+          "samples": [],
+          "histories": []
+        }
+        """
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
+        let snapshot = try decoder.decode(
+            SharedMetricSnapshot.self,
+            from: Data(json.utf8)
+        )
+        XCTAssertNil(snapshot.states)
+    }
+
+    func testMetricDataStateResolution() {
+        let now = Date(timeIntervalSince1970: 1_000)
+        let fresh = MetricSample(timestamp: now.addingTimeInterval(-2), value: 0.42)
+        let old = MetricSample(timestamp: now.addingTimeInterval(-30), value: 0.42)
+
+        XCTAssertEqual(
+            MetricDataState.resolve(
+                isAvailable: true,
+                isEnabled: true,
+                sample: nil,
+                now: now
+            ),
+            .collecting
+        )
+        XCTAssertEqual(
+            MetricDataState.resolve(
+                isAvailable: true,
+                isEnabled: true,
+                sample: fresh,
+                now: now
+            ),
+            .live
+        )
+        XCTAssertEqual(
+            MetricDataState.resolve(
+                isAvailable: true,
+                isEnabled: true,
+                sample: old,
+                now: now
+            ),
+            .stale
+        )
+        XCTAssertEqual(
+            MetricDataState.resolve(
+                isAvailable: true,
+                isEnabled: true,
+                sample: fresh,
+                consecutiveFailures: 3,
+                now: now
+            ),
+            .error
+        )
+        XCTAssertEqual(
+            MetricDataState.resolve(
+                isAvailable: true,
+                isEnabled: true,
+                sample: fresh,
+                requiresPermission: true,
+                now: now
+            ),
+            .permissionRequired
+        )
+        XCTAssertEqual(
+            MetricDataState.resolve(
+                isAvailable: true,
+                isEnabled: false,
+                sample: fresh,
+                now: now
+            ),
+            .disabled
+        )
+        XCTAssertEqual(
+            MetricDataState.resolve(
+                isAvailable: false,
+                isEnabled: true,
+                sample: fresh,
+                now: now
+            ),
+            .unavailable
+        )
+    }
+
+    func testEnginePublishesFirstLiveMetricWithinTwoSeconds() {
+        let expectation = expectation(description: "first live metric")
+        let start = Date()
+        let engine = MetricsEngine(
+            policy: SamplingPolicy(
+                onACInterval: 10,
+                onBatteryInterval: 10,
+                heavyEveryNCycles: 1
+            )
+        )
+        engine.register([ImmediateTestProvider()])
+        engine.setActiveMetrics([.cpu])
+        engine.onCycleReport = { report in
+            if report.samples[.cpu] != nil {
+                expectation.fulfill()
+            }
+        }
+        engine.start()
+        wait(for: [expectation], timeout: 2)
+        XCTAssertLessThan(Date().timeIntervalSince(start), 2)
+        engine.stop()
+    }
+
+    func testEngineReportsFailedAttemptsWithoutFabricatingSamples() {
+        let expectation = expectation(description: "failed attempt")
+        let engine = MetricsEngine(
+            policy: SamplingPolicy(
+                onACInterval: 10,
+                onBatteryInterval: 10,
+                heavyEveryNCycles: 1
+            )
+        )
+        engine.register([FailingTestProvider()])
+        engine.setActiveMetrics([.cpu])
+        engine.onCycleReport = { report in
+            XCTAssertTrue(report.samples.isEmpty)
+            XCTAssertEqual(report.failedMetricIDs, [.cpu])
+            expectation.fulfill()
+        }
+        engine.start()
+        wait(for: [expectation], timeout: 2)
+        engine.stop()
+    }
+
+    func testHistoryArchiveReplacesBucketsAndExportsCSV() throws {
+        let now = Date(timeIntervalSince1970: 3_600 * 100)
+        let older = HistoricalMetricPoint(
+            timestamp: now.addingTimeInterval(-3_600),
+            average: 0.25,
+            minimum: 0.1,
+            maximum: 0.5,
+            unit: .fraction,
+            sampleCount: 120
+        )
+        let replacement = HistoricalMetricPoint(
+            timestamp: older.timestamp,
+            average: 0.5,
+            minimum: 0.2,
+            maximum: 0.9,
+            unit: .fraction,
+            sampleCount: 240
+        )
+        var archive = MetricHistoryArchive()
+        archive.upsert(older, for: .cpu, now: now)
+        archive.upsert(replacement, for: .cpu, now: now)
+
+        XCTAssertEqual(archive.points[.cpu], [replacement])
+        let csv = try XCTUnwrap(String(data: archive.csvData(), encoding: .utf8))
+        XCTAssertTrue(csv.hasPrefix("hour,module,average,minimum,maximum,unit,samples\n"))
+        XCTAssertTrue(csv.contains(",CPU,50.00,20.00,90.00,percent,240\n"))
+    }
+
     // MARK: - Formatting
 
     func testPercentFormat() {
@@ -45,7 +241,7 @@ final class MetricsKitTests: XCTestCase {
 
     func testCPUProviderProducesValueAfterTwoSamples() {
         let cpu = CPUProvider()
-        _ = cpu.sample() // first sample is the reference
+        XCTAssertNil(cpu.sample(), "the reference pass must not fabricate a zero sample")
         // Create a short workload.
         var acc = 0.0
         for i in 0..<200_000 { acc += Double(i).squareRoot() }
@@ -72,7 +268,7 @@ final class MetricsKitTests: XCTestCase {
 
     func testNetworkProviderProducesNonNegativeRates() {
         let net = NetworkProvider()
-        _ = net.sample() // reference
+        XCTAssertNil(net.sample(), "the reference pass must not fabricate a zero sample")
         let second = net.sample()
         XCTAssertNotNil(second)
         if let s = second {
@@ -89,7 +285,12 @@ final class MetricsKitTests: XCTestCase {
             XCTAssertGreaterThan(s.detail["total"] ?? 0, 0)
             XCTAssertGreaterThanOrEqual(s.value, 0)
             XCTAssertLessThanOrEqual(s.value, 1)
+            XCTAssertNil(s.detail["readRate"])
+            XCTAssertNil(s.detail["writeRate"])
         }
+        let next = disk.sample()
+        XCTAssertNotNil(next?.detail["readRate"])
+        XCTAssertNotNil(next?.detail["writeRate"])
     }
 
     func testCompactRateFormat() {
@@ -148,5 +349,19 @@ final class MetricsKitTests: XCTestCase {
             XCTAssertLessThanOrEqual(MetricFormat.menuRate(v).count, 4,
                                      "menuRate(\(v)) too wide")
         }
+    }
+}
+
+private final class ImmediateTestProvider: MetricProvider {
+    let id = MetricID.cpu
+    func sample() -> MetricSample? {
+        MetricSample(value: 0.5)
+    }
+}
+
+private final class FailingTestProvider: MetricProvider {
+    let id = MetricID.cpu
+    func sample() -> MetricSample? {
+        nil
     }
 }

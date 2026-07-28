@@ -7,17 +7,17 @@ let package = Package(
         .macOS(.v15)
     ],
     products: [
-        // UI'dan bağımsız çekirdek: provider'lar, scheduler, store, engine.
+        // UI-independent core: providers, scheduler, store, and engine.
         .library(name: "MetricsKit", targets: ["MetricsKit"]),
-        // Xcode'a girmeden gerçek metrikleri terminalde görmek için demo aracı.
+        // Demo tool for viewing live metrics without opening Xcode.
         .executable(name: "mectrics-cli", targets: ["MectricsCLI"])
     ],
     targets: [
         .target(
             name: "MetricsKit",
             swiftSettings: [
-                // MVP boyunca Swift 5 dil modu: C tabanlı Mach/IOKit provider'larında
-                // strict-concurrency sürtünmesini azaltır. İleride .v6'ya taşınacak.
+                // Keep Swift 5 language mode during the MVP to reduce strict-concurrency
+                // friction in C-based Mach/IOKit providers. Migrate to Swift 6 later.
                 .swiftLanguageMode(.v5)
             ]
         ),

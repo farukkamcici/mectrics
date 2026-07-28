@@ -9,7 +9,8 @@ optional always-on-top floating panel.
 > device with a battery is connected). Unavailable hardware hides itself (e.g. Fans on a
 > fanless MacBook Air). Plus: detail popovers, floating panel (global hotkey **⌃⌥M**),
 > three-step onboarding, accent themes + compact menu bar style, notification thresholds,
-> settings, launch-at-login. Remaining for v1.0: WidgetKit, notarized DMG distribution.
+> settings, launch-at-login, and small/medium/large WidgetKit widgets. Remaining for v1.0:
+> the premium experience pass, Sparkle updates, and the public release.
 
 **Lightweight & private by design:** ~25 MB memory, ~3% CPU with adaptive sampling
 (slower on battery), zero telemetry, and fixed-width menu bar items that never jitter
@@ -22,6 +23,8 @@ as values change.
 - [01 — Product Plan](docs/01-product-plan.md)
 - [02 — Architecture](docs/02-architecture.md)
 - [03 — Roadmap](docs/03-roadmap.md)
+- [04 — Release and Notarization](docs/04-releasing.md)
+- [05 — Premium Experience Backlog](docs/05-premium-experience-backlog.md)
 
 Conventions for contributors: [`AGENTS.md`](AGENTS.md) (source of truth) and
 [`CLAUDE.md`](CLAUDE.md).
@@ -41,6 +44,7 @@ mectrics/
 │   ├── Hotkey/              # global hotkey (Carbon)
 │   ├── Settings/            # settings window (General / Modules / Alerts)
 │   └── Resources/           # Localizable.xcstrings (String Catalog)
+├── MectricsWidget/          # small/medium/large WidgetKit overview
 └── Packages/MetricsKit/     # UI-independent metric engine (SwiftPM)
     ├── Sources/MetricsKit/  # providers, scheduler, store, engine
     ├── Sources/MectricsCLI/ # `swift run mectrics-cli` — terminal demo
@@ -77,6 +81,7 @@ English-first, fully localizable. User-facing strings use `String(localized:)` /
 Zero telemetry. The app makes no network requests; no usage or hardware data ever
 leaves the device. All metrics come from local system interfaces (public APIs plus the
 same read-only SMC/IORegistry paths every open-source monitor uses).
+See the full [`PRIVACY.md`](PRIVACY.md) statement.
 
 ## License
 [MIT](LICENSE)

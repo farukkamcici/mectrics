@@ -1,136 +1,275 @@
 import SwiftUI
 import MetricsKit
 
-/// Three-step first-launch onboarding: welcome → module selection → setup.
-/// Shown once (see `AppModel.hasCompletedOnboarding`); every choice here can be
-/// changed later in Settings.
+/// A short, optional first-run flow built around the same live readings shown in the
+/// menu bar. Fine customization remains in Settings > Menu Bar.
 struct OnboardingView: View {
     @Bindable var model: AppModel
     var onFinish: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var step = 0
     @State private var launchAtLogin = LoginItem.isEnabled
 
-    private static let stepCount = 3
+    private static let stepCount = 2
+    private static let recommendedIDs: [MetricID] = [.cpu, .memory, .battery, .network]
 
     var body: some View {
         VStack(spacing: 0) {
             Group {
-                switch step {
-                case 0:  welcomeStep
-                case 1:  modulesStep
-                default: setupStep
+                if step == 0 {
+                    welcomeStep
+                } else {
+                    choicesStep
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+
             Divider()
             navigationBar
         }
-        .frame(width: 460, height: 440)
+        .frame(width: 540, height: 430)
     }
-
-    // MARK: - Steps
 
     private var welcomeStep: some View {
-        VStack(spacing: 14) {
-            Image(systemName: "gauge.with.needle")
-                .font(.system(size: 56, weight: .light))
+        VStack(spacing: ExperienceSpacing.xLarge) {
+            VStack(spacing: ExperienceSpacing.small) {
+                Image(systemName: "gauge.with.needle")
+                    .font(.system(size: 48, weight: .light))
+                    .foregroundStyle(.tint)
+                    .accessibilityHidden(true)
+                Text("Your Mac, clear at a glance")
+                    .font(.title.weight(.semibold))
+                Text("Live essentials stay visible in the menu bar without opening a dashboard.")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            livePreview
+
+            Label(
+                "Your readings stay on this Mac. Mectrics has no telemetry.",
+                systemImage: "lock.shield"
+            )
+            .font(.callout)
+            .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, ExperienceSpacing.xLarge * 2)
+        .padding(.vertical, ExperienceSpacing.xLarge)
+    }
+
+    private var livePreview: some View {
+        VStack(alignment: .leading, spacing: ExperienceSpacing.small) {
+            HStack {
+                Text("Live menu bar preview")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                let liveCount = recommendedModules.filter {
+                    model.metricState(for: $0, isEnabled: true) == .live
+                }.count
+                Text(
+                    String(
+                        localized: "onboarding.liveCount",
+                        defaultValue: "\(liveCount) live"
+                    )
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+            }
+
+            HStack(spacing: ExperienceSpacing.medium) {
+                ForEach(recommendedModules, id: \.self) { id in
+                    onboardingMetric(id)
+                    if id != recommendedModules.last {
+                        Divider().frame(height: 22)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, ExperienceSpacing.large)
+            .padding(.vertical, ExperienceSpacing.medium)
+            .background(
+                RoundedRectangle(cornerRadius: ExperienceRadius.standard, style: .continuous)
+                    .fill(.quaternary.opacity(0.55))
+            )
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private func onboardingMetric(_ id: MetricID) -> some View {
+        let state = model.metricState(for: id, isEnabled: true)
+        return HStack(spacing: ExperienceSpacing.xSmall) {
+            Image(systemName: FloatingPanelView.symbol(for: id))
                 .foregroundStyle(.tint)
-            Text("Welcome to Mectrics")
-                .font(.title.weight(.semibold))
-            Text("A lightweight system monitor that lives in your menu bar — CPU, memory, battery, network and disk at a glance.")
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
-            Label("Zero telemetry — no data ever leaves your device",
-                  systemImage: "lock.shield")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .padding(.top, 8)
+                .accessibilityHidden(true)
+            Text(previewValue(for: id))
+                .monospacedDigit()
+                .lineLimit(1)
+            if state != .live {
+                Image(systemName: state.symbolName)
+                    .font(.caption2)
+                    .foregroundStyle(state.tint)
+                    .help(state.reason)
+                    .accessibilityHidden(true)
+            }
         }
-        .padding(.horizontal, 40)
+        .font(.callout.weight(.semibold))
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(id.localizedName)
+        .accessibilityValue(
+            String(
+                localized: "metric.accessibility.valueAndState",
+                defaultValue: "\(previewValue(for: id)), \(state.localizedName)"
+            )
+        )
     }
 
-    private var modulesStep: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            stepHeader(
-                title: String(localized: "onboarding.modules.title", defaultValue: "Choose your modules"),
-                subtitle: String(localized: "onboarding.modules.subtitle",
-                                 defaultValue: "Each module appears as its own item in the menu bar. You can change this anytime in Settings.")
+    private var choicesStep: some View {
+        VStack(alignment: .leading, spacing: ExperienceSpacing.large) {
+            ExperienceSectionHeader(
+                title: String(
+                    localized: "onboarding.modules.title",
+                    defaultValue: "Start with the essentials"
+                ),
+                subtitle: String(
+                    localized: "onboarding.modules.subtitle",
+                    defaultValue: "Recommended modules are marked. Fine-tune components later in Settings."
+                )
             )
+
             Form {
-                ForEach(model.availableModules, id: \.self) { id in
-                    Toggle(id.localizedName, isOn: Binding(
-                        get: { model.enabledModules.contains(id) },
-                        set: { model.setEnabled($0, for: id) }
-                    ))
+                Section("Menu bar modules") {
+                    ForEach(recommendedModules, id: \.self) { id in
+                        Toggle(isOn: Binding(
+                            get: { model.enabledModules.contains(id) },
+                            set: { model.setEnabled($0, for: id) }
+                        )) {
+                            HStack {
+                                Label(id.localizedName, systemImage: FloatingPanelView.symbol(for: id))
+                                Spacer()
+                                Text("Recommended")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .accessibilityLabel(id.localizedName)
+                        .accessibilityHint(
+                            String(
+                                localized: "onboarding.recommended.hint",
+                                defaultValue: "Recommended menu bar module"
+                            )
+                        )
+                    }
+
+                    if additionalModules.isEmpty == false {
+                        ForEach(additionalModules, id: \.self) { id in
+                            Toggle(
+                                id.localizedName,
+                                isOn: Binding(
+                                    get: { model.enabledModules.contains(id) },
+                                    set: { model.setEnabled($0, for: id) }
+                                )
+                            )
+                        }
+                    }
+                }
+
+                Section("Optional") {
+                    Toggle(isOn: $launchAtLogin) {
+                        Text("Launch at login")
+                        Text("Start Mectrics automatically after you sign in.")
+                    }
+                    .accessibilityLabel(
+                        String(localized: "settings.launchAtLogin", defaultValue: "Launch at login")
+                    )
+                    .accessibilityHint(
+                        String(
+                            localized: "settings.launchAtLogin.hint",
+                            defaultValue: "Start Mectrics automatically after you sign in"
+                        )
+                    )
+                    .onChange(of: launchAtLogin) { _, enabled in
+                        LoginItem.setEnabled(enabled)
+                    }
                 }
             }
             .formStyle(.grouped)
             .scrollContentBackground(.hidden)
         }
-        .padding(.top, 24)
-        .padding(.horizontal, 24)
+        .padding(ExperienceSpacing.xLarge)
     }
-
-    private var setupStep: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            stepHeader(
-                title: String(localized: "onboarding.setup.title", defaultValue: "Make it yours"),
-                subtitle: String(localized: "onboarding.setup.subtitle",
-                                 defaultValue: "Two optional touches — both can be changed later in Settings.")
-            )
-            Form {
-                Toggle(isOn: $launchAtLogin) {
-                    Text("Launch at login")
-                    Text("Start Mectrics automatically when you log in.")
-                }
-                .onChange(of: launchAtLogin) { _, newValue in
-                    LoginItem.setEnabled(newValue)
-                }
-                Toggle(isOn: $model.showFloatingPanel) {
-                    Text("Show floating panel")
-                    Text("A small always-on-top widget with live metrics.")
-                }
-            }
-            .formStyle(.grouped)
-            .scrollContentBackground(.hidden)
-        }
-        .padding(.top, 24)
-        .padding(.horizontal, 24)
-    }
-
-    private func stepHeader(title: String, subtitle: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title).font(.title2.weight(.semibold))
-            Text(subtitle).font(.callout).foregroundStyle(.secondary)
-        }
-        .padding(.horizontal, 8)
-    }
-
-    // MARK: - Navigation
 
     private var navigationBar: some View {
         HStack {
-            if step > 0 {
-                Button("Back") { withAnimation { step -= 1 } }
-            }
-            Spacer()
-            HStack(spacing: 6) {
-                ForEach(0..<Self.stepCount, id: \.self) { i in
-                    Circle()
-                        .fill(i == step ? Color.accentColor : Color.secondary.opacity(0.3))
-                        .frame(width: 7, height: 7)
+            if step == 0 {
+                Button("Skip Setup", action: onFinish)
+            } else {
+                Button("Back") {
+                    withAnimation(ExperienceMotion.stateChange(reduceMotion: reduceMotion)) {
+                        step = 0
+                    }
                 }
             }
+
             Spacer()
-            if step < Self.stepCount - 1 {
-                Button("Continue") { withAnimation { step += 1 } }
-                    .keyboardShortcut(.defaultAction)
+            Text(
+                String(
+                    localized: "onboarding.progress",
+                    defaultValue: "Step \(step + 1) of \(Self.stepCount)"
+                )
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .monospacedDigit()
+            .accessibilityLabel(
+                String(
+                    localized: "onboarding.progress.accessibility",
+                    defaultValue: "Step \(step + 1) of \(Self.stepCount)"
+                )
+            )
+            Spacer()
+
+            if step == 0 {
+                Button("Continue") {
+                    withAnimation(ExperienceMotion.stateChange(reduceMotion: reduceMotion)) {
+                        step = 1
+                    }
+                }
+                .keyboardShortcut(.defaultAction)
             } else {
-                Button("Get Started") { onFinish() }
+                Button("Start Monitoring", action: onFinish)
                     .keyboardShortcut(.defaultAction)
             }
         }
-        .padding(14)
+        .padding(.horizontal, ExperienceSpacing.large)
+        .padding(.vertical, ExperienceSpacing.medium)
+    }
+
+    private var recommendedModules: [MetricID] {
+        Self.recommendedIDs.filter(model.availableModules.contains)
+    }
+
+    private var additionalModules: [MetricID] {
+        model.availableModules.filter { !Self.recommendedIDs.contains($0) }
+    }
+
+    private func previewValue(for id: MetricID) -> String {
+        guard let sample = model.latest[id] else { return "—" }
+        switch id {
+        case .cpu, .memory, .battery, .disk, .gpu, .bluetooth:
+            return MetricFormat.percent(sample.value)
+        case .network:
+            return "↓\(MetricFormat.menuRate(sample.detail["down"] ?? 0))"
+        case .sensors:
+            return "\(Int(sample.value.rounded()))°"
+        case .fans:
+            return "\(Int((sample.detail["maxRpm"] ?? 0).rounded())) RPM"
+        case .clock:
+            return "—"
+        }
     }
 }

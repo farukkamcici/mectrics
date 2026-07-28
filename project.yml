@@ -22,6 +22,8 @@ targets:
     dependencies:
       - package: MetricsKit
         product: MetricsKit
+      - target: MectricsWidget
+        embed: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.mectrics.app
@@ -29,14 +31,49 @@ targets:
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: YES
-        # Menu bar agent: no Dock icon, no main window.
-        INFOPLIST_KEY_LSUIElement: YES
         INFOPLIST_KEY_NSHumanReadableCopyright: "© 2026 Mectrics"
         # i18n: English development region; extract localized strings into the catalog.
         DEVELOPMENT_LANGUAGE: en
         SWIFT_EMIT_LOC_STRINGS: YES
         SWIFT_VERSION: "5.0"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         DEVELOPMENT_TEAM: ""
         CODE_SIGN_STYLE: Automatic
         # Sandbox off for local IOKit access during development (hardened runtime at release).
         ENABLE_HARDENED_RUNTIME: NO
+      configs:
+        Release:
+          DEVELOPMENT_TEAM: G88QSG6V2M
+          CODE_SIGN_ENTITLEMENTS: Mectrics/Mectrics.entitlements
+          ENABLE_HARDENED_RUNTIME: YES
+
+  MectricsWidget:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: MectricsWidget
+        excludes:
+          - Info.plist
+          - MectricsWidget.entitlements
+    dependencies:
+      - package: MetricsKit
+        product: MetricsKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mectrics.app.widget
+        PRODUCT_NAME: MectricsWidget
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        INFOPLIST_FILE: MectricsWidget/Info.plist
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+        SWIFT_VERSION: "5.0"
+        DEVELOPMENT_LANGUAGE: en
+        SWIFT_EMIT_LOC_STRINGS: YES
+        APPLICATION_EXTENSION_API_ONLY: YES
+        SKIP_INSTALL: YES
+      configs:
+        Release:
+          DEVELOPMENT_TEAM: G88QSG6V2M
+          CODE_SIGN_ENTITLEMENTS: MectricsWidget/MectricsWidget.entitlements
+          ENABLE_HARDENED_RUNTIME: YES
