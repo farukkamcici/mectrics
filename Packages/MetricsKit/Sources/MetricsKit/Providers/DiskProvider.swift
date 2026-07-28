@@ -21,12 +21,18 @@ public final class DiskProvider: MetricProvider, @unchecked Sendable {
         let url = URL(fileURLWithPath: "/")
         var total: Double = 0
         var free: Double = 0
+        var purgeable: Double = 0
         if let vals = try? url.resourceValues(forKeys: [
             .volumeTotalCapacityKey,
+            .volumeAvailableCapacityKey,
             .volumeAvailableCapacityForImportantUsageKey
         ]) {
             total = Double(vals.volumeTotalCapacity ?? 0)
             free = Double(vals.volumeAvailableCapacityForImportantUsage ?? 0)
+            // "Important usage" capacity includes space the system can reclaim
+            // (caches, snapshots); the strictly-free difference is purgeable.
+            let strictFree = Double(vals.volumeAvailableCapacity ?? 0)
+            purgeable = max(free - strictFree, 0)
         }
         let used = max(total - free, 0)
         let usage = total > 0 ? min(used / total, 1) : 0
@@ -48,7 +54,7 @@ public final class DiskProvider: MetricProvider, @unchecked Sendable {
         return MetricSample(
             value: usage,
             unit: .fraction,
-            detail: ["total": total, "free": free, "used": used,
+            detail: ["total": total, "free": free, "used": used, "purgeable": purgeable,
                      "readRate": readRate, "writeRate": writeRate]
         )
     }

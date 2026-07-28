@@ -13,8 +13,18 @@ struct DetailPopoverView: View {
         VStack(alignment: .leading, spacing: 9) {
             header
             Divider()
-            SparklineView(values: model.history(moduleID, count: 60), accent: model.accentColor)
-                .frame(height: 40)
+            if moduleID == .disk {
+                // Capacity barely moves on a 60 s timeline — show the breakdown instead.
+                CapacityBarView(
+                    used: sample?.detail["used"] ?? 0,
+                    purgeable: sample?.detail["purgeable"] ?? 0,
+                    total: sample?.detail["total"] ?? 0,
+                    accent: model.accentColor
+                )
+            } else {
+                SparklineView(values: model.history(moduleID, count: 60), accent: model.accentColor)
+                    .frame(height: 40)
+            }
             if moduleID == .cpu {
                 CoreBarsView(values: coreValues, accent: model.accentColor)
                     .frame(height: 24)
@@ -149,15 +159,27 @@ struct DetailPopoverView: View {
                 r.append((String(localized: "cpu.temperature", defaultValue: "Temperature"),
                           String(format: "%.1f°C", t)))
             }
+            r.append((String(localized: "cpu.uptime", defaultValue: "Uptime"),
+                      Self.uptimeString))
             return r
         case .memory:
-            return [
+            var r: [(String, String)] = [
                 (String(localized: "mem.used", defaultValue: "Used"), MetricFormat.bytes(d["used"] ?? 0)),
                 (String(localized: "mem.total", defaultValue: "Total"), MetricFormat.bytes(d["total"] ?? 0)),
                 (String(localized: "mem.wired", defaultValue: "Wired"), MetricFormat.bytes(d["wired"] ?? 0)),
                 (String(localized: "mem.compressed", defaultValue: "Compressed"), MetricFormat.bytes(d["compressed"] ?? 0)),
                 (String(localized: "mem.free", defaultValue: "Free"), MetricFormat.bytes(d["free"] ?? 0))
             ]
+            if let swapTotal = d["swapTotal"], swapTotal > 0 {
+                let used = MetricFormat.bytes(d["swapUsed"] ?? 0)
+                r.append((String(localized: "mem.swap", defaultValue: "Swap"),
+                          "\(used) / \(MetricFormat.bytes(swapTotal))"))
+            }
+            if let level = d["pressureLevel"] {
+                r.append((String(localized: "mem.pressure", defaultValue: "Pressure"),
+                          Self.pressureLabel(level)))
+            }
+            return r
         case .battery:
             let chargingLabel = (d["charging"] ?? 0) > 0
                 ? String(localized: "battery.charging", defaultValue: "Charging")
@@ -183,13 +205,20 @@ struct DetailPopoverView: View {
                 (String(localized: "net.totalUp", defaultValue: "Total uploaded"), MetricFormat.bytes(d["upTotal"] ?? 0))
             ]
         case .disk:
-            return [
+            var r: [(String, String)] = [
                 (String(localized: "disk.used", defaultValue: "Used"), MetricFormat.bytes(d["used"] ?? 0)),
-                (String(localized: "disk.free", defaultValue: "Free"), MetricFormat.bytes(d["free"] ?? 0)),
+                (String(localized: "disk.free", defaultValue: "Free"), MetricFormat.bytes(d["free"] ?? 0))
+            ]
+            if let purgeable = d["purgeable"], purgeable > 0 {
+                r.append((String(localized: "disk.purgeable", defaultValue: "Purgeable"),
+                          MetricFormat.bytes(purgeable)))
+            }
+            r += [
                 (String(localized: "disk.total", defaultValue: "Total"), MetricFormat.bytes(d["total"] ?? 0)),
                 (String(localized: "disk.read", defaultValue: "Read"), MetricFormat.bytesPerSecond(d["readRate"] ?? 0)),
                 (String(localized: "disk.write", defaultValue: "Write"), MetricFormat.bytesPerSecond(d["writeRate"] ?? 0))
             ]
+            return r
         case .gpu:
             var r: [(String, String)] = [
                 (String(localized: "gpu.count", defaultValue: "GPUs"), "\(Int(d["gpuCount"] ?? 1))")
@@ -242,6 +271,84 @@ struct DetailPopoverView: View {
             return r
         default:
             return []
+        }
+    }
+
+    // MARK: - System info formatting
+
+    private static var uptimeString: String {
+        let uptime = Int(ProcessInfo.processInfo.systemUptime)
+        let days = uptime / 86_400
+        let hours = (uptime % 86_400) / 3_600
+        let minutes = (uptime % 3_600) / 60
+        if days > 0 { return "\(days)d \(hours)h" }
+        if hours > 0 { return "\(hours)h \(minutes)m" }
+        return "\(minutes)m"
+    }
+
+    /// Kernel pressure level (1/2/4) → user-facing label.
+    private static func pressureLabel(_ level: Double) -> String {
+        switch Int(level) {
+        case 1:  return String(localized: "pressure.normal", defaultValue: "Normal")
+        case 2:  return String(localized: "pressure.warning", defaultValue: "Warning")
+        case 4:  return String(localized: "pressure.critical", defaultValue: "Critical")
+        default: return "—"
+        }
+    }
+}
+
+/// Horizontal capacity breakdown for the Disk popover: used / purgeable / free
+/// segments with a compact legend.
+private struct CapacityBarView: View {
+    let used: Double
+    let purgeable: Double
+    let total: Double
+    var accent: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            GeometryReader { geo in
+                HStack(spacing: 1) {
+                    segment(width: geo.size.width, fraction: usedStrict, color: accent)
+                    segment(width: geo.size.width, fraction: purgeableFraction,
+                            color: accent.opacity(0.35))
+                    segment(width: geo.size.width, fraction: freeFraction,
+                            color: .secondary.opacity(0.15))
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+            }
+            .frame(height: 14)
+            HStack(spacing: 12) {
+                legend(color: accent,
+                       label: String(localized: "disk.legend.used", defaultValue: "Used"))
+                if purgeable > 0 {
+                    legend(color: accent.opacity(0.35),
+                           label: String(localized: "disk.legend.purgeable", defaultValue: "Purgeable"))
+                }
+                legend(color: .secondary.opacity(0.3),
+                       label: String(localized: "disk.legend.free", defaultValue: "Free"))
+            }
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+        }
+    }
+
+    // "Used" reported by the provider already excludes purgeable; draw the three
+    // segments so they sum to the full width.
+    private var usedStrict: Double { total > 0 ? min(used / total, 1) : 0 }
+    private var purgeableFraction: Double { total > 0 ? min(purgeable / total, 1) : 0 }
+    private var freeFraction: Double { max(1 - usedStrict - purgeableFraction, 0) }
+
+    private func segment(width: CGFloat, fraction: Double, color: Color) -> some View {
+        Rectangle()
+            .fill(color)
+            .frame(width: max(width * CGFloat(fraction), fraction > 0 ? 2 : 0))
+    }
+
+    private func legend(color: Color, label: String) -> some View {
+        HStack(spacing: 4) {
+            Circle().fill(color).frame(width: 6, height: 6)
+            Text(label)
         }
     }
 }

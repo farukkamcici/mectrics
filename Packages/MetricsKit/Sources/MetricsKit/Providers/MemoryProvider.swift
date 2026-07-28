@@ -48,7 +48,7 @@ public final class MemoryProvider: MetricProvider, @unchecked Sendable {
         let used = active + wired + compressed
         let usage = totalMemory > 0 ? min(max(used / totalMemory, 0), 1) : 0
 
-        let detail: [String: Double] = [
+        var detail: [String: Double] = [
             "total": totalMemory,
             "used": used,
             "active": active,
@@ -58,6 +58,20 @@ public final class MemoryProvider: MetricProvider, @unchecked Sendable {
             "free": free,
             "purgeable": purgeable
         ]
+
+        // Swap usage (vm.swapusage) and the kernel's memory-pressure level
+        // (1 = normal, 2 = warning, 4 = critical).
+        var swap = xsw_usage()
+        var swapSize = MemoryLayout<xsw_usage>.stride
+        if sysctlbyname("vm.swapusage", &swap, &swapSize, nil, 0) == 0 {
+            detail["swapUsed"] = Double(swap.xsu_used)
+            detail["swapTotal"] = Double(swap.xsu_total)
+        }
+        var pressure: Int32 = 0
+        var pressureSize = MemoryLayout<Int32>.stride
+        if sysctlbyname("kern.memorystatus_vm_pressure_level", &pressure, &pressureSize, nil, 0) == 0 {
+            detail["pressureLevel"] = Double(pressure)
+        }
 
         return MetricSample(value: usage, unit: .fraction, detail: detail)
     }
