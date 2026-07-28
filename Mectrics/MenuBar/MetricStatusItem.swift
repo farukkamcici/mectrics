@@ -73,11 +73,11 @@ final class MetricStatusItem: NSObject {
     private static func template(for id: MetricID) -> String {
         switch id {
         case .network:   return "↓999M"
-        case .battery:   return "100"   // batteries do sit at 100; ⚡ grows the item while charging
-        case .bluetooth: return "BT99"
+        case .battery:   return "100%"   // batteries do sit at 100%; ⚡ grows the item while charging
+        case .bluetooth: return "BT99%"
         case .sensors:   return "99°"
         case .fans:      return "9.9K"
-        default:         return "99"
+        default:         return "99%"
         }
     }
 
