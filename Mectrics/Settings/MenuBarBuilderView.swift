@@ -22,7 +22,7 @@ struct MenuBarBuilderView: View {
 
             Text("Components")
                 .font(.headline)
-            Text("Click a component (or drag it into the menu bar above) to add it or switch its look. Remove items with the ⓧ in the menu bar preview.")
+            Text("Click a component to add or remove it — a module can have several items at once. Dragging onto the menu bar above also adds.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
 
@@ -47,8 +47,9 @@ struct MenuBarBuilderView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
-            ForEach(model.orderedEnabledModules, id: \.self) { id in
-                stripItem(id)
+            let entries = model.orderedEnabledItems
+            ForEach(entries.indices, id: \.self) { i in
+                stripItem(entries[i].module, entries[i].component)
             }
             Spacer(minLength: 0)
         }
@@ -65,11 +66,11 @@ struct MenuBarBuilderView: View {
         }
     }
 
-    private func stripItem(_ id: MetricID) -> some View {
+    private func stripItem(_ id: MetricID, _ component: MenuBarComponent) -> some View {
         HStack(spacing: 5) {
-            preview(id, model.component(for: id))
+            preview(id, component)
             Button {
-                model.setEnabled(false, for: id)
+                model.toggleComponent(component, for: id)
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 10))
@@ -103,7 +104,7 @@ struct MenuBarBuilderView: View {
     }
 
     private func tile(_ id: MetricID, _ component: MenuBarComponent) -> some View {
-        let isActive = model.enabledModules.contains(id) && model.component(for: id) == component
+        let isActive = model.isComponentEnabled(component, for: id)
         return VStack(spacing: 3) {
             preview(id, component)
                 .frame(height: 20)
@@ -122,15 +123,13 @@ struct MenuBarBuilderView: View {
         )
         .contentShape(RoundedRectangle(cornerRadius: 8))
         .onTapGesture {
-            // Tap only ever adds or switches the look — removal lives on the strip's ⓧ,
-            // so exploring tiles can never silently drop items from the menu bar.
-            guard !isActive else { return }
-            model.moduleComponents[id] = component
-            model.setEnabled(true, for: id)
+            // Multi-select: each tile toggles independently; a module can put several
+            // components in the menu bar at once.
+            model.toggleComponent(component, for: id)
         }
         .draggable("\(id.rawValue)|\(component.rawValue)")
         .help(isActive
-              ? String(localized: "builder.tile.active", defaultValue: "In the menu bar")
+              ? String(localized: "builder.tile.remove", defaultValue: "Click to remove")
               : String(localized: "builder.tile.add", defaultValue: "Click to add"))
     }
 
@@ -226,8 +225,9 @@ struct MenuBarBuilderView: View {
               model.availableModules.contains(id),
               MenuBarComponent.available(for: id).contains(component)
         else { return false }
-        model.moduleComponents[id] = component
-        model.setEnabled(true, for: id)
+        if !model.isComponentEnabled(component, for: id) {
+            model.toggleComponent(component, for: id)
+        }
         return true
     }
 }

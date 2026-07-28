@@ -6,7 +6,8 @@ import MetricsKit
 @MainActor
 final class MenuBarController {
     private let model: AppModel
-    private var items: [MetricID: MetricStatusItem] = [:]
+    /// One status item per enabled (module, component) pair, keyed "module|component".
+    private var items: [String: MetricStatusItem] = [:]
     private let popover = NSPopover()
     private var popoverModuleID: MetricID?
 
@@ -21,12 +22,12 @@ final class MenuBarController {
         for (_, item) in items { item.remove() }
         items.removeAll()
 
-        for id in model.orderedEnabledModules {
-            let statusItem = MetricStatusItem(id: id)
+        for (id, component) in model.orderedEnabledItems {
+            let statusItem = MetricStatusItem(id: id, component: component)
             statusItem.onClick = { [weak self] moduleID in
                 self?.togglePopover(for: moduleID)
             }
-            items[id] = statusItem
+            items["\(id.rawValue)|\(component.rawValue)"] = statusItem
         }
         refresh()
     }
@@ -34,12 +35,11 @@ final class MenuBarController {
     /// Updates the live values of all items.
     func refresh() {
         let accent = model.accentNSColor
-        for (id, statusItem) in items {
+        for statusItem in items.values {
+            let id = statusItem.id
             guard let sample = model.latest[id] else { continue }
-            let component = model.component(for: id)
             statusItem.update(
-                component: component,
-                visual: MenuBarText.visual(for: id, component: component, sample: sample),
+                visual: MenuBarText.visual(for: id, component: statusItem.component, sample: sample),
                 samples: model.history(id),
                 accent: accent
             )
@@ -49,7 +49,8 @@ final class MenuBarController {
     // MARK: - Popover
 
     private func togglePopover(for id: MetricID) {
-        guard let button = items[id]?.item.button else { return }
+        // Anchor on the module's first item (a module can have several).
+        guard let button = items.values.first(where: { $0.id == id })?.item.button else { return }
 
         if popover.isShown && popoverModuleID == id {
             popover.performClose(nil)
@@ -58,8 +59,11 @@ final class MenuBarController {
         }
 
         let content = DetailPopoverView(model: model, moduleID: id)
-        popover.contentViewController = NSHostingController(rootView: content)
-        popover.contentSize = NSSize(width: 290, height: DetailPopoverView.height(for: id))
+        let host = NSHostingController(rootView: content)
+        // Content height varies (top-processes list expands/collapses) — let SwiftUI
+        // drive the popover size instead of pinning it.
+        host.sizingOptions = .preferredContentSize
+        popover.contentViewController = host
         popoverModuleID = id
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         popover.contentViewController?.view.window?.makeKey()

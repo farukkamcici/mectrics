@@ -20,16 +20,16 @@ struct DetailPopoverView: View {
                     .frame(height: 24)
             }
             detailRows
-            Spacer(minLength: 0)
+            if moduleID == .cpu || moduleID == .memory {
+                Divider()
+                TopProcessesView(mode: moduleID == .cpu ? .cpu : .memory,
+                                 accent: model.accentColor)
+            }
+            Divider()
             footer
         }
         .padding(11)
-        .frame(width: 290, height: Self.height(for: moduleID))
-    }
-
-    /// Popover height per module (CPU carries the extra per-core bar row).
-    static func height(for id: MetricID) -> CGFloat {
-        id == .cpu ? 280 : 248
+        .frame(width: 290)
     }
 
     /// Per-core usage fractions for the CPU core bars.
@@ -40,15 +40,33 @@ struct DetailPopoverView: View {
     }
 
     private var header: some View {
-        HStack {
+        HStack(spacing: 6) {
+            Image(systemName: FloatingPanelView.symbol(for: moduleID))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(model.accentColor)
             Text(moduleID.localizedName)
                 .font(.headline)
             Spacer()
+            if moduleID == .memory || moduleID == .disk {
+                headerRing
+            }
             Text(primaryValueString)
                 .font(.system(.title3, design: .rounded).weight(.semibold))
                 .foregroundStyle(.primary)
                 .monospacedDigit()
         }
+    }
+
+    /// Small usage donut next to the value for capacity-style modules.
+    private var headerRing: some View {
+        ZStack {
+            Circle().stroke(.secondary.opacity(0.22), lineWidth: 3)
+            Circle()
+                .trim(from: 0, to: min(max(sample?.value ?? 0, 0), 1))
+                .stroke(model.accentColor, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+        }
+        .frame(width: 18, height: 18)
     }
 
     @ViewBuilder

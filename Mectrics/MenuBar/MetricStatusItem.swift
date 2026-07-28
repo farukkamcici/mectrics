@@ -14,23 +14,29 @@ import MetricsKit
 /// Pictorial components (battery glyph, ring, core bars) have inherently fixed sizes.
 final class MetricStatusItem: NSObject {
     let id: MetricID
+    let component: MenuBarComponent
     let item: NSStatusItem
     var onClick: ((MetricID) -> Void)?
 
-    /// Component-dependent cache: font + reserved slot are re-measured only when the
-    /// user switches this module's component.
-    private var cachedComponent: MenuBarComponent?
-    private var textFont: NSFont = .monospacedDigitSystemFont(ofSize: 12, weight: .medium)
-    private var reservedTextWidth: CGFloat = 0
+    private let textFont: NSFont
+    private let reservedTextWidth: CGFloat
 
-    init(id: MetricID) {
+    init(id: MetricID, component: MenuBarComponent) {
         self.id = id
+        self.component = component
         self.item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        // The stacked network activity item uses a small two-line font.
+        self.textFont = component == .netActivity
+            ? .monospacedDigitSystemFont(ofSize: 8.5, weight: .semibold)
+            : .monospacedDigitSystemFont(ofSize: 12, weight: .medium)
+        let template = component.template(for: id)
+        self.reservedTextWidth = template.isEmpty ? 0
+            : ceil((template as NSString).size(withAttributes: [.font: textFont]).width)
         super.init()
         // Preserve position when the user ⌘-drags the item in the menu bar.
-        item.autosaveName = "mectrics.\(id.rawValue)"
+        item.autosaveName = "mectrics.\(id.rawValue).\(component.rawValue)"
         // Removing an autosave-named item persists a hidden flag; force visible so
-        // re-adding a module (menu bar rebuild) always shows it again.
+        // re-adding an item (menu bar rebuild) always shows it again.
         item.isVisible = true
         if let button = item.button {
             button.target = self
@@ -48,18 +54,7 @@ final class MetricStatusItem: NSObject {
     }
 
     /// Updates the live menu-bar indicator.
-    func update(component: MenuBarComponent, visual: MenuBarVisual,
-                samples: [Double], accent: NSColor) {
-        if component != cachedComponent {
-            cachedComponent = component
-            // The stacked network activity item uses a small two-line font.
-            textFont = component == .netActivity
-                ? .monospacedDigitSystemFont(ofSize: 8.5, weight: .semibold)
-                : .monospacedDigitSystemFont(ofSize: 12, weight: .medium)
-            let template = component.template(for: id)
-            reservedTextWidth = template.isEmpty ? 0
-                : ceil((template as NSString).size(withAttributes: [.font: textFont]).width)
-        }
+    func update(visual: MenuBarVisual, samples: [Double], accent: NSColor) {
         item.button?.image = Self.render(
             visual: visual,
             font: textFont,

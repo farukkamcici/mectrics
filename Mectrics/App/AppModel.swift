@@ -16,11 +16,27 @@ final class AppModel {
     /// The latest sample per module (read by the menu bar + popover).
     var latest: [MetricID: MetricSample] = [:]
 
-    /// Modules the user chose to show in the menu bar.
-    var enabledModules: Set<MetricID> {
+    /// Enabled menu bar items: per module, which components are shown. A module may
+    /// contribute several items at once (e.g. Battery icon + Battery health).
+    var enabledComponents: [MetricID: Set<MenuBarComponent>] {
         didSet {
-            persistEnabled()
-            if enabledModules != oldValue { onModulesChanged?() }
+            persistEnabledComponents()
+            if enabledComponents != oldValue { onModulesChanged?() }
+        }
+    }
+
+    /// Modules with at least one component in the menu bar (popover/panel scope).
+    var enabledModules: Set<MetricID> {
+        Set(availableModules.filter { !(enabledComponents[$0] ?? []).isEmpty })
+    }
+
+    /// Menu bar items in display order: module order, then the component order
+    /// defined by `MenuBarComponent.available(for:)`.
+    var orderedEnabledItems: [(module: MetricID, component: MenuBarComponent)] {
+        availableModules.flatMap { id in
+            MenuBarComponent.available(for: id)
+                .filter { enabledComponents[id]?.contains($0) ?? false }
+                .map { (id, $0) }
         }
     }
 
@@ -61,14 +77,14 @@ final class AppModel {
         didSet { persistAlertRules() }
     }
 
-    /// Per-module menu bar component (which look the module's item uses).
-    var moduleComponents: [MetricID: MenuBarComponent] {
-        didSet { persistModuleComponents(); onAppearanceChanged?() }
+    func isComponentEnabled(_ component: MenuBarComponent, for id: MetricID) -> Bool {
+        enabledComponents[id]?.contains(component) ?? false
     }
 
-    func component(for id: MetricID) -> MenuBarComponent {
-        let chosen = moduleComponents[id] ?? .default(for: id)
-        return MenuBarComponent.available(for: id).contains(chosen) ? chosen : .default(for: id)
+    func toggleComponent(_ component: MenuBarComponent, for id: MetricID) {
+        var set = enabledComponents[id] ?? []
+        if set.contains(component) { set.remove(component) } else { set.insert(component) }
+        enabledComponents[id] = set
     }
 
     private let defaults = UserDefaults.standard
@@ -96,15 +112,8 @@ final class AppModel {
         self.hasCompletedOnboarding = defaults.bool(forKey: Self.onboardingKey)
         self.accentChoice = AccentChoice(rawValue: defaults.string(forKey: Self.accentKey) ?? "") ?? .system
         self.alertRules = Self.loadAlertRules(from: defaults, available: available)
-        self.moduleComponents = Self.loadModuleComponents(from: defaults)
-
-        // If nothing was persisted, enable all available modules.
-        if let raw = defaults.array(forKey: Self.enabledKey) as? [String] {
-            let restored = raw.compactMap { MetricID(rawValue: $0) }.filter { available.contains($0) }
-            self.enabledModules = restored.isEmpty ? Set(available) : Set(restored)
-        } else {
-            self.enabledModules = Set(available)
-        }
+        self.enabledComponents = Self.loadEnabledComponents(
+            from: defaults, available: available.filter { $0 != .sensors })
     }
 
     /// Modules in menu bar order (CPU, Memory, Battery ...).
@@ -112,8 +121,16 @@ final class AppModel {
         availableModules.filter { enabledModules.contains($0) }
     }
 
+    /// Module-level switch (onboarding): enabling adds the default component if the
+    /// module has none; disabling removes all of its components.
     func setEnabled(_ enabled: Bool, for id: MetricID) {
-        if enabled { enabledModules.insert(id) } else { enabledModules.remove(id) }
+        if enabled {
+            if (enabledComponents[id] ?? []).isEmpty {
+                enabledComponents[id] = [.default(for: id)]
+            }
+        } else {
+            enabledComponents[id] = []
+        }
     }
 
     /// Normalized history for sparklines.
@@ -121,8 +138,43 @@ final class AppModel {
         engine.store.history(id, count: count).map(\.normalized)
     }
 
-    private func persistEnabled() {
-        defaults.set(enabledModules.map(\.rawValue), forKey: Self.enabledKey)
+    private static let enabledComponentsKey = "enabledComponents"
+
+    private static func loadEnabledComponents(from defaults: UserDefaults,
+                                              available: [MetricID]) -> [MetricID: Set<MenuBarComponent>] {
+        if let data = defaults.data(forKey: Self.enabledComponentsKey),
+           let raw = try? JSONDecoder().decode([String: [String]].self, from: data) {
+            var result: [MetricID: Set<MenuBarComponent>] = [:]
+            for (key, values) in raw {
+                guard let id = MetricID(rawValue: key), available.contains(id) else { continue }
+                let valid = MenuBarComponent.available(for: id)
+                result[id] = Set(values.compactMap(MenuBarComponent.init).filter(valid.contains))
+            }
+            return result
+        }
+        // Migrate the one-component-per-module era (enabledModules + moduleComponents).
+        let legacyChoices = Self.loadModuleComponents(from: defaults)
+        let legacyEnabled: [MetricID]
+        if let raw = defaults.array(forKey: Self.enabledKey) as? [String] {
+            legacyEnabled = raw.compactMap { MetricID(rawValue: $0) }.filter(available.contains)
+        } else {
+            legacyEnabled = available
+        }
+        var result: [MetricID: Set<MenuBarComponent>] = [:]
+        for id in (legacyEnabled.isEmpty ? available : legacyEnabled) {
+            let choice = legacyChoices[id] ?? .default(for: id)
+            result[id] = [MenuBarComponent.available(for: id).contains(choice) ? choice : .default(for: id)]
+        }
+        return result
+    }
+
+    private func persistEnabledComponents() {
+        let raw = Dictionary(uniqueKeysWithValues: enabledComponents.map { key, value in
+            (key.rawValue, value.map(\.rawValue).sorted())
+        })
+        if let data = try? JSONEncoder().encode(raw) {
+            defaults.set(data, forKey: Self.enabledComponentsKey)
+        }
     }
 
     // MARK: - Appearance
@@ -176,6 +228,7 @@ final class AppModel {
         }
     }
 
+    /// Legacy single-choice-per-module preference, read only for migration.
     private static func loadModuleComponents(from defaults: UserDefaults) -> [MetricID: MenuBarComponent] {
         if let raw = defaults.dictionary(forKey: Self.moduleComponentsKey) as? [String: String] {
             var components: [MetricID: MenuBarComponent] = [:]
@@ -186,7 +239,6 @@ final class AppModel {
             }
             return components
         }
-        // Migrate the short-lived value/graph/both style preference.
         if let legacy = defaults.dictionary(forKey: Self.legacyStylesKey) as? [String: String] {
             var components: [MetricID: MenuBarComponent] = [:]
             for (key, value) in legacy {
@@ -201,10 +253,5 @@ final class AppModel {
             return components
         }
         return [:]
-    }
-
-    private func persistModuleComponents() {
-        let raw = Dictionary(uniqueKeysWithValues: moduleComponents.map { ($0.key.rawValue, $0.value.rawValue) })
-        defaults.set(raw, forKey: Self.moduleComponentsKey)
     }
 }
