@@ -16,6 +16,9 @@ Guidance for Claude Code (and other agents) working in this repository.
 - **Zero telemetry**, adaptive sampling, keep it lightweight (< 60 MB RAM).
 - `project.yml` is the source; run `xcodegen generate` after adding files or editing it.
   Never commit `Mectrics.xcodeproj/`, `DerivedData/`, `.build/`.
+- **Never add Claude (or any AI agent) as a commit contributor.** No `Co-Authored-By:`
+  trailers, no "Generated with" lines, no AI attribution of any kind. Commits are authored
+  solely by the human. (See AGENTS.md §7.)
 
 ## Fast local loop (no Xcode UI)
 

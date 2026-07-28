@@ -81,8 +81,9 @@ xcodebuild -project Mectrics.xcodeproj -scheme Mectrics -configuration Debug bui
 ## 7. Commits
 
 - English, imperative-ish subject; concise body explaining the *why*.
-- Co-author trailer for AI-assisted commits:
-  `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`
+- **Never add Claude (or any AI agent) as a commit contributor/author.** Do not add
+  `Co-Authored-By:` trailers, `Generated with` lines, or any AI attribution. Commits are
+  authored solely by the human contributor.
 - Commit or push only when the user asks. Branch before committing on `main` if unsure.
 
 ## 8. Product decisions (fixed)
