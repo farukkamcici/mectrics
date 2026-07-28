@@ -95,6 +95,7 @@ struct TopProcessesView: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .focusEffectDisabled()
             .help(String(
                 localized: "topProcs.toggle.help",
                 defaultValue: "Show or hide the process list"

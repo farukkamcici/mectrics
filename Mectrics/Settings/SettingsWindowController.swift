@@ -21,7 +21,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
 
     private static let initialContentSize = NSSize(width: 620, height: 480)
     private static let minimumContentSize = NSSize(width: 520, height: 480)
-    private static let tabContentHeights: [CGFloat] = [570, 680, 480]
+    private static let tabContentHeights: [CGFloat] = [500, 680, 480]
     private static let frameAutosaveName = "mectrics.settings"
     private static let selectedPaneKey = "settings.selectedPane"
     private static let toolbarIdentifier = NSToolbar.Identifier("mectrics.settings.toolbar")

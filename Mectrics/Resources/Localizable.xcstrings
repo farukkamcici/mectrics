@@ -32,16 +32,7 @@
     "Application" : {
 
     },
-    "Average" : {
-
-    },
     "Back" : {
-
-    },
-    "Battery and disk history" : {
-
-    },
-    "Charts" : {
 
     },
     "Color" : {
@@ -66,9 +57,6 @@
 
     },
     "For" : {
-
-    },
-    "History builds hourly as Mectrics runs." : {
 
     },
     "Icons" : {
@@ -104,6 +92,9 @@
     "Quit" : {
 
     },
+    "Quit Mectrics" : {
+
+    },
     "Recommended" : {
 
     },
@@ -120,9 +111,6 @@
 
     },
     "Start Monitoring" : {
-
-    },
-    "Time" : {
 
     },
     "Top processes" : {
@@ -995,50 +983,6 @@
         }
       }
     },
-    "history.chart.accessibilityLabel" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ history, %2$@"
-          }
-        }
-      }
-    },
-    "history.chart.range" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Up to %@"
-          }
-        }
-      }
-    },
-    "history.chart.readingCount" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%lld hourly readings"
-          }
-        }
-      }
-    },
-    "history.chart.summary" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld hourly readings, minimum %2$.0f%%, maximum %3$.0f%%, latest %4$.0f%%"
-          }
-        }
-      }
-    },
     "history.export.failed" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -1057,39 +1001,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Export Metric History"
-          }
-        }
-      }
-    },
-    "history.range.day" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "24 hours"
-          }
-        }
-      }
-    },
-    "history.range.month" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "30 days"
-          }
-        }
-      }
-    },
-    "history.range.week" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "7 days"
           }
         }
       }

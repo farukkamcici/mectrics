@@ -47,10 +47,7 @@ struct DetailPopoverView: View {
                 total: sample?.detail["total"] ?? 0,
                 accent: model.accentColor
             )
-            historicalTrend
-        } else if moduleID == .battery {
-            historicalTrend
-        } else {
+        } else if moduleID != .battery {
             SparklineView(values: model.history(moduleID, count: 60), accent: model.accentColor)
                 .frame(height: 40)
         }
@@ -66,15 +63,6 @@ struct DetailPopoverView: View {
             )
             .padding(.top, ExperienceSpacing.xSmall)
         }
-    }
-
-    private var historicalTrend: some View {
-        HistoricalTrendView(
-            points: model.historicalPoints(moduleID),
-            range: model.detailHistoryRange,
-            metricName: moduleID.localizedName,
-            accent: model.accentColor
-        )
     }
 
     /// Per-core usage fractions for the CPU core bars.

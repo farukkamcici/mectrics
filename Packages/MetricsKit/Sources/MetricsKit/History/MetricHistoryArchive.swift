@@ -83,13 +83,6 @@ public struct MetricHistoryArchive: Codable, Sendable, Equatable {
         points[id] = metricPoints.filter { $0.timestamp >= cutoff }
     }
 
-    public func points(
-        for id: MetricID,
-        since cutoff: Date
-    ) -> [HistoricalMetricPoint] {
-        (points[id] ?? []).filter { $0.timestamp >= cutoff }
-    }
-
     public func csvData() -> Data {
         var lines = ["hour,module,average,minimum,maximum,unit,samples"]
         let formatter = ISO8601DateFormatter()
