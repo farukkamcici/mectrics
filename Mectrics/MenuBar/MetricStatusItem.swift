@@ -63,16 +63,21 @@ final class MetricStatusItem: NSObject {
 
     // MARK: - Layout templates
 
-    /// Worst-case string per module, used to reserve a stable text width. For the
-    /// two-line network item this is a single line (both lines are the same width).
+    /// Common-worst-case string per module, used to reserve a stable text width. For
+    /// the two-line network item this is a single line (both lines are the same width).
+    ///
+    /// Deliberately sized for the *common* worst case ("99%", not "100%"): reserving
+    /// the rare 100% case permanently pads every item with dead space. When a value
+    /// does exceed the slot, the item grows for those samples and shrinks back
+    /// (`textSlot = max(reserved, content)`), which beats always-wasted width.
     private static func template(for id: MetricID) -> String {
         switch id {
         case .network:   return "↓999M"
-        case .battery:   return "⚡100%"
-        case .bluetooth: return "BT100%"
-        case .sensors:   return "100°"
+        case .battery:   return "100%"   // batteries do sit at 100%; ⚡ grows the item while charging
+        case .bluetooth: return "BT99%"
+        case .sensors:   return "99°"
         case .fans:      return "9.9K"
-        default:         return "100%"
+        default:         return "99%"
         }
     }
 
