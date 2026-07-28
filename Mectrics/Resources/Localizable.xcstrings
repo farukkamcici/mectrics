@@ -38,9 +38,6 @@
     "Back" : {
 
     },
-    "Baseline" : {
-
-    },
     "Battery and disk history" : {
 
     },
@@ -72,9 +69,6 @@
 
     },
     "History builds hourly as Mectrics runs." : {
-
-    },
-    "Hourly average" : {
 
     },
     "Icons" : {
@@ -1008,6 +1002,28 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ history, %2$@"
+          }
+        }
+      }
+    },
+    "history.chart.range" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Up to %@"
+          }
+        }
+      }
+    },
+    "history.chart.readingCount" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%lld hourly readings"
           }
         }
       }
