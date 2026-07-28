@@ -92,6 +92,7 @@ struct TopProcessesView: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .focusEffectDisabled()
 
             if expanded {
                 VStack(alignment: .leading, spacing: 4) {
