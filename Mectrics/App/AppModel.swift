@@ -209,9 +209,10 @@ final class AppModel {
 
     // MARK: - Alerts
 
-    /// Modules that support threshold alerts, in display order.
+    /// Modules that support threshold alerts, in canonical order. Includes sensors
+    /// (CPU temperature) even though temperatures are not a menu bar module.
     var alertableModules: [MetricID] {
-        availableModules.filter { alertRules[$0] != nil }
+        MetricID.allCases.filter { alertRules[$0] != nil }
     }
 
     private static func defaultAlertRules(available: [MetricID]) -> [MetricID: AlertRule] {
@@ -222,6 +223,9 @@ final class AppModel {
                 rules[id] = AlertRule(enabled: false, thresholdPercent: 90)
             case .battery:
                 rules[id] = AlertRule(enabled: false, thresholdPercent: 20)
+            case .sensors:
+                // Threshold is °C for the temperature rule, not a percentage.
+                rules[id] = AlertRule(enabled: false, thresholdPercent: 85)
             default:
                 break
             }

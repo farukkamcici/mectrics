@@ -18,25 +18,41 @@ public final class BluetoothProvider: MetricProvider, @unchecked Sendable {
     public init() {}
 
     public var isAvailable: Bool {
-        !scanBatteryPercents().isEmpty
+        !scanBatteryDevices().isEmpty
     }
 
-    public func sample() -> MetricSample? {
-        let percents = scanBatteryPercents()
-        guard !percents.isEmpty else { return nil }
+    /// Device names from the latest scan, index-aligned with `device<i>` detail keys.
+    /// The detail dictionary is Double-only, so names travel via this side channel
+    /// (written on the sampling queue, read by the UI on main — guarded by a lock).
+    public static func latestDeviceNames() -> [String] {
+        namesLock.lock()
+        defer { namesLock.unlock() }
+        return latestNames
+    }
 
-        let minPct = percents.min() ?? 0
-        var detail: [String: Double] = ["deviceCount": Double(percents.count)]
-        for (i, pct) in percents.enumerated() {
-            detail["device\(i)"] = pct
+    private static let namesLock = NSLock()
+    private static var latestNames: [String] = []
+
+    public func sample() -> MetricSample? {
+        let devices = scanBatteryDevices()
+        guard !devices.isEmpty else { return nil }
+
+        Self.namesLock.lock()
+        Self.latestNames = devices.map(\.name)
+        Self.namesLock.unlock()
+
+        let minPct = devices.map(\.percent).min() ?? 0
+        var detail: [String: Double] = ["deviceCount": Double(devices.count)]
+        for (i, device) in devices.enumerated() {
+            detail["device\(i)"] = device.percent
         }
         return MetricSample(value: minPct / 100, unit: .fraction, detail: detail)
     }
 
-    /// Recursively scans the IORegistry and collects the percentages of entries that
-    /// expose `BatteryPercent`.
-    private func scanBatteryPercents() -> [Double] {
-        var result: [Double] = []
+    /// Recursively scans the IORegistry and collects entries that expose
+    /// `BatteryPercent`, with their product names.
+    private func scanBatteryDevices() -> [(name: String, percent: Double)] {
+        var result: [(name: String, percent: Double)] = []
         var iterator: io_iterator_t = 0
         guard IORegistryCreateIterator(
             kIOMainPortDefault,
@@ -59,7 +75,10 @@ public final class BluetoothProvider: MetricProvider, @unchecked Sendable {
             else { continue }
 
             if let pct = (dict["BatteryPercent"] as? NSNumber)?.doubleValue, pct > 0 {
-                result.append(pct)
+                let name = (dict["Product"] as? String)
+                    ?? (dict["DeviceName"] as? String)
+                    ?? ""
+                result.append((name: name, percent: pct))
             }
         }
         return result

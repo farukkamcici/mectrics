@@ -65,6 +65,35 @@ popover on click; toggle modules in settings; launch at login.
 - iOS/iPad companion + iCloud sync.
 - Localization (multiple languages via the String Catalog).
 
+## Competitive backlog (researched 2026-07-28)
+Sources: iStat Menus 7 feature list, Stats (exelban) most-upvoted issues, MacRumors
+"iStat vs Stats" thread, Usage app. Ordered by expected value/effort:
+
+**High value, medium effort**
+- [ ] **Combined mode** — one menu bar item opening an all-modules overview popover
+      (top-voted Stats issue #1084; iStat 7 headline feature).
+- [ ] **Long history** — iStat keeps 30 days across restarts and users cite it as the
+      reason to pay; persist ring buffers to disk (hourly downsampling) + a history
+      window with time ranges (1h/24h/7d/30d).
+- [ ] **Per-app breakdowns** — top apps by network and disk I/O (iStat has both;
+      `nettop`/`fs_usage`-style sampling on popover open, like our Top processes).
+- [ ] **Data Today** — daily network totals with per-day rollover (Usage), persisted.
+
+**Differentiators nobody has (our openings)**
+- [ ] **Hardware-domain grouping** (already ours — temps live in CPU/GPU, keep leaning in).
+- [ ] **Zero-telemetry + fully offline as a headline** — iStat shows public IP via
+      network calls; we can make "makes literally zero network requests" a verifiable
+      claim (document it, CI check for network symbols).
+- [ ] **Visual menu bar builder** (already ours — Stats/iStat both use dense settings
+      checkboxes; polish and screenshot it for the README).
+- [ ] **Alert on kernel memory-pressure level** (we surface the real kernel signal;
+      iStat/Stats only do % thresholds).
+
+**Deliberately out (privacy/scope)**
+- Weather, world clocks, calendar (iStat) — needs network + location; not a monitor's job.
+- Public IP / ping — requires external calls; conflicts with the zero-network promise.
+- Fan *control* (writes to SMC) — read-only by principle; control apps exist.
+
 ---
 
 ## Decisions made ✅

@@ -31,10 +31,11 @@ final class ThresholdMonitor {
     func evaluate(latest: [MetricID: MetricSample], rules: [MetricID: AlertRule]) {
         for (id, rule) in rules where rule.enabled {
             guard let sample = latest[id] else { continue }
-            let percent = sample.value * 100
+            // Sensors carry °C directly; everything else is a 0...1 fraction.
+            let measured = sample.unit == .celsius ? sample.value : sample.value * 100
             let violating = Self.isBelowRule(id)
-                ? percent <= Double(rule.thresholdPercent)
-                : percent >= Double(rule.thresholdPercent)
+                ? measured <= Double(rule.thresholdPercent)
+                : measured >= Double(rule.thresholdPercent)
 
             let crossed = violating && !(wasViolating[id] ?? false)
             wasViolating[id] = violating
@@ -43,23 +44,28 @@ final class ThresholdMonitor {
             let now = Date()
             guard now.timeIntervalSince(lastFired[id] ?? .distantPast) >= cooldown else { continue }
             lastFired[id] = now
-            post(for: id, rule: rule, percent: Int(percent.rounded()))
+            post(for: id, rule: rule, measured: Int(measured.rounded()))
         }
     }
 
     /// Battery alerts when the value drops below the threshold; everything else above.
     static func isBelowRule(_ id: MetricID) -> Bool { id == .battery }
 
-    private func post(for id: MetricID, rule: AlertRule, percent: Int) {
+    private func post(for id: MetricID, rule: AlertRule, measured: Int) {
         Self.requestAuthorizationIfNeeded()
 
         let content = UNMutableNotificationContent()
         content.title = Self.title(for: id)
-        content.body = Self.isBelowRule(id)
-            ? String(localized: "alert.body.below",
-                     defaultValue: "\(id.localizedName) is at \(percent)% — below your \(rule.thresholdPercent)% threshold.")
-            : String(localized: "alert.body.above",
-                     defaultValue: "\(id.localizedName) is at \(percent)% — above your \(rule.thresholdPercent)% threshold.")
+        if id == .sensors {
+            content.body = String(localized: "alert.body.temp",
+                defaultValue: "CPU temperature is \(measured)°C — above your \(rule.thresholdPercent)°C threshold.")
+        } else {
+            content.body = Self.isBelowRule(id)
+                ? String(localized: "alert.body.below",
+                         defaultValue: "\(id.localizedName) is at \(measured)% — below your \(rule.thresholdPercent)% threshold.")
+                : String(localized: "alert.body.above",
+                         defaultValue: "\(id.localizedName) is at \(measured)% — above your \(rule.thresholdPercent)% threshold.")
+        }
         content.sound = .default
 
         let request = UNNotificationRequest(
@@ -74,6 +80,7 @@ final class ThresholdMonitor {
         switch id {
         case .battery: return String(localized: "alert.title.battery", defaultValue: "Low battery")
         case .disk:    return String(localized: "alert.title.disk", defaultValue: "Disk almost full")
+        case .sensors: return String(localized: "alert.title.temp", defaultValue: "High CPU temperature")
         default:       return String(localized: "alert.title.high",
                                      defaultValue: "High \(id.localizedName) usage")
         }

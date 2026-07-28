@@ -85,16 +85,20 @@ struct SettingsView: View {
     private func alertRow(_ id: MetricID) -> some View {
         let rule = ruleBinding(id)
         let below = ThresholdMonitor.isBelowRule(id)
-        let range = below ? 5...50 : 50...100
+        let isTemp = id == .sensors
+        let range = isTemp ? 60...105 : (below ? 5...50 : 50...100)
+        let label = isTemp
+            ? String(localized: "alerts.temp", defaultValue: "CPU temperature above")
+            : (below
+               ? String(localized: "alerts.below", defaultValue: "\(id.localizedName) below")
+               : String(localized: "alerts.above", defaultValue: "\(id.localizedName) above"))
         return HStack {
             Toggle(isOn: rule.enabled) {
-                Text(below
-                     ? String(localized: "alerts.below", defaultValue: "\(id.localizedName) below")
-                     : String(localized: "alerts.above", defaultValue: "\(id.localizedName) above"))
+                Text(label)
             }
             Spacer()
             Stepper(value: rule.thresholdPercent, in: range, step: 5) {
-                Text("\(rule.wrappedValue.thresholdPercent)%")
+                Text("\(rule.wrappedValue.thresholdPercent)\(isTemp ? "°C" : "%")")
                     .monospacedDigit()
                     .frame(minWidth: 40, alignment: .trailing)
             }

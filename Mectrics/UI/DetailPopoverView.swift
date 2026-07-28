@@ -181,12 +181,21 @@ struct DetailPopoverView: View {
             }
             return r
         case .battery:
-            let chargingLabel = (d["charging"] ?? 0) > 0
+            let charging = (d["charging"] ?? 0) > 0
+            let chargingLabel = charging
                 ? String(localized: "battery.charging", defaultValue: "Charging")
                 : String(localized: "battery.onBattery", defaultValue: "On battery")
             var r: [(String, String)] = [
                 (String(localized: "battery.status", defaultValue: "Status"), chargingLabel)
             ]
+            // Time estimates: -1 means "still calculating"; show whichever applies.
+            if charging, let t = d["timeToFull"], t > 0 {
+                r.append((String(localized: "battery.timeToFull", defaultValue: "Time to full"),
+                          Self.minutesString(t)))
+            } else if !charging, let t = d["timeToEmpty"], t > 0 {
+                r.append((String(localized: "battery.timeRemaining", defaultValue: "Time remaining"),
+                          Self.minutesString(t)))
+            }
             if let h = d["healthPercent"] {
                 r.append((String(localized: "battery.health", defaultValue: "Health"), "\(Int(h))%"))
             }
@@ -198,12 +207,17 @@ struct DetailPopoverView: View {
             }
             return r
         case .network:
-            return [
+            var r: [(String, String)] = [
                 (String(localized: "net.down", defaultValue: "Download"), MetricFormat.bytesPerSecond(d["down"] ?? 0)),
                 (String(localized: "net.up", defaultValue: "Upload"), MetricFormat.bytesPerSecond(d["up"] ?? 0)),
                 (String(localized: "net.totalDown", defaultValue: "Total downloaded"), MetricFormat.bytes(d["downTotal"] ?? 0)),
                 (String(localized: "net.totalUp", defaultValue: "Total uploaded"), MetricFormat.bytes(d["upTotal"] ?? 0))
             ]
+            if let info = NetworkInfo.primaryIPv4() {
+                r.append((String(localized: "net.localIP", defaultValue: "Local IP"),
+                          "\(info.address) (\(info.interface))"))
+            }
+            return r
         case .disk:
             var r: [(String, String)] = [
                 (String(localized: "disk.used", defaultValue: "Used"), MetricFormat.bytes(d["used"] ?? 0)),
@@ -262,10 +276,12 @@ struct DetailPopoverView: View {
                 (String(localized: "bt.deviceCount", defaultValue: "Device count"), "\(Int(d["deviceCount"] ?? 0))")
             ]
             let count = Int(d["deviceCount"] ?? 0)
+            let names = BluetoothProvider.latestDeviceNames()
             for i in 0..<count {
                 if let pct = d["device\(i)"] {
-                    let label = String(localized: "bt.device", defaultValue: "Device \(i + 1)")
-                    r.append((label, "\(Int(pct))%"))
+                    let fallback = String(localized: "bt.device", defaultValue: "Device \(i + 1)")
+                    let name = i < names.count && !names[i].isEmpty ? names[i] : fallback
+                    r.append((name, "\(Int(pct))%"))
                 }
             }
             return r
@@ -275,6 +291,14 @@ struct DetailPopoverView: View {
     }
 
     // MARK: - System info formatting
+
+    /// Minutes → "2h 15m" / "45m".
+    private static func minutesString(_ minutes: Double) -> String {
+        let total = Int(minutes)
+        let hours = total / 60
+        let mins = total % 60
+        return hours > 0 ? "\(hours)h \(mins)m" : "\(mins)m"
+    }
 
     private static var uptimeString: String {
         let uptime = Int(ProcessInfo.processInfo.systemUptime)
