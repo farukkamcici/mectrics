@@ -37,7 +37,7 @@ final class MetricStatusItem: NSObject {
         self.iconSymbol = NSImage(
             systemSymbolName: FloatingPanelView.symbol(for: id),
             accessibilityDescription: nil
-        )?.withSymbolConfiguration(.init(pointSize: 9.5, weight: .semibold))
+        )?.withSymbolConfiguration(.init(pointSize: 10.5, weight: .semibold))
         super.init()
         // Preserve position when the user ⌘-drags the item in the menu bar.
         item.autosaveName = "mectrics.\(id.rawValue).\(component.rawValue)"
@@ -79,7 +79,7 @@ final class MetricStatusItem: NSObject {
     private static let gap: CGFloat = 4
 
     /// Leading space taken by the embedded module icon (glyph + gap).
-    private static let iconSlot: CGFloat = 15
+    private static let iconSlot: CGFloat = 16
 
     private static func render(visual: MenuBarVisual, font: NSFont, samples: [Double],
                                accent: NSColor, reservedTextWidth: CGFloat,
@@ -112,7 +112,7 @@ final class MetricStatusItem: NSObject {
         let image = NSImage(size: NSSize(width: max(width, 8), height: height))
         image.lockFocus()
         appearance.performAsCurrentDrawingAppearance {
-            if let icon { drawIcon(icon) }
+            if let icon { drawIcon(icon, accent: accent) }
             switch visual {
             case .text(let text):
                 drawTextBlock(text, attrs: attrs,
@@ -145,13 +145,13 @@ final class MetricStatusItem: NSObject {
         return image
     }
 
-    /// Draws the module symbol tinted like secondary label text, vertically centered
-    /// at the leading edge.
-    private static func drawIcon(_ icon: NSImage) {
+    /// Draws the module symbol tinted with the accent color, vertically centered at
+    /// the leading edge — icons match the sparklines/charts and pop against the text.
+    private static func drawIcon(_ icon: NSImage, accent: NSColor) {
         let size = icon.size
         let origin = NSPoint(x: 0, y: (height - size.height) / 2)
         icon.draw(at: origin, from: .zero, operation: .sourceOver, fraction: 1)
-        NSColor.secondaryLabelColor.set()
+        accent.set()
         NSRect(origin: origin, size: size).fill(using: .sourceAtop)
     }
 
