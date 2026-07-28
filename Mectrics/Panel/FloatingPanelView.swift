@@ -30,7 +30,10 @@ struct FloatingPanelView: View {
             ForEach(model.orderedEnabledModules, id: \.self) { id in
                 HStack(spacing: 6) {
                     icon(id)
+                    // Window size is measured once per layout change, so values get a
+                    // stable min width to avoid clipping as digits grow.
                     valueText(id, size: 11)
+                        .frame(minWidth: id == .network ? 78 : 32, alignment: .leading)
                     if Self.showsSparkline(id) {
                         SparklineView(values: model.history(id, count: 30), accent: model.accentColor)
                             .frame(width: 26, height: 12)

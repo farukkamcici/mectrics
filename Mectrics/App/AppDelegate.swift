@@ -20,6 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Rebuild the menu bar when the module selection changes.
         model.onModulesChanged = { [weak self] in
             self?.menuBar.rebuild()
+            self?.floatingPanel.refreshSize()
         }
 
         // Floating panel (always-on-top live widget), restored from last session.
@@ -31,9 +32,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             floatingPanel.setVisible(true)
         }
 
-        // Redraw immediately when a look-related setting (accent, density) changes.
+        // Redraw immediately when a look-related setting (accent, panel layout,
+        // icons) changes.
         model.onAppearanceChanged = { [weak self] in
             self?.menuBar.refresh()
+            self?.floatingPanel.refreshSize()
         }
 
         // Global hotkey (⌃⌥M) toggles the floating panel from anywhere.

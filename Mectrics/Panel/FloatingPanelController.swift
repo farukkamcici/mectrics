@@ -30,11 +30,31 @@ final class FloatingPanelController {
         }
     }
 
+    /// Re-measures the SwiftUI content and fits the window to it, keeping the top
+    /// edge anchored. Called when the layout toggle or the module set changes —
+    /// NOT via NSHostingController's automatic sizing, which recursed into a
+    /// windowDidLayout ↔ setFrame loop on this borderless panel and blew the stack.
+    func refreshSize() {
+        guard let panel, let view = panel.contentViewController?.view else { return }
+        DispatchQueue.main.async {
+            view.layoutSubtreeIfNeeded()
+            let size = view.fittingSize
+            guard size.width > 1, size.height > 1 else { return }
+            var frame = panel.frame
+            guard abs(frame.width - size.width) > 0.5 || abs(frame.height - size.height) > 0.5
+            else { return }
+            frame.origin.y += frame.height - size.height
+            frame.size = size
+            panel.setFrame(frame, display: true)
+        }
+    }
+
     private func show() {
         if panel == nil {
             panel = makePanel()
         }
         panel?.orderFrontRegardless()
+        refreshSize()
     }
 
     private func makePanel() -> FloatingPanel {
@@ -55,10 +75,9 @@ final class FloatingPanelController {
         // Visible on every Space, including alongside full-screen apps.
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
-        // SwiftUI drives the window size (layout toggle / module count change it).
-        let host = NSHostingController(rootView: FloatingPanelView(model: model))
-        host.sizingOptions = .preferredContentSize
-        panel.contentViewController = host
+        // Sizing is manual (refreshSize) — automatic hosting sizing recurses on
+        // borderless panels; see refreshSize.
+        panel.contentViewController = NSHostingController(rootView: FloatingPanelView(model: model))
 
         // Restore the previous position; first launch goes to the top-right corner.
         let restored = panel.setFrameUsingName(Self.autosaveName)

@@ -62,7 +62,10 @@ final class AppModel {
 
     /// Floating panel shape (horizontal strip / vertical card).
     var panelLayout: PanelLayout {
-        didSet { defaults.set(panelLayout.rawValue, forKey: Self.panelLayoutKey) }
+        didSet {
+            defaults.set(panelLayout.rawValue, forKey: Self.panelLayoutKey)
+            if panelLayout != oldValue { onAppearanceChanged?() }
+        }
     }
 
     /// Embed a small module icon at the leading edge of every menu bar item, so it's
