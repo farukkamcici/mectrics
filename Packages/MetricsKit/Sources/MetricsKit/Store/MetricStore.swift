@@ -1,13 +1,13 @@
 import Foundation
 
-/// Metrik başına sabit kapasiteli halka tampon (ring buffer) tutar.
-/// Sparkline geçmişi ve son değer buradan okunur. Sabit kapasite = sıfıra yakın
-/// tahsis (hot path'te heap allocation yok) → hafiflik hedefiyle uyumlu.
+/// Keeps a fixed-capacity ring buffer per metric. Sparkline history and the latest value
+/// are read from here. Fixed capacity means near-zero allocation on the hot path (no heap
+/// allocation per sample), aligned with the lightweight goal.
 ///
-/// Erişim tek seri kuyruktan yapıldığı varsayılır (engine'in sampling kuyruğu).
-/// UI okumaları da aynı kuyruk üzerinden ana thread'e publish edilir.
+/// Access is assumed to happen from a single serial queue (the engine's sampling queue).
+/// UI reads are published to the main thread through that same queue.
 public final class MetricStore: @unchecked Sendable {
-    /// Metrik başına saklanacak örnek sayısı (ör. 300 örnek ≈ 5 dk @1s).
+    /// Samples kept per metric (e.g. 300 samples ≈ 5 min @1s).
     public let capacity: Int
 
     private var buffers: [MetricID: RingBuffer<MetricSample>] = [:]
@@ -23,12 +23,12 @@ public final class MetricStore: @unchecked Sendable {
         buffers[id]?.append(sample)
     }
 
-    /// En güncel örnek.
+    /// Most recent sample.
     public func latest(_ id: MetricID) -> MetricSample? {
         buffers[id]?.last
     }
 
-    /// En yeni `count` örnek, eskiden yeniye sıralı (sparkline için).
+    /// The newest `count` samples, oldest-to-newest (for sparklines).
     public func history(_ id: MetricID, count: Int) -> [MetricSample] {
         guard let buffer = buffers[id] else { return [] }
         let all = buffer.elements
@@ -36,16 +36,16 @@ public final class MetricStore: @unchecked Sendable {
         return Array(all.suffix(count))
     }
 
-    /// Tüm geçmiş.
+    /// Full history.
     public func history(_ id: MetricID) -> [MetricSample] {
         buffers[id]?.elements ?? []
     }
 }
 
-/// Basit sabit-kapasiteli halka tampon.
+/// Simple fixed-capacity ring buffer.
 struct RingBuffer<Element> {
     private var storage: [Element?]
-    private var head = 0        // bir sonraki yazılacak indeks
+    private var head = 0        // next write index
     private var filled = 0
     let capacity: Int
 
@@ -66,7 +66,7 @@ struct RingBuffer<Element> {
         return storage[idx]
     }
 
-    /// Eskiden yeniye sıralı elemanlar.
+    /// Elements oldest-to-newest.
     var elements: [Element] {
         guard filled > 0 else { return [] }
         var result: [Element] = []

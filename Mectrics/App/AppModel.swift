@@ -2,19 +2,19 @@ import Foundation
 import Observation
 import MetricsKit
 
-/// UI ile MetricsKit motoru arasındaki köprü. `@Observable` → SwiftUI görünümleri
-/// `latest` değiştikçe otomatik güncellenir.
+/// Bridge between the UI and the MetricsKit engine. `@Observable` → SwiftUI views update
+/// automatically as `latest` changes.
 @Observable
 final class AppModel {
     let engine: MetricsEngine
 
-    /// Bu makinede kullanılabilir çekirdek modüller (ör. masaüstünde pil yok).
+    /// Core modules available on this machine (e.g. no battery on a desktop).
     let availableModules: [MetricID]
 
-    /// Her modülün son örneği (menü çubuğu + popover bunu okur).
+    /// The latest sample per module (read by the menu bar + popover).
     var latest: [MetricID: MetricSample] = [:]
 
-    /// Kullanıcının menü çubuğunda göstermeyi seçtiği modüller.
+    /// Modules the user chose to show in the menu bar.
     var enabledModules: Set<MetricID> {
         didSet {
             persistEnabled()
@@ -22,10 +22,11 @@ final class AppModel {
         }
     }
 
-    /// Etkin modül kümesi değişince menü çubuğunu yeniden kurmak için (AppDelegate bağlar).
+    /// Called when the enabled-module set changes, so the menu bar can be rebuilt
+    /// (wired by AppDelegate).
     @ObservationIgnored var onModulesChanged: (() -> Void)?
 
-    /// Accent rengi tercihi (basitlik için sistem accent'i varsayılan).
+    /// Accent color preference (system accent by default for simplicity).
     var useSystemAccent = true
 
     private let defaults = UserDefaults.standard
@@ -40,7 +41,7 @@ final class AppModel {
         engine.register(providers)
         self.engine = engine
 
-        // Kayıtlı seçim yoksa tüm mevcut modülleri aç.
+        // If nothing was persisted, enable all available modules.
         if let raw = defaults.array(forKey: Self.enabledKey) as? [String] {
             let restored = raw.compactMap { MetricID(rawValue: $0) }.filter { available.contains($0) }
             self.enabledModules = restored.isEmpty ? Set(available) : Set(restored)
@@ -49,7 +50,7 @@ final class AppModel {
         }
     }
 
-    /// Modülleri menü çubuğu sırasına göre (CPU, Bellek, Pil ...) verir.
+    /// Modules in menu bar order (CPU, Memory, Battery ...).
     var orderedEnabledModules: [MetricID] {
         availableModules.filter { enabledModules.contains($0) }
     }
@@ -58,7 +59,7 @@ final class AppModel {
         if enabled { enabledModules.insert(id) } else { enabledModules.remove(id) }
     }
 
-    /// Sparkline için normalize edilmiş geçmiş.
+    /// Normalized history for sparklines.
     func history(_ id: MetricID, count: Int = 40) -> [Double] {
         engine.store.history(id, count: count).map(\.normalized)
     }

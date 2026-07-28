@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 import MetricsKit
 
-/// Menü çubuğu öğelerini oluşturur, günceller ve tıklamada detay popover'ını yönetir.
+/// Creates and updates the menu bar items and manages the detail popover on click.
 @MainActor
 final class MenuBarController {
     private let model: AppModel
@@ -16,7 +16,7 @@ final class MenuBarController {
         popover.animates = true
     }
 
-    /// Etkin modüllere göre menü çubuğu öğelerini sıfırdan kurar.
+    /// Rebuilds the menu bar items from scratch based on the enabled modules.
     func rebuild() {
         for (_, item) in items { item.remove() }
         items.removeAll()
@@ -31,7 +31,7 @@ final class MenuBarController {
         refresh()
     }
 
-    /// Tüm öğelerin canlı değerlerini günceller.
+    /// Updates the live values of all items.
     func refresh() {
         let accent = NSColor.controlAccentColor
         for (id, statusItem) in items {

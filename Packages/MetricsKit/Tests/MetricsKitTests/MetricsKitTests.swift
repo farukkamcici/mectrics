@@ -12,7 +12,7 @@ final class MetricsKitTests: XCTestCase {
         }
         let hist = store.history(.cpu)
         XCTAssertEqual(hist.count, 3)
-        XCTAssertEqual(hist.map(\.value), [2, 3, 4]) // en yeni 3 örnek, sıralı
+        XCTAssertEqual(hist.map(\.value), [2, 3, 4]) // newest 3 samples, in order
         XCTAssertEqual(store.latest(.cpu)?.value, 4)
     }
 
@@ -24,7 +24,7 @@ final class MetricsKitTests: XCTestCase {
         XCTAssertEqual(store.history(.memory, count: 3).map(\.value), [7, 8, 9])
     }
 
-    // MARK: - Formatlama
+    // MARK: - Formatting
 
     func testPercentFormat() {
         XCTAssertEqual(MetricFormat.percent(0.5), "50%")
@@ -41,12 +41,12 @@ final class MetricsKitTests: XCTestCase {
         XCTAssertEqual(line.count, 3)
     }
 
-    // MARK: - Provider sağlık kontrolleri (gerçek donanım)
+    // MARK: - Provider sanity checks (real hardware)
 
     func testCPUProviderProducesValueAfterTwoSamples() {
         let cpu = CPUProvider()
-        _ = cpu.sample() // ilk örnek referans
-        // Kısa bir iş yükü oluştur.
+        _ = cpu.sample() // first sample is the reference
+        // Create a short workload.
         var acc = 0.0
         for i in 0..<200_000 { acc += Double(i).squareRoot() }
         _ = acc
@@ -72,7 +72,7 @@ final class MetricsKitTests: XCTestCase {
 
     func testNetworkProviderProducesNonNegativeRates() {
         let net = NetworkProvider()
-        _ = net.sample() // referans
+        _ = net.sample() // reference
         let second = net.sample()
         XCTAssertNotNil(second)
         if let s = second {

@@ -1,11 +1,11 @@
 import Foundation
 import Darwin
 
-/// Fiziksel bellek kullanımını Mach `host_statistics64` (VM istatistikleri) ile okur.
+/// Reads physical memory usage via Mach `host_statistics64` (VM statistics).
 ///
-/// `value` = kullanılan bellek oranı (0...1). Activity Monitor'ın "Bellek Kullanımı"na
-/// yakın bir yaklaşım: kullanılan ≈ (active + wired + compressed). Ayrıntı sözlüğünde
-/// tüm bileşenler bytes cinsinden verilir ki UI gerçek dökümü gösterebilsin.
+/// `value` = used-memory fraction (0...1). A close approximation to Activity Monitor's
+/// "Memory Used": used ≈ (active + wired + compressed). The detail dictionary carries all
+/// components in bytes so the UI can show the real breakdown.
 public final class MemoryProvider: MetricProvider, @unchecked Sendable {
     public let id: MetricID = .memory
     public let cost: SamplingCost = .light
@@ -44,7 +44,7 @@ public final class MemoryProvider: MetricProvider, @unchecked Sendable {
         let free       = Double(stats.free_count) * pageSize
         let purgeable  = Double(stats.purgeable_count) * pageSize
 
-        // Kullanılan bellek yaklaşımı (Activity Monitor'a yakın).
+        // Used-memory approximation (close to Activity Monitor).
         let used = active + wired + compressed
         let usage = totalMemory > 0 ? min(max(used / totalMemory, 0), 1) : 0
 

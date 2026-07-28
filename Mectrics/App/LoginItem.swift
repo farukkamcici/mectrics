@@ -1,7 +1,7 @@
 import Foundation
 import ServiceManagement
 
-/// macOS 13+ `SMAppService` ile "girişte başlat" yönetimi.
+/// "Launch at login" management via `SMAppService` (macOS 13+).
 enum LoginItem {
     static var isEnabled: Bool {
         SMAppService.mainApp.status == .enabled
@@ -19,7 +19,7 @@ enum LoginItem {
                 }
             }
         } catch {
-            NSLog("LoginItem hatası: \(error.localizedDescription)")
+            NSLog("LoginItem error: \(error.localizedDescription)")
         }
     }
 }

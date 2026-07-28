@@ -1,14 +1,15 @@
 import Foundation
 import Darwin
 
-/// Ağ verimini (throughput) `getifaddrs` ile arayüz sayaçlarından hesaplar.
+/// Computes network throughput from interface counters via `getifaddrs`.
 ///
-/// Kümülatif ibytes/obytes sayaçlarının ardışık iki örnek farkı / geçen süre = hız.
-/// Loopback (`lo*`) hariç tüm bağlantı katmanı (AF_LINK) arayüzleri toplanır.
-/// `value` = toplam (indirme + yükleme) bytes/s. Ayrıntı: down, up, downTotal, upTotal.
+/// The cumulative ibytes/obytes counters differenced between two consecutive samples,
+/// divided by elapsed time, give the rate. All link-layer (AF_LINK) interfaces except
+/// loopback (`lo*`) are summed. `value` = total (down + up) bytes/s.
+/// Detail: down, up, downTotal, upTotal.
 ///
-/// Not: `if_data` sayaçları 32-bit; ~4 GB'de sarar. 1–2 sn örneklemede pratikte sorun
-/// olmaz. İleride NET_RT_IFLIST2 (64-bit) ile güçlendirilebilir.
+/// Note: `if_data` counters are 32-bit and wrap at ~4 GB. At 1–2 s sampling this is not a
+/// practical problem. Can be hardened later with NET_RT_IFLIST2 (64-bit).
 public final class NetworkProvider: MetricProvider, @unchecked Sendable {
     public let id: MetricID = .network
     public let cost: SamplingCost = .medium
@@ -23,7 +24,7 @@ public final class NetworkProvider: MetricProvider, @unchecked Sendable {
         let (down, up) = readTotals()
         let now = Date()
 
-        // İlk örnek: referansı sakla, hız üretme.
+        // First sample: store reference, don't produce a rate.
         guard let last = prevTime else {
             prevDown = down; prevUp = up; prevTime = now
             return MetricSample(value: 0, unit: .bytesPerSecond,

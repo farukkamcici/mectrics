@@ -1,81 +1,90 @@
-# 03 — Yol Haritası & Geliştirme Planı
+# 03 — Roadmap & Development Plan
 
-> Sen macOS'a yenisin; bu yüzden plan "önce çalışan en küçük dikey dilim" mantığında.
-> Her fazın sonunda **çalışan, elle görülebilen** bir şey var.
+> You are new to macOS, so the plan follows a "smallest working vertical slice first"
+> approach. Each phase ends with something working you can actually see.
 
-## 0. Ön koşullar (senin / benim yapacaklarım)
-| # | İş | Kim |
-|---|----|-----|
-| 0.1 | Xcode kurulu (App Store) + Command Line Tools | Sen (bir kez) |
-| 0.2 | Apple Developer hesabı ($99/yıl) — notarization & dağıtım için gerekli | **Sen** (karar + ödeme) |
-| 0.3 | Proje iskeleti, MetricsKit paketi, ilk kod | Ben |
-| 0.4 | Bundle ID, App Group ID belirleme (ör. `com.mectrics.app`) | Beraber (ben öneririm) |
+## 0. Prerequisites
+| # | Task | Who |
+|---|------|-----|
+| 0.1 | Xcode installed (App Store) + Command Line Tools | You (once) |
+| 0.2 | Apple Developer account ($99/yr) — needed for notarization & distribution | **You** (owned ✅) |
+| 0.3 | Project scaffold, MetricsKit package, initial code | Me |
+| 0.4 | Bundle ID, App Group ID (e.g. `com.mectrics.app`) | Together (I propose) |
 
-> Not: Geliştirme ve yerel çalıştırma için Developer hesabı **gerekmez** (kendi Mac'inde
-> imzasız/geçici imzayla çalışır). Hesap yalnızca **dağıtım/notarization** aşamasında şart.
+> Note: a Developer account is **not** needed for development / local runs (it runs on your
+> own Mac unsigned / ad-hoc signed). It's only required at the **distribution/notarization**
+> stage.
 
 ---
 
-## Faz 1 — MVP (v0.1): "Menü çubuğunda canlı CPU/RAM/Pil"
-**Hedef:** Uygulama açılıyor, menü çubuğunda CPU %, RAM %, Pil % + sparkline; tıklayınca detay popover; ayarlardan modül aç/kapat; login'de başlat.
+## Phase 1 — MVP (v0.1): "Live CPU/Memory/Battery in the menu bar" ✅
+**Goal:** app launches, shows CPU %, Memory %, Battery % + sparkline in the menu bar; detail
+popover on click; toggle modules in settings; launch at login.
 
-- [ ] Xcode workspace + ana app target + `MetricsKit` SPM paketi.
-- [ ] `SamplingScheduler` + `MetricStore` (ring buffer).
-- [ ] Provider'lar: **CPU** (`host_processor_info`), **Memory** (`host_statistics64`), **Battery** (IOKit IOPS).
-- [ ] `MenuBarController` + custom `NSView` (sayı + sparkline çizimi).
-- [ ] Modül detay popover (SwiftUI).
-- [ ] Ayarlar penceresi (SwiftUI): modül aç/kapat, örnekleme frekansı.
-- [ ] `SMAppService` ile launch-at-login.
-- [ ] Adaptif örnekleme (AC/pil).
-- **Çıktı:** Kendi Mac'inde çalışan gerçek monitör. İlk "wow".
+- [x] Xcode workspace + main app target + `MetricsKit` SPM package.
+- [x] `SamplingScheduler` + `MetricStore` (ring buffer).
+- [x] Providers: **CPU** (`host_processor_info`), **Memory** (`host_statistics64`),
+      **Battery** (IOKit IOPS).
+- [x] `MenuBarController` + custom drawing (number + sparkline).
+- [x] Module detail popover (SwiftUI).
+- [x] Settings window (SwiftUI): toggle modules, sampling frequency.
+- [x] Launch-at-login via `SMAppService`.
+- [x] Adaptive sampling (AC/battery).
+- **Output:** a real monitor running on your Mac.
 
-## Faz 2 — Çekirdek genişleme (v0.5)
-**Hedef:** Free çekirdeğin tamamı + deneyim özellikleri.
-- [x] Provider'lar: **Network** (getifaddrs Δ), **Disk** (kapasite + IOKit throughput), **Bluetooth** (IORegistry pil). Menü çubuğu + popover entegrasyonu, testler. *(Clock sonraya)*
-- [ ] **Floating panel** (NSPanel canlı widget) — sürüklenebilir, always-on-top.
-- [ ] **Onboarding** (3 adım: profil / modül / izin).
-- [ ] **Temalar & accent**, compact/normal menü çubuğu modu.
-- [ ] **Bildirim eşikleri** (temel kurallar).
-- [ ] **Global hotkey** (panel aç/kapat).
-- **Çıktı:** Günlük kullanılabilir, "beta'ya hazır" ürün.
+## Phase 2 — Core expansion (v0.5)
+**Goal:** the full free core + experience features.
+- [x] Providers: **Network** (getifaddrs Δ), **Disk** (capacity + IOKit throughput),
+      **Bluetooth** (IORegistry battery). Menu bar + popover integration, tests. *(Clock later)*
+- [x] English-first + i18n architecture (String Catalog), CLAUDE.md/AGENTS.md conventions.
+- [x] Menu bar width stability (fixed reserved width, right-aligned text).
+- [ ] **Floating panel** (NSPanel live widget) — draggable, always-on-top.
+- [ ] **Onboarding** (3 steps: profile / modules / permissions).
+- [ ] **Themes & accent**, compact/normal menu bar mode.
+- [ ] **Notification thresholds** (basic rules).
+- [ ] **Global hotkey** (show/hide the panel).
+- **Output:** a daily-usable, "beta-ready" product.
 
-## Faz 3 — İleri modüller & dağıtım (v1.0)
-**Hedef:** Donanım modülleri, widget, açık kaynak yayını, DMG dağıtımı.
-- [ ] Provider'lar: **GPU**, **Sensörler/Sıcaklık (SMC)**, **Fanlar (SMC)** — Apple Silicon (+ mümkünse Intel) test.
+## Phase 3 — Advanced modules & distribution (v1.0)
+**Goal:** hardware modules, widget, open-source release, DMG distribution.
+- [ ] Providers: **GPU**, **Sensors/Temperature (SMC)**, **Fans (SMC)** — Apple Silicon
+      (+ Intel if possible) testing.
 - [ ] **WidgetKit extension** (small/medium/large, App Group snapshot).
-- [ ] Gelişmiş bildirimler, veri geçmişi/export.
-- [ ] **Hardened Runtime + notarization**, **Sparkle** oto-güncelleme, DMG paketleme.
-- [ ] GitHub repo (açık kaynak, LICENSE), README, landing/gizlilik metni, GitHub Releases.
-- **Çıktı:** Halka açık, açık kaynak v1.0.
+- [ ] Advanced notifications, data history/export.
+- [ ] **Hardened Runtime + notarization**, **Sparkle** auto-update, DMG packaging.
+- [ ] GitHub repo (open source, LICENSE), README, landing/privacy statement, GitHub Releases.
+- **Output:** a public, open-source v1.0.
 
-## Faz 4 — v1.x+ (sonra)
-- Per-process gelişmiş görünüm (mini Activity Monitor).
-- App Store sürümü (sensör-kısıtlı).
+## Phase 4 — v1.x+ (later)
+- Advanced per-process view (mini Activity Monitor).
+- App Store build (sensor-limited).
 - iOS/iPad companion + iCloud sync.
-- Yerelleştirme (çoklu dil).
+- Localization (multiple languages via the String Catalog).
 
 ---
 
-## Verilen kararlar ✅
-1. **Dağıtım:** **Direct / DMG** (Developer ID + notarization). Apple Developer hesabı mevcut. Tam sensör/GPU/fan erişimi (sandbox kısıtı yok).
-2. **Min macOS:** **15 Sequoia** (geliştirme makinesi macOS 27 / Xcode 26 / Swift 6.3, Apple Silicon).
-3. **Monetizasyon:** **Tamamen ücretsiz & açık kaynak.** Free/Pro ayrımı ve lisanslama kodu yok → mimari basitleşir.
+## Decisions made ✅
+1. **Distribution:** **Direct / DMG** (Developer ID + notarization). Apple Developer account
+   owned. Full sensor/GPU/fan access (no sandbox restriction).
+2. **Minimum macOS:** **15 Sequoia** (dev machine macOS 27 / Xcode 26 / Swift 6.3, Apple Silicon).
+3. **Monetization:** **fully free & open source.** No Free/Pro split, no licensing code →
+   simpler architecture.
 
-## Hâlâ netleşecek (küçük)
-- **Açık kaynak lisansı:** MIT (izin verici) vs GPLv3 (Stats gibi, türevleri açık tutar). → Öneri: başlangıçta **MIT** (esneklik), istenirse değişir.
-- **Bundle ID / marka:** `com.mectrics.app` (öneri). İsim "mectrics" kesin varsayılıyor.
-- **GitHub org/repo adı** ve Sponsors (opsiyonel) kurulumu — dağıtım fazında.
+## Still to finalize (small)
+- **Open-source license:** MIT (permissive) vs GPLv3 (like Stats, keeps derivatives open).
+  → Proposal: start with **MIT** (flexibility), change if desired.
+- **Bundle ID / brand:** `com.mectrics.app` (proposal). Name "mectrics" assumed final.
+- **GitHub org/repo** and Sponsors (optional) — at the distribution phase.
 
-## Riskler & azaltma
-| Risk | Azaltma |
-|------|---------|
-| SMC/GPU key'leri Apple Silicon'da farklı, kırılgan | Stats açık kaynağını referans al; donanım matrisinde test; sensörleri Pro/opsiyonel tut. |
-| App Store sandbox sensörleri engeller | Önce Direct dağıtım; App Store'u ayrı, kısıtlı SKU olarak sonra. |
-| Uygulamanın kendisi pil/CPU yer (iStat şikayeti) | Adaptif örnekleme + görünürlük-farkında redraw baştan mimaride. |
-| WidgetKit gerçek zamanlı değil beklentisi | Floating panel'i "canlı widget" olarak öne çıkar; WidgetKit'i "özet" olarak konumla. |
-| Notarization/imza yeni bir alan (sana) | Ben script'leyeceğim; sadece Developer hesabı + bir kez sertifika kurulumu senden. |
+## Risks & mitigations
+| Risk | Mitigation |
+|------|------------|
+| SMC/GPU keys differ and are fragile on Apple Silicon | Reference Stats' open source; test on a hardware matrix; keep sensors optional. |
+| App Store sandbox blocks sensors | Direct distribution first; App Store as a separate, limited SKU later. |
+| The app itself eats battery/CPU (the iStat complaint) | Adaptive sampling + visibility-aware redraw baked into the architecture. |
+| Expectation that WidgetKit is real-time | Feature the floating panel as the "live widget"; position WidgetKit as "at a glance". |
+| Notarization/signing is new to you | I'll script it; you only need the Developer account + a one-time certificate setup. |
 
-## Şimdi ne yapıyoruz?
-Faz 1'e başlıyorum: proje iskeleti + `MetricsKit` + ilk CPU provider. Yukarıdaki 5 kararı
-netleştirmek işi hızlandırır ama **beklemeden** makul varsayılanlarla (Direct dağıtım,
-macOS 14, tek-seferlik Pro, `com.mectrics.app`) MVP koduna başlayabilirim.
+## Where we are now
+Phase 1 done; Phase 2 providers (Network/Disk/Bluetooth) done, plus English/i18n and menu
+bar width stability. Next high-impact item: the **floating panel (live, draggable widget)**.

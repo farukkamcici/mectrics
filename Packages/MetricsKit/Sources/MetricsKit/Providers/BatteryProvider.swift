@@ -2,12 +2,12 @@ import Foundation
 import IOKit.ps
 import IOKit
 
-/// Pil durumunu IOKit Power Sources API'sinden okur; sağlık/cycle için IORegistry
-/// `AppleSmartBattery` girdisini sorgular.
+/// Reads battery state from the IOKit Power Sources API; queries the IORegistry
+/// `AppleSmartBattery` entry for health/cycle info.
 ///
-/// `value` = şarj oranı (0...1). Ayrıntı: charging (1/0), timeToEmpty/Full (dk),
+/// `value` = charge fraction (0...1). Detail: charging (1/0), timeToEmpty/Full (min),
 /// cycleCount, healthPercent, temperature (°C), amperage/voltage.
-/// Masaüstü Mac'lerde (pil yok) `isAvailable == false`.
+/// On desktop Macs (no battery) `isAvailable == false`.
 public final class BatteryProvider: MetricProvider, @unchecked Sendable {
     public let id: MetricID = .battery
     public let cost: SamplingCost = .medium
@@ -45,7 +45,7 @@ public final class BatteryProvider: MetricProvider, @unchecked Sendable {
             "maxCapacity": Double(maxCap)
         ]
 
-        // Sağlık / cycle / sıcaklık: AppleSmartBattery IORegistry girdisi.
+        // Health / cycle / temperature from the AppleSmartBattery IORegistry entry.
         if let smart = readSmartBattery() {
             detail.merge(smart) { _, new in new }
         }
@@ -73,7 +73,7 @@ public final class BatteryProvider: MetricProvider, @unchecked Sendable {
             out["healthPercent"] = Double(maxCap) / Double(designCap) * 100
         }
         if let temp = dict["Temperature"] as? Int {
-            // AppleSmartBattery sıcaklığı 1/100 °C.
+            // AppleSmartBattery temperature is in 1/100 °C.
             out["temperature"] = Double(temp) / 100
         }
         if let voltage = dict["Voltage"] as? Int { out["voltage"] = Double(voltage) / 1000 }

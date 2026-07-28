@@ -1,14 +1,16 @@
 import Foundation
 import IOKit
 
-/// Bağlı Bluetooth cihazlarının pil seviyelerini IORegistry'den okur (best-effort).
+/// Reads the battery levels of connected Bluetooth devices from the IORegistry
+/// (best-effort).
 ///
-/// Birçok cihaz (Magic Mouse/Keyboard, bazı kulaklıklar) IORegistry'de `BatteryPercent`
-/// özelliği yayınlar. `value` = en düşük cihaz pili (0...1) — "en kritik cihaz" göstergesi.
-/// Ayrıntı: deviceCount ve device0..N pil yüzdeleri.
+/// Many devices (Magic Mouse/Keyboard, some headphones) publish a `BatteryPercent`
+/// property in the IORegistry. `value` = lowest device battery (0...1) — a "most critical
+/// device" indicator. Detail: deviceCount and device0..N battery percentages.
 ///
-/// Not: Pil yayını cihaza göre değişkendir; hiç cihaz bulunmazsa modül kullanılamaz sayılır
-/// (menü çubuğunda görünmez). Cihaz adları ileride ayrı bir kanalla eklenecek.
+/// Note: battery reporting varies by device; if no device is found the module is treated
+/// as unavailable (hidden in the menu bar). Device names will be added later via a
+/// separate channel (the detail dictionary is Double-only).
 public final class BluetoothProvider: MetricProvider, @unchecked Sendable {
     public let id: MetricID = .bluetooth
     public let cost: SamplingCost = .medium
@@ -31,7 +33,8 @@ public final class BluetoothProvider: MetricProvider, @unchecked Sendable {
         return MetricSample(value: minPct / 100, unit: .fraction, detail: detail)
     }
 
-    /// IORegistry'yi özyinelemeli tarayıp `BatteryPercent` içeren girdilerin yüzdelerini toplar.
+    /// Recursively scans the IORegistry and collects the percentages of entries that
+    /// expose `BatteryPercent`.
     private func scanBatteryPercents() -> [Double] {
         var result: [Double] = []
         var iterator: io_iterator_t = 0

@@ -1,11 +1,11 @@
 import Foundation
 import IOKit
 
-/// Ana disk (`/`) doluluğunu ve okuma/yazma verimini raporlar.
+/// Reports the main disk (`/`) usage and read/write throughput.
 ///
-/// `value` = kullanılan alan oranı (0...1). Ayrıntı: total, free, used (bytes),
-/// readRate, writeRate (bytes/s). Kapasite `URL` resource değerlerinden; verim
-/// IOKit `IOBlockStorageDriver` istatistiklerinin delta'sından.
+/// `value` = used-space fraction (0...1). Detail: total, free, used (bytes),
+/// readRate, writeRate (bytes/s). Capacity comes from `URL` resource values; throughput
+/// from the delta of IOKit `IOBlockStorageDriver` statistics.
 public final class DiskProvider: MetricProvider, @unchecked Sendable {
     public let id: MetricID = .disk
     public let cost: SamplingCost = .medium
@@ -17,7 +17,7 @@ public final class DiskProvider: MetricProvider, @unchecked Sendable {
     public init() {}
 
     public func sample() -> MetricSample? {
-        // Kapasite
+        // Capacity
         let url = URL(fileURLWithPath: "/")
         var total: Double = 0
         var free: Double = 0
@@ -31,7 +31,7 @@ public final class DiskProvider: MetricProvider, @unchecked Sendable {
         let used = max(total - free, 0)
         let usage = total > 0 ? min(used / total, 1) : 0
 
-        // Verim (throughput)
+        // Throughput
         let (read, write) = readBlockStats()
         let now = Date()
         var readRate: Double = 0

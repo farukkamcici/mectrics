@@ -1,53 +1,60 @@
-# 00 — Pazar & Rakip Araştırması
+# 00 — Market & Competitor Research
 
-> Amaç: "Usage" tarzı Mac donanım-metrik uygulamalarını incelemek, kullanıcıların bu tür
-> apps'lerden beklediği özellikleri çıkarmak ve **mectrics** için farklılaşma alanlarını
-> belirlemek.
+> Goal: study "Usage"-style Mac hardware-metric apps, extract the features users expect
+> from this category, and identify differentiation opportunities for **mectrics**.
 
-## 1. İncelenen ürünler
+## 1. Products reviewed
 
-| Ürün | Model | Öne çıkanlar | Zayıf yönler |
-|------|-------|--------------|--------------|
-| **Usage** (usage.pro) | Paid + Setapp, macOS/iOS/iPadOS | 40+ menu bar bileşeni, "en CPU-dostu" iddiası, iCloud sync, gizlilik odaklı, güzel widget'lar, per-process CPU/RAM | Kapalı kaynak, sensör derinliği iStat kadar değil |
-| **Stats** (exelban, açık kaynak) | Ücretsiz, MIT, 25k+ ⭐ | CPU/GPU/RAM/Disk/Network/Sensors/Battery/Bluetooth/Clock, native SwiftUI, düşük kaynak, 40+ dil, çok özelleştirilebilir | UI biraz teknik/yoğun, onboarding zayıf, widget iletişimi varsayılan kapalı (sistem yükü) |
-| **iStat Menus** (Bjango) | ~$12–30 tek seferlik | En derin sensör/fan/voltage kapsamı, geçmiş veri, custom sensör, notification threshold, en olgun | **Sparkline yok**, klavye kısayolu yok, popover taşınamaz, dashboard özelleştirmesi kısıtlı, sürüm başı ücretli upgrade, bazı kullanıcılarda **pil tüketimi** şikayeti |
-| **MoniThor** | Ücretsiz | Live sparkline, 8 accent renk teması, sürüklenebilir kompakt panel, Apple Silicon-optimize native Swift | Yeni, ekosistem küçük |
-| **Stats Panel / Activity Bar / Air Stats** | Freemium | Hafiflik, "sadece CPU/RAM/Network isteyenlere" sade seçenek | Sığ özellik seti |
+| Product | Model | Highlights | Weaknesses |
+|---------|-------|------------|------------|
+| **Usage** (usage.pro) | Paid + Setapp, macOS/iOS/iPadOS | 40+ menu bar components, "most CPU-friendly" claim, iCloud sync, privacy-focused, nice widgets, per-process CPU/RAM | Closed source, sensor depth below iStat |
+| **Stats** (exelban, open source) | Free, MIT, 25k+ ⭐ | CPU/GPU/RAM/Disk/Network/Sensors/Battery/Bluetooth/Clock, native SwiftUI, low resource use, 40+ languages, highly customizable | UI a bit dense/technical, weak onboarding, widget comms off by default (system load) |
+| **iStat Menus** (Bjango) | ~$12–30 one-time | Deepest sensor/fan/voltage coverage, historical data, custom sensors, notification thresholds, most mature | **No sparklines**, no keyboard shortcuts, non-movable popover, limited dashboard customization, paid upgrades per major version, battery-drain complaints from some users |
+| **MoniThor** | Free | Live sparklines, 8 accent color themes, draggable compact panel, native Apple-Silicon-optimized Swift | New, small ecosystem |
+| **Stats Panel / Activity Bar / Air Stats** | Freemium | Lightness, a simple "just CPU/RAM/Network" option | Shallow feature set |
 
-## 2. Kullanıcıların en çok istediği özellikler (rakip + forum sentezi)
+## 2. Most-wanted features (competitor + forum synthesis)
 
-1. **Live sparkline / trend grafiği** — statik sayı değil, son ~60 örneğin mini grafiği (CPU, RAM, network...). iStat'ın en büyük eksiği olarak öne çıkıyor.
-2. **Klavye kısayolları** — tam ekran çalışırken fare olmadan paneli açabilme.
-3. **Sürüklenebilir / serbest konumlanan panel** — menü çubuğu ikonuna sabitlenmiş popover yerine taşınabilir pencere.
-4. **Düşük kaynak tüketimi** — native Swift 30–80 MB; Electron 200–400 MB. Monitörün kendisi pil/CPU yememeli. iStat'ın pil şikayetleri buradan.
-5. **Derin ama okunur metrikler** — per-core CPU, memory *pressure* (sadece kullanım değil), network up/down, battery health + cycle count, disk read/write throughput, sıcaklık/fan.
-6. **Bildirim eşikleri** — "CPU %90'ı 30 sn geçerse uyar", "pil %20 altına düştü", "disk doldu".
-7. **Gizlilik** — hiçbir veri toplanmaması net bir satış argümanı (Usage bunu vurguluyor).
-8. **Tema / accent renk** — görsel kişiselleştirme.
-9. **Sade varsayılan + derinlik opsiyonel** — yeni kullanıcı boğulmamalı, power-user derinliğe inebilmeli. Stats'ın onboarding zaafı buradan.
-10. **Per-process görünüm** — "neyim CPU/RAM yiyor?" hızlı cevabı (mini Activity Monitor).
+1. **Live sparkline / trend graphs** — not a static number but a mini graph of the last
+   ~60 samples (CPU, RAM, network...). iStat's biggest gap.
+2. **Keyboard shortcuts** — open the panel without the mouse while in full screen.
+3. **Draggable / free-floating panel** — instead of a popover anchored to the menu bar icon.
+4. **Low resource use** — native Swift 30–80 MB vs Electron 200–400 MB. The monitor itself
+   must not eat battery/CPU. This is the root of iStat's battery complaints.
+5. **Deep but readable metrics** — per-core CPU, memory *pressure* (not just usage),
+   network up/down, battery health + cycle count, disk read/write throughput, temps/fans.
+6. **Notification thresholds** — "alert if CPU > 90% for 30s", "battery below 20%",
+   "disk full".
+7. **Privacy** — collecting no data is a clear selling point (Usage emphasizes this).
+8. **Theme / accent color** — visual personalization.
+9. **Simple default + optional depth** — new users shouldn't drown; power users can dig in.
+   This is Stats' onboarding weakness.
+10. **Per-process view** — a quick "what's eating my CPU/RAM?" answer (mini Activity Monitor).
 
-## 3. Yaygın şikayetler (kaçınılacaklar)
+## 3. Common complaints (to avoid)
 
-- Menü çubuğu kalabalığı ve okunması zor mikro-grafikler.
-- Sürüm başı zorunlu ücretli upgrade (iStat modeli birçok kullanıcıyı Stats'a itiyor).
-- Uygulamanın kendisinin pil/CPU tüketmesi (özellikle uyku sırasında ölçmeye devam etmek).
-- Karmaşık, rehbersiz ilk kurulum.
-- WidgetKit widget'larının gerçek zamanlı olmaması (sistem timeline throttle'ı).
+- Cluttered menu bar and hard-to-read micro-graphs.
+- Mandatory paid upgrades per major version (the iStat model pushes many users to Stats).
+- The app itself consuming battery/CPU (especially continuing to measure during sleep).
+- Complex, unguided first-run setup.
+- WidgetKit widgets not being real-time (system timeline throttling).
 
-## 4. mectrics için farklılaşma tezi
+## 4. Differentiation thesis for mectrics
 
-> **"iStat'ın derinliği + Stats'ın açık ruhu + modern, sade, gerçekten hafif bir deneyim."**
+> **"iStat's depth + Stats' open spirit + a genuinely light, modern, simple experience."**
 
-Konumlanma sütunları:
-1. **Sparkline-first menü çubuğu** — her modül canlı mini grafik (iStat'ın #1 eksiğini kapat).
-2. **İki widget modu** — (a) WidgetKit masaüstü widget'ı (düşük frekans, sistem-native), (b) uygulamanın kendi **canlı floating panel**'i (gerçek zamanlı, sürüklenebilir, always-on-top). Kullanıcı ikisinden birini/ikisini seçer.
-3. **Radikal hafiflik** — native SwiftUI/AppKit, uyku/güç kaynağına göre uyarlanan örnekleme frekansı (pilde yavaşla), hedef < 60 MB RAM ve düşük CPU.
-4. **Onboarding + akıllı varsayılanlar** — ilk açılışta 3 adımda kurulum; "Basit" ve "Pro" profilleri.
-5. **Gizlilik garantisi** — sıfır telemetri, sandbox/hardened runtime, açık gizlilik metni.
-6. **Adil fiyatlandırma** — güçlü ücretsiz çekirdek + tek seferlik Pro lisansı (sürüm-başı zorlama yok).
+Positioning pillars:
+1. **Sparkline-first menu bar** — every module shows a live mini graph (close iStat's #1 gap).
+2. **Dual widget modes** — (a) a WidgetKit desktop widget (low frequency, system-native),
+   (b) the app's own live **floating panel** (real-time, draggable, always-on-top). The user
+   picks either or both.
+3. **Radical lightness** — native SwiftUI/AppKit, sampling frequency adapted to power/sleep
+   (slow down on battery), target < 60 MB RAM and low CPU.
+4. **Onboarding + smart defaults** — a 3-step first run; "Simple" and "Pro" profiles.
+5. **Privacy guarantee** — zero telemetry, sandbox/hardened runtime, clear privacy statement.
+6. **Fair model** — a strong free core; free & open source (no per-version paywall).
 
-## Kaynaklar
+## Sources
 - [Usage — usage.pro](https://usage.pro/)
 - [Stats — mac-stats.com](https://mac-stats.com/) / [GitHub exelban/stats](https://github.com/exelban/stats)
 - [iStat Menus — bjango.com](https://bjango.com/mac/istatmenus/)

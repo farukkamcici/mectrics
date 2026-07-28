@@ -1,7 +1,10 @@
 import Foundation
 import MetricsKit
 
-/// Modül başına menü çubuğu metnini ve sparkline gösterilip gösterilmeyeceğini üretir.
+/// Produces the per-module menu bar string and whether to show a sparkline.
+///
+/// Menu bar strings are numeric/symbolic (not natural language) so they are not
+/// localized; user-facing prose lives in the popover/settings via String Catalog.
 enum MenuBarText {
     static func showsSparkline(_ id: MetricID) -> Bool {
         switch id {

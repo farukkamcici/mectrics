@@ -1,11 +1,11 @@
 import Foundation
 
-/// Tek bir örnekleme anındaki metrik değeri.
+/// A metric value captured at a single sampling instant.
 ///
-/// - `value`: 0...1 aralığında normalize edilmiş temel değer (ör. CPU kullanımı 0.42).
-///   Yüzde göstermek için `* 100`. Hız/sıcaklık gibi normalize edilemeyen metriklerde
-///   `value` ham değeri taşır ve yorumu `unit` belirler.
-/// - `detail`: modüle özgü ayrıntılar (per-core, used/wired, up/down bytes, °C ...).
+/// - `value`: normalized base value in 0...1 (e.g. CPU usage 0.42). Multiply by 100 for
+///   a percentage. For metrics that cannot be normalized (rate/temperature), `value`
+///   carries the raw value and `unit` describes its interpretation.
+/// - `detail`: module-specific breakdown (per-core, used/wired, up/down bytes, °C ...).
 public struct MetricSample: Sendable, Codable, Equatable {
     public let timestamp: Date
     public let value: Double
@@ -24,9 +24,9 @@ public struct MetricSample: Sendable, Codable, Equatable {
         self.detail = detail
     }
 
-    /// Sparkline/istatistik için 0...1 aralığına oturtulmuş değer.
-    /// `.fraction` ise value; `.percent` ise value/100; diğerlerinde value olduğu gibi
-    /// döner (grafik kendi min/max'ını normalize eder).
+    /// Value mapped into 0...1 for sparklines/stats.
+    /// `.fraction` -> value; `.percent` -> value/100; otherwise value as-is
+    /// (the chart normalizes against its own min/max).
     public var normalized: Double {
         switch unit {
         case .fraction: return value
@@ -39,10 +39,10 @@ public struct MetricSample: Sendable, Codable, Equatable {
 public enum MetricUnit: String, Sendable, Codable {
     case fraction        // 0...1
     case percent         // 0...100
-    case bytesPerSecond  // ağ/disk hız
-    case bytes           // kapasite
-    case celsius         // sıcaklık
+    case bytesPerSecond  // network/disk rate
+    case bytes           // capacity
+    case celsius         // temperature
     case rpm             // fan
-    case watts           // güç
-    case count           // adet (cycle, cihaz sayısı)
+    case watts           // power
+    case count           // count (cycles, device count)
 }

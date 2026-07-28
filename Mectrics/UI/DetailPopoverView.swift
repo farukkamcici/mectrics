@@ -1,7 +1,7 @@
 import SwiftUI
 import MetricsKit
 
-/// Menü çubuğu öğesine tıklanınca açılan detay popover'ı.
+/// The detail popover shown when a menu bar item is clicked.
 struct DetailPopoverView: View {
     @Bindable var model: AppModel
     let moduleID: MetricID
@@ -24,7 +24,7 @@ struct DetailPopoverView: View {
 
     private var header: some View {
         HStack {
-            Text(moduleID.displayName)
+            Text(moduleID.localizedName)
                 .font(.headline)
             Spacer()
             Text(primaryValueString)
@@ -51,19 +51,19 @@ struct DetailPopoverView: View {
     private var footer: some View {
         HStack {
             SettingsLink {
-                Label("Ayarlar", systemImage: "gearshape")
+                Label("Settings", systemImage: "gearshape")
             }
             Spacer()
             Button(role: .destructive) {
                 NSApp.terminate(nil)
             } label: {
-                Label("Çıkış", systemImage: "power")
+                Label("Quit", systemImage: "power")
             }
         }
         .font(.callout)
     }
 
-    // MARK: - Değer biçimleme
+    // MARK: - Value formatting
 
     private var primaryValueString: String {
         guard let sample else { return "—" }
@@ -79,54 +79,71 @@ struct DetailPopoverView: View {
         }
     }
 
+    /// Row label/value pairs. Labels are localized; values are numeric/units.
     private var rows: [(String, String)] {
         guard let sample else { return [] }
         let d = sample.detail
         switch moduleID {
         case .cpu:
-            var r: [(String, String)] = [("Çekirdek sayısı", "\(Int(d["coreCount"] ?? 0))")]
+            var r: [(String, String)] = [
+                (String(localized: "cpu.cores", defaultValue: "Cores"), "\(Int(d["coreCount"] ?? 0))")
+            ]
             let cores = Int(d["coreCount"] ?? 0)
             let perCore = (0..<cores).compactMap { d["core\($0)"] }
             if let maxCore = perCore.max() {
-                r.append(("En yüklü çekirdek", MetricFormat.percent(maxCore, decimals: 0)))
+                r.append((String(localized: "cpu.busiestCore", defaultValue: "Busiest core"),
+                          MetricFormat.percent(maxCore, decimals: 0)))
             }
             return r
         case .memory:
             return [
-                ("Kullanılan", MetricFormat.bytes(d["used"] ?? 0)),
-                ("Toplam", MetricFormat.bytes(d["total"] ?? 0)),
-                ("Wired", MetricFormat.bytes(d["wired"] ?? 0)),
-                ("Sıkıştırılmış", MetricFormat.bytes(d["compressed"] ?? 0)),
-                ("Boş", MetricFormat.bytes(d["free"] ?? 0))
+                (String(localized: "mem.used", defaultValue: "Used"), MetricFormat.bytes(d["used"] ?? 0)),
+                (String(localized: "mem.total", defaultValue: "Total"), MetricFormat.bytes(d["total"] ?? 0)),
+                (String(localized: "mem.wired", defaultValue: "Wired"), MetricFormat.bytes(d["wired"] ?? 0)),
+                (String(localized: "mem.compressed", defaultValue: "Compressed"), MetricFormat.bytes(d["compressed"] ?? 0)),
+                (String(localized: "mem.free", defaultValue: "Free"), MetricFormat.bytes(d["free"] ?? 0))
             ]
         case .battery:
-            var r: [(String, String)] = []
-            r.append(("Durum", (d["charging"] ?? 0) > 0 ? "Şarj oluyor" : "Pilde"))
-            if let h = d["healthPercent"] { r.append(("Sağlık", "\(Int(h))%")) }
-            if let c = d["cycleCount"] { r.append(("Şarj döngüsü", "\(Int(c))")) }
-            if let t = d["temperature"] { r.append(("Sıcaklık", String(format: "%.1f°C", t))) }
+            let chargingLabel = (d["charging"] ?? 0) > 0
+                ? String(localized: "battery.charging", defaultValue: "Charging")
+                : String(localized: "battery.onBattery", defaultValue: "On battery")
+            var r: [(String, String)] = [
+                (String(localized: "battery.status", defaultValue: "Status"), chargingLabel)
+            ]
+            if let h = d["healthPercent"] {
+                r.append((String(localized: "battery.health", defaultValue: "Health"), "\(Int(h))%"))
+            }
+            if let c = d["cycleCount"] {
+                r.append((String(localized: "battery.cycles", defaultValue: "Charge cycles"), "\(Int(c))"))
+            }
+            if let t = d["temperature"] {
+                r.append((String(localized: "battery.temp", defaultValue: "Temperature"), String(format: "%.1f°C", t)))
+            }
             return r
         case .network:
             return [
-                ("İndirme", MetricFormat.bytesPerSecond(d["down"] ?? 0)),
-                ("Yükleme", MetricFormat.bytesPerSecond(d["up"] ?? 0)),
-                ("Toplam indirilen", MetricFormat.bytes(d["downTotal"] ?? 0)),
-                ("Toplam yüklenen", MetricFormat.bytes(d["upTotal"] ?? 0))
+                (String(localized: "net.down", defaultValue: "Download"), MetricFormat.bytesPerSecond(d["down"] ?? 0)),
+                (String(localized: "net.up", defaultValue: "Upload"), MetricFormat.bytesPerSecond(d["up"] ?? 0)),
+                (String(localized: "net.totalDown", defaultValue: "Total downloaded"), MetricFormat.bytes(d["downTotal"] ?? 0)),
+                (String(localized: "net.totalUp", defaultValue: "Total uploaded"), MetricFormat.bytes(d["upTotal"] ?? 0))
             ]
         case .disk:
             return [
-                ("Kullanılan", MetricFormat.bytes(d["used"] ?? 0)),
-                ("Boş", MetricFormat.bytes(d["free"] ?? 0)),
-                ("Toplam", MetricFormat.bytes(d["total"] ?? 0)),
-                ("Okuma", MetricFormat.bytesPerSecond(d["readRate"] ?? 0)),
-                ("Yazma", MetricFormat.bytesPerSecond(d["writeRate"] ?? 0))
+                (String(localized: "disk.used", defaultValue: "Used"), MetricFormat.bytes(d["used"] ?? 0)),
+                (String(localized: "disk.free", defaultValue: "Free"), MetricFormat.bytes(d["free"] ?? 0)),
+                (String(localized: "disk.total", defaultValue: "Total"), MetricFormat.bytes(d["total"] ?? 0)),
+                (String(localized: "disk.read", defaultValue: "Read"), MetricFormat.bytesPerSecond(d["readRate"] ?? 0)),
+                (String(localized: "disk.write", defaultValue: "Write"), MetricFormat.bytesPerSecond(d["writeRate"] ?? 0))
             ]
         case .bluetooth:
-            var r: [(String, String)] = [("Cihaz sayısı", "\(Int(d["deviceCount"] ?? 0))")]
+            var r: [(String, String)] = [
+                (String(localized: "bt.deviceCount", defaultValue: "Device count"), "\(Int(d["deviceCount"] ?? 0))")
+            ]
             let count = Int(d["deviceCount"] ?? 0)
             for i in 0..<count {
                 if let pct = d["device\(i)"] {
-                    r.append(("Cihaz \(i + 1)", "\(Int(pct))%"))
+                    let label = String(localized: "bt.device", defaultValue: "Device \(i + 1)")
+                    r.append((label, "\(Int(pct))%"))
                 }
             }
             return r

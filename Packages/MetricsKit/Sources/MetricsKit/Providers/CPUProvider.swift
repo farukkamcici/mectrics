@@ -1,11 +1,11 @@
 import Foundation
 import Darwin
 
-/// CPU kullanımını Mach `host_processor_info` ile per-core tick sayaçlarından hesaplar.
+/// Computes CPU usage from per-core tick counters via Mach `host_processor_info`.
 ///
-/// Yöntem: her çekirdek için user+system+nice+idle "tick" sayaçları kümülatiftir.
-/// İki ardışık örnek arasındaki delta'lardan busy oranı = (Δbusy) / (Δtotal).
-/// İlk örnek referans alınır; ikinci örnekten itibaren gerçek değer üretilir.
+/// Method: for each core the user+system+nice+idle "tick" counters are cumulative.
+/// The busy ratio between two consecutive samples = (Δbusy) / (Δtotal). The first sample
+/// is used as a reference; real values are produced from the second sample onward.
 public final class CPUProvider: MetricProvider, @unchecked Sendable {
     public let id: MetricID = .cpu
     public let cost: SamplingCost = .light
@@ -17,7 +17,7 @@ public final class CPUProvider: MetricProvider, @unchecked Sendable {
     public func sample() -> MetricSample? {
         guard let cores = readPerCoreTicks() else { return nil }
 
-        // İlk örnek: referansı sakla, henüz oran üretme (0 döndür).
+        // First sample: store the reference, don't produce a ratio yet (return 0).
         guard previousTicks.count == cores.count, !previousTicks.isEmpty else {
             previousTicks = cores
             return MetricSample(value: 0, unit: .fraction,
@@ -57,7 +57,7 @@ public final class CPUProvider: MetricProvider, @unchecked Sendable {
         return MetricSample(value: aggregate, unit: .fraction, detail: detail)
     }
 
-    /// Her çekirdek için [user, system, idle, nice] tick dizisini döndürür.
+    /// Returns a [user, system, idle, nice] tick array for each core.
     private func readPerCoreTicks() -> [[UInt32]]? {
         var cpuCount: natural_t = 0
         var info: processor_info_array_t?
@@ -72,7 +72,7 @@ public final class CPUProvider: MetricProvider, @unchecked Sendable {
         )
         guard result == KERN_SUCCESS, let info else { return nil }
 
-        // Bittiğinde çekirdek belleğini geri ver.
+        // Give the kernel memory back when done.
         defer {
             let size = vm_size_t(UInt(infoCount) * UInt(MemoryLayout<integer_t>.stride))
             vm_deallocate(mach_task_self_, vm_address_t(bitPattern: info), size)

@@ -1,10 +1,10 @@
 import SwiftUI
 
-/// Mectrics — menü çubuğu sistem monitörü.
+/// Mectrics — a menu bar system monitor.
 ///
-/// Uygulama bir "accessory" (menü çubuğu ajanı) olarak çalışır: Dock ikonu ve ana pencere
-/// yoktur. Menü çubuğu öğeleri `AppDelegate` içindeki `MenuBarController` tarafından
-/// yönetilir. Buradaki `Settings` sahnesi yalnızca ayarlar penceresini sağlar.
+/// The app runs as an "accessory" (menu bar agent): there is no Dock icon and no main
+/// window. Menu bar items are managed by `MenuBarController` inside `AppDelegate`. The
+/// `Settings` scene here only provides the settings window.
 @main
 struct MectricsApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate

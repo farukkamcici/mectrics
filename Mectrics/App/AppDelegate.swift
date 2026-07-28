@@ -1,24 +1,24 @@
 import AppKit
 import MetricsKit
 
-/// Uygulama yaşam döngüsü + menü çubuğu kurulumu.
+/// App lifecycle + menu bar setup.
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let model = AppModel()
     private var menuBar: MenuBarController!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Menü çubuğu ajanı: Dock ikonu yok.
+        // Menu bar agent: no Dock icon.
         NSApp.setActivationPolicy(.accessory)
 
         menuBar = MenuBarController(model: model)
         menuBar.rebuild()
 
-        // Modül seçimi değişince menü çubuğunu yeniden kur.
+        // Rebuild the menu bar when the module selection changes.
         model.onModulesChanged = { [weak self] in
             self?.menuBar.rebuild()
         }
 
-        // Her örnekleme döngüsünde (ana thread) modeli ve menü çubuğunu güncelle.
+        // Update the model and menu bar on every sampling cycle (main thread).
         model.engine.onCycle = { [weak self] updated in
             guard let self else { return }
             for (id, sample) in updated {
@@ -27,7 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self.menuBar.refresh()
         }
 
-        // Enerji dostu: pilde daha yavaş örnekle.
+        // Energy-friendly: sample more slowly on battery.
         let onBattery = Self.isOnBattery()
         model.engine.start(onBattery: onBattery)
     }
@@ -36,7 +36,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.engine.stop()
     }
 
-    /// Şu an pil gücünde miyiz? (İlk aralık kararı için basit kontrol.)
+    /// Are we currently on battery power? (Simple check for the initial interval.)
     private static func isOnBattery() -> Bool {
         guard let sample = BatteryProvider().sample() else { return false }
         return (sample.detail["charging"] ?? 0) == 0

@@ -1,12 +1,12 @@
 import Foundation
 
-/// Metrik toplama koordinatörü.
+/// Metric collection coordinator.
 ///
-/// - Kayıtlı provider'ları seri bir arka plan kuyruğunda periyodik örnekler.
-/// - Sonuçları `MetricStore`'a yazar (ring buffer / geçmiş).
-/// - Her döngü sonunda `onCycle` closure'ını **ana thread**'de çağırır → UI güncellemesi.
+/// - Periodically samples the registered providers on a serial background queue.
+/// - Writes results into the `MetricStore` (ring buffer / history).
+/// - Calls `onCycle` on the **main thread** after each cycle → UI update.
 ///
-/// UI'dan bağımsızdır (SwiftUI import etmez); CLI ve app aynı motoru kullanır.
+/// UI-agnostic (does not import SwiftUI); the CLI and the app share the same engine.
 public final class MetricsEngine: @unchecked Sendable {
     public let store: MetricStore
 
@@ -16,8 +16,8 @@ public final class MetricsEngine: @unchecked Sendable {
     private var policy: SamplingPolicy
     private var cycleCount = 0
 
-    /// Her örnekleme döngüsünden sonra ana thread'de çağrılır.
-    /// Parametre: bu döngüde güncellenen metriklerin son değerleri.
+    /// Called on the main thread after each sampling cycle.
+    /// Parameter: the latest values of the metrics updated this cycle.
     public var onCycle: (@Sendable ([MetricID: MetricSample]) -> Void)?
 
     public init(store: MetricStore = MetricStore(),
@@ -26,7 +26,7 @@ public final class MetricsEngine: @unchecked Sendable {
         self.policy = policy
     }
 
-    /// Mevcut (kullanılabilir) provider'ları kaydeder.
+    /// Registers the available providers (unavailable ones are dropped).
     public func register(_ providers: [MetricProvider]) {
         queue.async { [weak self] in
             guard let self else { return }
@@ -48,7 +48,7 @@ public final class MetricsEngine: @unchecked Sendable {
         }
     }
 
-    /// Güç durumu değişince aralığı yeniden ayarlar.
+    /// Re-tunes the interval when the power state changes.
     public func updatePowerState(onBattery: Bool) {
         queue.async { [weak self] in
             guard let self, self.timer != nil else { return }

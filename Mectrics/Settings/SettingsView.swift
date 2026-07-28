@@ -1,7 +1,7 @@
 import SwiftUI
 import MetricsKit
 
-/// Ayarlar penceresi — modül seçimi ve genel tercihler.
+/// Settings window — module selection and general preferences.
 struct SettingsView: View {
     @Bindable var model: AppModel
     @State private var launchAtLogin = LoginItem.isEnabled
@@ -9,21 +9,22 @@ struct SettingsView: View {
     var body: some View {
         TabView {
             generalTab
-                .tabItem { Label("Genel", systemImage: "gearshape") }
+                .tabItem { Label("General", systemImage: "gearshape") }
             modulesTab
-                .tabItem { Label("Modüller", systemImage: "square.grid.2x2") }
+                .tabItem { Label("Modules", systemImage: "square.grid.2x2") }
         }
         .frame(width: 420, height: 300)
     }
 
     private var generalTab: some View {
         Form {
-            Toggle("Girişte başlat", isOn: $launchAtLogin)
+            Toggle("Launch at login", isOn: $launchAtLogin)
                 .onChange(of: launchAtLogin) { _, newValue in
                     LoginItem.setEnabled(newValue)
                 }
-            LabeledContent("Sürüm", value: "0.1.0 (MVP)")
-            LabeledContent("Gizlilik", value: "Sıfır telemetri — hiçbir veri cihazdan çıkmaz")
+            LabeledContent("Version", value: "0.1.0 (MVP)")
+            LabeledContent("Privacy", value: String(localized: "settings.privacy.value",
+                defaultValue: "Zero telemetry — no data ever leaves your device"))
         }
         .formStyle(.grouped)
         .padding()
@@ -31,9 +32,9 @@ struct SettingsView: View {
 
     private var modulesTab: some View {
         Form {
-            Section("Menü çubuğunda göster") {
+            Section("Show in menu bar") {
                 ForEach(model.availableModules, id: \.self) { id in
-                    Toggle(id.displayName, isOn: Binding(
+                    Toggle(id.localizedName, isOn: Binding(
                         get: { model.enabledModules.contains(id) },
                         set: { model.setEnabled($0, for: id) }
                     ))
@@ -41,7 +42,7 @@ struct SettingsView: View {
             }
             if model.availableModules.count < MetricID.allCases.count {
                 Section {
-                    Text("Ağ, Disk, GPU, Sensör ve Fan modülleri sonraki sürümlerde eklenecek.")
+                    Text("GPU, Sensors and Fan modules will be added in future releases.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }

@@ -1,13 +1,14 @@
 import Foundation
 
-/// Güç durumuna göre örnekleme aralığını belirler.
-/// Hafiflik sözü: AC'de hızlı, pilde yavaş; ileride uyku/görünürlük ile duraklatma eklenir.
+/// Determines the sampling interval based on power state.
+/// Lightweight promise: faster on AC, slower on battery; sleep/visibility pausing
+/// will be added later.
 public struct SamplingPolicy: Sendable {
-    /// AC güç kaynağındayken temel aralık (sn).
+    /// Base interval while on AC power (seconds).
     public var onACInterval: TimeInterval
-    /// Pildeyken aralık (sn).
+    /// Interval while on battery (seconds).
     public var onBatteryInterval: TimeInterval
-    /// Ağır provider'lar (sensör/GPU) kaç temel döngüde bir örneklensin.
+    /// Heavy providers (sensors/GPU) are sampled once every N base cycles.
     public var heavyEveryNCycles: Int
 
     public init(

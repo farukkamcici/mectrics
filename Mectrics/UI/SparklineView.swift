@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// Basit SwiftUI sparkline — popover ve panellerde geçmişi çizer.
+/// Simple SwiftUI sparkline — draws history in popovers and panels.
 struct SparklineView: View {
-    let values: [Double]     // 0...1 normalize
+    let values: [Double]     // normalized 0...1
     var accent: Color = .accentColor
 
     var body: some View {

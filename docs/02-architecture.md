@@ -1,59 +1,61 @@
-# 02 — Teknik Mimari: mectrics
+# 02 — Technical Architecture: mectrics
 
-> Not: Sen web/mobil geliştirmeye hakimsin ama macOS'a yenisin. Bu doküman kararların
-> *neden*ini de açıklar; macOS'a özgü tuzakları işaretler.
+> Note: you are experienced with web/mobile but new to macOS. This doc explains the *why*
+> behind decisions and flags macOS-specific pitfalls.
 
-## 1. Teknoloji seçimleri (ve gerekçeleri)
+## 1. Technology choices (and rationale)
 
-| Katman | Seçim | Neden |
-|--------|-------|-------|
-| Dil | **Swift 5.9+** | Native, düşük kaynak; ekosistem standardı. |
-| UI | **SwiftUI + AppKit hibrit** | SwiftUI: settings/popover/paneller (hızlı, modern). AppKit (`NSStatusItem`): menü çubuğunda canlı sparkline çizmek için tam kontrol gerekiyor — saf SwiftUI `MenuBarExtra` custom çizimde kısıtlı. |
-| Menü çubuğu | **`NSStatusItem` + custom `NSView`** (AppKit), popover içi SwiftUI | Canlı metin+sparkline render, ⌘-drag ile sıralama, hassas genişlik kontrolü. |
-| Widget | **WidgetKit** extension + kendi **floating `NSPanel`** | WidgetKit = sistem-native ama throttled (dk mertebesi). Floating panel = gerçek zamanlı canlı widget. İkisi de sunulur. |
-| Metrik motoru | **Local Swift Package `MetricsKit`** | Test edilebilir, UI'dan bağımsız, widget extension ile paylaşılabilir. |
-| Paylaşım | **App Group + shared container** | Ana app ↔ widget extension veri paylaşımı. |
-| Reaktivite | **Combine / `@Observable`** | Sampler → store → ViewModel → UI akışı. |
-| Kalıcılık | **UserDefaults (App Group)** + küçük JSON snapshot | Ayarlar + widget için son snapshot. Ağır DB gereksiz. |
-| Güncelleme | **Sparkle** (direct dağıtımda) | Standart macOS otomatik güncelleme. |
-| Global hotkey | **`KeyboardShortcuts` (sindresorhus)** veya Carbon `RegisterEventHotKey` | Panel aç/kapat. |
+| Layer | Choice | Why |
+|-------|--------|-----|
+| Language | **Swift 5.9+** | Native, low resource use; ecosystem standard. |
+| UI | **SwiftUI + AppKit hybrid** | SwiftUI: settings/popover/panels (fast, modern). AppKit (`NSStatusItem`): needed to draw a live sparkline in the menu bar — pure SwiftUI `MenuBarExtra` is limited for custom drawing. |
+| Menu bar | **`NSStatusItem` + custom `NSView`**, SwiftUI inside the popover | Live text+sparkline render, ⌘-drag reordering, precise width control. |
+| Widget | **WidgetKit** extension + own **floating `NSPanel`** | WidgetKit = system-native but throttled (minutes). Floating panel = real-time live widget. Both are offered. |
+| Metric engine | **Local Swift Package `MetricsKit`** | Testable, UI-independent, shareable with the widget extension. |
+| Sharing | **App Group + shared container** | Main app ↔ widget extension data sharing. |
+| Reactivity | **Combine / `@Observable`** | sampler → store → view model → UI flow. |
+| Persistence | **UserDefaults (App Group)** + small JSON snapshot | Settings + last snapshot for the widget. No heavy DB needed. |
+| Updates | **Sparkle** (direct distribution) | Standard macOS auto-update. |
+| Global hotkey | **`KeyboardShortcuts` (sindresorhus)** or Carbon `RegisterEventHotKey` | Show/hide the panel. |
 | Login item | **`SMAppService`** (macOS 13+) | Modern launch-at-login API. |
-| Lisans | **Lemon Squeezy / Paddle** + lokal doğrulama | Solo-friendly, KDV/vergi hallediyor. |
 
-**Min hedef:** **macOS 15 Sequoia** (karar verildi). Geliştirme makinesi: macOS 27 / Xcode 26.6 / Swift 6.3 / Apple Silicon. Modern API'lar (`@Observable`, güncel WidgetKit) rahatça kullanılır.
+**Minimum target:** **macOS 15 Sequoia** (decided). Dev machine: macOS 27 / Xcode 26.6 /
+Swift 6.3 / Apple Silicon. Modern APIs (`@Observable`, current WidgetKit) are freely usable.
 
-**Not (açık kaynak / ücretsiz kararı):** Free/Pro ayrımı ve lisanslama kodu **yok**. `Licensing/` klasörü ve lisans doğrulama mimariden çıkarıldı; tüm modüller herkese açık.
+**Note (open-source / free decision):** there is **no** Free/Pro split and **no** licensing
+code. The `Licensing/` folder and license verification were removed from the architecture;
+all modules are available to everyone.
 
 ---
 
-## 2. Yüksek seviye mimari
+## 2. High-level architecture
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                     Mectrics.app (main)                       │
 │                                                              │
-│  AppDelegate ── MenuBarController (NSStatusItem'lar)          │
+│  AppDelegate ── MenuBarController (NSStatusItems)            │
 │       │              │                                        │
-│       │              ├── CPUStatusItem  (NSView: text+spark)  │
-│       │              ├── MemStatusItem                        │
+│       │              ├── CPU status item  (NSImage: text+spark)│
+│       │              ├── Memory status item                   │
 │       │              └── ...                                  │
 │       │                                                       │
-│       ├── PopoverManager (SwiftUI detay görünümleri)          │
-│       ├── FloatingPanelManager (NSPanel canlı widget'lar)     │
-│       ├── SettingsWindow (SwiftUI)                            │
-│       └── NotificationEngine (eşik kuralları)                 │
+│       ├── PopoverManager (SwiftUI detail views)              │
+│       ├── FloatingPanelManager (NSPanel live widgets)        │
+│       ├── SettingsWindow (SwiftUI)                           │
+│       └── NotificationEngine (threshold rules)               │
 │                          ▲                                     │
 │                          │ @Observable / Combine              │
 │  ┌───────────────────────┴──────────────────────────────┐    │
 │  │                MetricsKit (Swift Package)             │    │
 │  │                                                      │    │
-│  │  SamplingScheduler (adaptif timer)                   │    │
+│  │  SamplingScheduler (adaptive timer)                  │    │
 │  │      → fan-out →                                     │    │
 │  │  [MetricProvider]  CPU / Memory / Battery /          │    │
 │  │                    Network / Disk / GPU / Sensors /  │    │
 │  │                    Fans / Bluetooth                  │    │
-│  │      → yazar →                                       │    │
-│  │  MetricStore (per-metric ring buffer + son değer)    │    │
+│  │      → writes →                                      │    │
+│  │  MetricStore (per-metric ring buffer + latest)       │    │
 │  │      → snapshot →                                    │    │
 │  │  SharedSnapshotWriter (App Group container)          │    │
 │  └──────────────────────────────────────────────────────┘    │
@@ -68,115 +70,119 @@
 
 ---
 
-## 3. MetricsKit tasarımı (çekirdek)
+## 3. MetricsKit design (the core)
 
 ```swift
-// Bir örnek ölçüm
+// A single measurement
 struct MetricSample {
     let timestamp: Date
-    let value: Double          // normalize edilmiş temel değer (ör. CPU %)
-    let detail: [String: Double] // per-core, used/wired, up/down vb.
+    let value: Double          // normalized base value (e.g. CPU %)
+    let detail: [String: Double] // per-core, used/wired, up/down, etc.
 }
 
 protocol MetricProvider: AnyObject {
     var id: MetricID { get }          // .cpu, .memory, ...
-    var isAvailable: Bool { get }     // donanım/izin var mı
-    var cost: SamplingCost { get }    // light/medium/heavy → zamanlama
-    func sample() throws -> MetricSample
+    var isAvailable: Bool { get }     // hardware/permission present?
+    var cost: SamplingCost { get }    // light/medium/heavy → scheduling
+    func sample() -> MetricSample?
 }
 
 final class MetricStore {
-    // metric başına sabit boyutlu ring buffer (ör. 300 örnek = ~5 dk @1s)
+    // fixed-size ring buffer per metric (e.g. 300 samples ≈ 5 min @1s)
     func append(_ s: MetricSample, for id: MetricID)
     func latest(_ id: MetricID) -> MetricSample?
-    func history(_ id: MetricID, count: Int) -> [MetricSample]  // sparkline için
+    func history(_ id: MetricID, count: Int) -> [MetricSample]  // for sparklines
 }
 
 final class SamplingScheduler {
-    // Adaptif: AC'de 1s, pilde 2–3s, uykuda/ekran kapalıyken duraklat.
-    // Ağır provider'lar (sensör/SMC) daha seyrek örneklenir.
+    // Adaptive: 1s on AC, 2–3s on battery, pause on sleep/screen-off.
+    // Heavy providers (sensors/SMC) are sampled less often.
 }
 ```
 
-### Ölçüm kaynakları (macOS API haritası)
-| Metrik | API / kaynak | Not / tuzak |
-|--------|--------------|-------------|
-| CPU | `host_processor_info(PROCESSOR_CPU_LOAD_INFO)` / `host_statistics64` | Ardışık iki örnek farkı = kullanım. Per-core buradan. |
-| Bellek | `host_statistics64(vm_statistics64)` + `sysctl(hw.memsize)` | pressure için `vm.memory_pressure` / compressed sayfalar. |
-| Pil | **IOKit** `IOPSCopyPowerSourcesInfo`, `IOPSCopyPowerSourcesList`; health/cycle için `IORegistry AppleSmartBattery` | cycle count IORegistry'den. |
-| Ağ | `getifaddrs` + `if_data` (ibytes/obytes) veya `sysctl net.route` | Δbytes/Δt = hız. Per-process için `nettop`/`libnetstat` (Pro, daha zor). |
-| Disk (alan) | `statfs` / `URL.resourceValues(.volumeAvailableCapacity...)` | Basit. |
-| Disk (throughput) | **IOKit** `IOBlockStorageDriver` istatistikleri | Δ okuma/yazma bytes. |
-| GPU | **IOKit** `IOAccelerator`/`AGXAccelerator` "Device Utilization %"; VRAM `Metal`/IORegistry | Apple Silicon'da anahtarlar farklı; test gerektirir. |
-| Sensör/Sıcaklık | **SMC** (`AppleSMC`) key okuma; Apple Silicon'da `IOHIDEventSystemClient` thermal sensörleri | SMC key seti M-serisinde farklı. Stats kod tabanı iyi referans. |
-| Fan | **SMC** `F0Ac...` keyleri | Bazı Mac'lerde fan yok (fanless MacBook Air). |
-| Bluetooth | **IOBluetooth** / `IORegistry` cihaz pil `BatteryPercent` | AirPods vb. |
+### Measurement sources (macOS API map)
+| Metric | API / source | Note / pitfall |
+|--------|--------------|----------------|
+| CPU | `host_processor_info(PROCESSOR_CPU_LOAD_INFO)` / `host_statistics64` | Diff of two consecutive samples = usage. Per-core from here. |
+| Memory | `host_statistics64(vm_statistics64)` + `sysctl(hw.memsize)` | Pressure from `vm.memory_pressure` / compressed pages. |
+| Battery | **IOKit** `IOPSCopyPowerSourcesInfo`, `IOPSCopyPowerSourcesList`; health/cycle from `IORegistry AppleSmartBattery` | Cycle count from IORegistry. |
+| Network | `getifaddrs` + `if_data` (ibytes/obytes) or `sysctl net.route` | Δbytes/Δt = rate. Per-process via `nettop`/`libnetstat` (harder, later). |
+| Disk (space) | `statfs` / `URL.resourceValues(.volumeAvailableCapacity...)` | Simple. |
+| Disk (throughput) | **IOKit** `IOBlockStorageDriver` statistics | Δ read/write bytes. |
+| GPU | **IOKit** `IOAccelerator`/`AGXAccelerator` "Device Utilization %"; VRAM via `Metal`/IORegistry | Keys differ on Apple Silicon; needs testing. |
+| Sensors/Temperature | **SMC** (`AppleSMC`) key reads; on Apple Silicon `IOHIDEventSystemClient` thermal sensors | SMC key set differs on M-series. Stats' code is a good reference. |
+| Fans | **SMC** `F0Ac...` keys | Some Macs have no fans (fanless MacBook Air). |
+| Bluetooth | **IOBluetooth** / `IORegistry` device `BatteryPercent` | AirPods, etc. |
 
-> **Önemli:** Sensör/SMC/fan/GPU okuma App Store sandbox'ında kısıtlı olabilir. Bu yüzden
-> tam özellik için **Developer ID + notarization ile direct dağıtım** (Stats/iStat modeli)
-> öneriyoruz; App Store sürümü sensör-kısıtlı olabilir. Karar `03-roadmap.md`'de.
+> **Important:** reading sensors/SMC/fans/GPU may be restricted under the App Store sandbox.
+> That's why full functionality favors **direct distribution with Developer ID +
+> notarization** (the Stats/iStat model); an App Store build could be sensor-limited.
 
 ---
 
-## 4. Menü çubuğu render'ı (kritik detay)
+## 4. Menu bar rendering (a critical detail)
 
-- Modül başına bir `NSStatusItem` (kullanıcı hangi modülleri göstereceğini seçer).
-- Her item bir custom `NSView` barındırır: sol tarafta sayı/ikon, sağda opsiyonel sparkline (`CAShapeLayer` veya `draw(_:)`).
-- Redraw: `MetricStore` güncellendiğinde (Combine subscription), ~1–2 sn'de bir. Görünür değilken (menü bar gizli/tam ekran) redraw'ı kıs.
-- ⌘-drag ile yeniden sıralama macOS'un doğal davranışı — `NSStatusItem.autosaveName` ile konum korunur.
-- Genişlik: içeriğe göre dinamik; "compact/normal" moduna göre sparkline gizlenir.
+- One `NSStatusItem` per module (the user selects which modules to show).
+- Each item renders live text + optional sparkline into an `NSImage` assigned to the
+  button (avoids subview layout; pixel-precise; correct light/dark adaptation).
+- **Width stability:** each module reserves a fixed text width from a worst-case template
+  and right-aligns text inside it, so items never shift as values change digit counts.
+- Redraw on `MetricStore` updates (~1–2s); throttle when hidden/full-screen.
+- ⌘-drag reordering is native; `NSStatusItem.autosaveName` preserves position.
 
-## 5. Floating panel (canlı widget)
-- `NSPanel` (nonactivating, `.floating` veya `.statusBar` level), köşe yuvarlatılmış, saydam blur (`NSVisualEffectView`).
-- İçerik SwiftUI (`NSHostingView`), `MetricStore`'a bağlı — gerçek zamanlı.
-- Sürükle-bırak konum, ekranda snap, "always on top" toggle, boyut preset'leri.
-- Çoklu panel (Pro): her biri farklı modül.
+## 5. Floating panel (live widget)
+- `NSPanel` (nonactivating, `.floating` level), rounded corners, translucent blur
+  (`NSVisualEffectView`).
+- SwiftUI content (`NSHostingView`) bound to `MetricStore` — real-time.
+- Drag-to-position, screen snap, "always on top" toggle, size presets.
+- Multiple panels, each a different module.
 
 ## 6. WidgetKit extension
-- `TimelineProvider` App Group'tan son snapshot'ı okur (`SharedSnapshotReader`).
-- Ana app periyodik olarak `SharedSnapshotWriter` ile snapshot + kısa geçmiş yazar; `WidgetCenter.shared.reloadTimelines` ile tetikler.
-- **Kısıt:** sistem güncelleme sıklığını throttle eder (gerçek zamanlı değil, dk mertebesi). Kullanıcıya bu net anlatılır; gerçek zaman isteyen floating panel'i kullanır.
+- `TimelineProvider` reads the last snapshot from the App Group (`SharedSnapshotReader`).
+- The main app periodically writes a snapshot + short history (`SharedSnapshotWriter`) and
+  calls `WidgetCenter.shared.reloadTimelines`.
+- **Constraint:** the system throttles update frequency (not real-time). This is explained
+  to the user; the floating panel serves the real-time need, WidgetKit serves "at a glance".
 - Small/Medium/Large; Lock Screen/Notification Center.
 
-## 7. Güç & performans stratejisi (farklılaşma sözü)
-- **Adaptif örnekleme:** AC 1s / pil 2–3s / ekran kapalı-uyku duraklat.
-- Ağır provider'ları (SMC, GPU) seyrek örnekle; sadece ilgili UI görünürken hızlandır.
-- Görünmeyen UI'ı hesaplama dışı bırak (menü bar gizli, panel kapalı).
-- Zero-alloc hot path: ring buffer önceden ayrılmış; her örnekte heap allocation'dan kaçın.
-- Hedef: Activity Monitor'da "Energy Impact: Low", RAM < 60 MB.
+## 7. Power & performance strategy (the differentiation promise)
+- **Adaptive sampling:** AC 1s / battery 2–3s / screen-off-sleep pause.
+- Sample heavy providers (SMC, GPU) rarely; speed up only when the relevant UI is visible.
+- Skip computation for invisible UI (menu bar hidden, panel closed).
+- Zero-alloc hot path: the ring buffer is pre-allocated; avoid per-sample heap allocation.
+- Target: "Energy Impact: Low", RAM < 60 MB.
 
-## 8. Güvenlik / gizlilik / dağıtım
-- **Sıfır telemetri**, ağ çağrısı yalnızca (opsiyonel) güncelleme ve lisans doğrulama.
-- **Hardened Runtime** + **notarization** (direct dağıtım).
-- Sandbox: App Store sürümünde zorunlu → sensör modülleri kısıtlı olabilir; direct sürüm non-sandbox veya minimal entitlement.
-- Gerekli entitlement/izinler onboarding'de şeffaf istenir.
+## 8. Security / privacy / distribution
+- **Zero telemetry**; network calls only for (optional) updates.
+- **Hardened Runtime** + **notarization** (direct distribution).
+- Sandbox: required for App Store → sensor modules may be limited; the direct build is
+  non-sandboxed or minimally entitled.
+- Required entitlements/permissions are requested transparently in onboarding.
 
-## 9. Test stratejisi
-- `MetricsKit` unit test (provider'lar mock host verisiyle; hesaplama doğruluğu — Δbytes/Δt, CPU %).
-- Snapshot/golden test SwiftUI görünümleri.
-- Manuel matris: Intel + Apple Silicon (M-serisi), fansız Air, harici monitör, düşük pil.
-- Performans: uzun süreli çalışmada RAM/CPU regresyon takibi.
+## 9. Test strategy
+- `MetricsKit` unit tests (providers against mock host data; computation correctness —
+  Δbytes/Δt, CPU %).
+- Snapshot/golden tests for SwiftUI views.
+- Manual matrix: Intel + Apple Silicon (M-series), fanless Air, external monitor, low battery.
+- Performance: track RAM/CPU regression over long runs.
 
-## 10. Repo yapısı
+## 10. Repo structure
 ```
 mectrics/
-├── docs/                         # bu planlar
-├── Mectrics.xcodeproj            # (veya Tuist/XcodeGen ile üretilir)
-├── Mectrics/                     # ana app target
+├── docs/                         # these plans
+├── project.yml                   # XcodeGen source (Mectrics.xcodeproj is generated)
+├── Mectrics/                     # main app target
 │   ├── App/                      # AppDelegate, MectricsApp, Settings scene
-│   ├── MenuBar/                  # NSStatusItem controller + custom NSView'lar
-│   ├── Panels/                   # FloatingPanelManager, SwiftUI panel görünümleri
-│   ├── Popover/                  # modül detay görünümleri
-│   ├── Settings/                 # ayarlar UI
-│   ├── Notifications/            # NotificationEngine
-│   ├── Licensing/                # Pro lisans doğrulama
-│   └── Resources/                # Assets, Info.plist, entitlements
-├── MectricsWidget/               # WidgetKit extension target
+│   ├── MenuBar/                  # NSStatusItem controller + custom drawing
+│   ├── UI/                       # popover, sparkline, formatting, localization
+│   ├── Settings/                 # settings UI
+│   └── Resources/                # Localizable.xcstrings, assets
 ├── Packages/
-│   └── MetricsKit/               # SPM: providers, scheduler, store, shared IO
+│   └── MetricsKit/               # SPM: providers, scheduler, store, engine, CLI
 │       ├── Sources/MetricsKit/
+│       ├── Sources/MectricsCLI/
 │       └── Tests/MetricsKitTests/
-└── Tools/                        # scriptler (notarize, release)
+└── (future) MectricsWidget/      # WidgetKit extension target
 ```
-> Başlangıçta Xcode projesi doğrudan (yeni başlayan için en az sürtünme). Metrik mantığı
-> baştan `MetricsKit` paketinde → test edilebilir ve widget ile paylaşılabilir.
+> Start with the Xcode project directly (least friction for a macOS newcomer). Metric logic
+> lives in the `MetricsKit` package from the start → testable and shareable with the widget.
