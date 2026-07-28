@@ -36,13 +36,12 @@ final class MenuBarController {
         let accent = model.accentNSColor
         for (id, statusItem) in items {
             guard let sample = model.latest[id] else { continue }
-            let capable = MenuBarText.showsSparkline(id)
-            let style: ModuleDisplayStyle = capable ? model.displayStyle(for: id) : .value
+            let component = model.component(for: id)
             statusItem.update(
-                text: style == .graph ? "" : MenuBarText.string(for: id, sample: sample),
+                component: component,
+                visual: MenuBarText.visual(for: id, component: component, sample: sample),
                 samples: model.history(id),
-                accent: accent,
-                showSparkline: capable && style != .value
+                accent: accent
             )
         }
     }

@@ -61,13 +61,14 @@ final class AppModel {
         didSet { persistAlertRules() }
     }
 
-    /// Per-module menu bar content (value / graph / both) for sparkline-capable modules.
-    var moduleStyles: [MetricID: ModuleDisplayStyle] {
-        didSet { persistModuleStyles(); onAppearanceChanged?() }
+    /// Per-module menu bar component (which look the module's item uses).
+    var moduleComponents: [MetricID: MenuBarComponent] {
+        didSet { persistModuleComponents(); onAppearanceChanged?() }
     }
 
-    func displayStyle(for id: MetricID) -> ModuleDisplayStyle {
-        moduleStyles[id] ?? .both
+    func component(for id: MetricID) -> MenuBarComponent {
+        let chosen = moduleComponents[id] ?? .default(for: id)
+        return MenuBarComponent.available(for: id).contains(chosen) ? chosen : .default(for: id)
     }
 
     private let defaults = UserDefaults.standard
@@ -76,7 +77,8 @@ final class AppModel {
     private static let onboardingKey = "hasCompletedOnboarding"
     private static let accentKey = "accentChoice"
     private static let alertsKey = "alertRules"
-    private static let moduleStylesKey = "moduleStyles"
+    private static let moduleComponentsKey = "moduleComponents"
+    private static let legacyStylesKey = "moduleStyles"
 
     init() {
         let providers = MetricsKit.coreProviders()
@@ -94,7 +96,7 @@ final class AppModel {
         self.hasCompletedOnboarding = defaults.bool(forKey: Self.onboardingKey)
         self.accentChoice = AccentChoice(rawValue: defaults.string(forKey: Self.accentKey) ?? "") ?? .system
         self.alertRules = Self.loadAlertRules(from: defaults, available: available)
-        self.moduleStyles = Self.loadModuleStyles(from: defaults)
+        self.moduleComponents = Self.loadModuleComponents(from: defaults)
 
         // If nothing was persisted, enable all available modules.
         if let raw = defaults.array(forKey: Self.enabledKey) as? [String] {
@@ -174,20 +176,35 @@ final class AppModel {
         }
     }
 
-    private static func loadModuleStyles(from defaults: UserDefaults) -> [MetricID: ModuleDisplayStyle] {
-        guard let raw = defaults.dictionary(forKey: Self.moduleStylesKey) as? [String: String]
-        else { return [:] }
-        var styles: [MetricID: ModuleDisplayStyle] = [:]
-        for (key, value) in raw {
-            if let id = MetricID(rawValue: key), let style = ModuleDisplayStyle(rawValue: value) {
-                styles[id] = style
+    private static func loadModuleComponents(from defaults: UserDefaults) -> [MetricID: MenuBarComponent] {
+        if let raw = defaults.dictionary(forKey: Self.moduleComponentsKey) as? [String: String] {
+            var components: [MetricID: MenuBarComponent] = [:]
+            for (key, value) in raw {
+                if let id = MetricID(rawValue: key), let component = MenuBarComponent(rawValue: value) {
+                    components[id] = component
+                }
             }
+            return components
         }
-        return styles
+        // Migrate the short-lived value/graph/both style preference.
+        if let legacy = defaults.dictionary(forKey: Self.legacyStylesKey) as? [String: String] {
+            var components: [MetricID: MenuBarComponent] = [:]
+            for (key, value) in legacy {
+                guard let id = MetricID(rawValue: key) else { continue }
+                switch value {
+                case "value": components[id] = .value
+                case "graph": components[id] = .graph
+                case "both":  components[id] = .valueGraph
+                default: break
+                }
+            }
+            return components
+        }
+        return [:]
     }
 
-    private func persistModuleStyles() {
-        let raw = Dictionary(uniqueKeysWithValues: moduleStyles.map { ($0.key.rawValue, $0.value.rawValue) })
-        defaults.set(raw, forKey: Self.moduleStylesKey)
+    private func persistModuleComponents() {
+        let raw = Dictionary(uniqueKeysWithValues: moduleComponents.map { ($0.key.rawValue, $0.value.rawValue) })
+        defaults.set(raw, forKey: Self.moduleComponentsKey)
     }
 }

@@ -3,34 +3,29 @@ import MetricsKit
 
 /// Wraps a single `NSStatusItem` representing one module in the menu bar.
 ///
-/// The live text + sparkline are rendered into an `NSImage` assigned to the button
-/// (Stats uses a similar approach). This gives pixel-precise drawing and correct
-/// light/dark menu-bar adaptation without any subview layout work.
+/// The live content is rendered into an `NSImage` assigned to the button (Stats uses
+/// a similar approach). This gives pixel-precise drawing and correct light/dark
+/// menu-bar adaptation without any subview layout work.
 ///
-/// Width stability: each module reserves a FIXED text width derived from a worst-case
-/// template string, and the actual text is right-aligned inside that slot. This keeps
-/// the item's total width constant so items never shift as values change digits
-/// (e.g. "9%" -> "100%", or network rates growing/shrinking).
-///
-/// Compactness: the Network module renders as two stacked lines (down over up) in a
-/// small monospaced font, so it stays narrow instead of reserving room for a wide
-/// "↓999.9M ↑999.9M" single line.
+/// Width stability: text-bearing components reserve a FIXED text width derived from a
+/// common-worst-case template ("99%", not "100%"), and the actual text is
+/// right-aligned inside that slot. When a value does exceed the slot the item grows
+/// for those samples and shrinks back — rare jitter beats always-wasted width.
+/// Pictorial components (battery glyph, ring, core bars) have inherently fixed sizes.
 final class MetricStatusItem: NSObject {
     let id: MetricID
     let item: NSStatusItem
     var onClick: ((MetricID) -> Void)?
 
-    /// Font used for this module's live text (small for the two-line network item).
-    private let textFont: NSFont
-    /// Fixed width reserved for the text slot, measured once from a worst-case template.
-    private let reservedTextWidth: CGFloat
+    /// Component-dependent cache: font + reserved slot are re-measured only when the
+    /// user switches this module's component.
+    private var cachedComponent: MenuBarComponent?
+    private var textFont: NSFont = .monospacedDigitSystemFont(ofSize: 12, weight: .medium)
+    private var reservedTextWidth: CGFloat = 0
 
     init(id: MetricID) {
         self.id = id
         self.item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        self.textFont = Self.font(for: id)
-        let template = Self.template(for: id) as NSString
-        self.reservedTextWidth = ceil(template.size(withAttributes: [.font: textFont]).width)
         super.init()
         // Preserve position when the user ⌘-drags the item in the menu bar.
         item.autosaveName = "mectrics.\(id.rawValue)"
@@ -53,44 +48,26 @@ final class MetricStatusItem: NSObject {
     }
 
     /// Updates the live menu-bar indicator.
-    func update(text: String, samples: [Double], accent: NSColor, showSparkline: Bool) {
+    func update(component: MenuBarComponent, visual: MenuBarVisual,
+                samples: [Double], accent: NSColor) {
+        if component != cachedComponent {
+            cachedComponent = component
+            // The stacked network activity item uses a small two-line font.
+            textFont = component == .netActivity
+                ? .monospacedDigitSystemFont(ofSize: 8.5, weight: .semibold)
+                : .monospacedDigitSystemFont(ofSize: 12, weight: .medium)
+            let template = component.template(for: id)
+            reservedTextWidth = template.isEmpty ? 0
+                : ceil((template as NSString).size(withAttributes: [.font: textFont]).width)
+        }
         item.button?.image = Self.render(
-            text: text,
+            visual: visual,
             font: textFont,
-            samples: showSparkline ? samples : [],
+            samples: samples,
             accent: accent,
             reservedTextWidth: reservedTextWidth,
             appearance: item.button?.effectiveAppearance ?? NSApp.effectiveAppearance
         )
-    }
-
-    // MARK: - Layout templates
-
-    /// Common-worst-case string per module, used to reserve a stable text width. For
-    /// the two-line network item this is a single line (both lines are the same width).
-    ///
-    /// Deliberately sized for the *common* worst case ("99%", not "100%"): reserving
-    /// the rare 100% case permanently pads every item with dead space. When a value
-    /// does exceed the slot, the item grows for those samples and shrinks back
-    /// (`textSlot = max(reserved, content)`), which beats always-wasted width.
-    private static func template(for id: MetricID) -> String {
-        switch id {
-        case .network:   return "↓999M"
-        case .battery:   return "100%"   // batteries do sit at 100%; ⚡ grows the item while charging
-        case .bluetooth: return "BT99%"
-        case .sensors:   return "99°"
-        case .fans:      return "9.9K"
-        default:         return "99%"
-        }
-    }
-
-    /// Font per module: a small semibold font for the two-line network item, the
-    /// standard menu-bar size for everything else.
-    private static func font(for id: MetricID) -> NSFont {
-        switch id {
-        case .network: return .monospacedDigitSystemFont(ofSize: 8.5, weight: .semibold)
-        default:       return .monospacedDigitSystemFont(ofSize: 12, weight: .medium)
-        }
     }
 
     // MARK: - Drawing
@@ -99,56 +76,84 @@ final class MetricStatusItem: NSObject {
     private static let sparkWidth: CGFloat = 20
     private static let gap: CGFloat = 4
 
-    private static func render(text: String, font: NSFont, samples: [Double], accent: NSColor,
-                               reservedTextWidth: CGFloat,
+    private static func render(visual: MenuBarVisual, font: NSFont, samples: [Double],
+                               accent: NSColor, reservedTextWidth: CGFloat,
                                appearance: NSAppearance) -> NSImage {
         let attrs: [NSAttributedString.Key: Any] = [
             .font: font,
             .foregroundColor: NSColor.labelColor
         ]
 
-        let lines = text.components(separatedBy: "\n")
-        let isTwoLine = lines.count > 1
-        // Graph-only style: no text slot, just a slightly wider sparkline.
-        let graphOnly = text.isEmpty
-
-        // Measure the widest line so the slot never shrinks below real content.
-        let lineWidths = lines.map { ceil(($0 as NSString).size(withAttributes: attrs).width) }
-        let contentWidth = lineWidths.max() ?? 0
-        let textSlot = graphOnly ? 0 : max(reservedTextWidth, contentWidth)
-
-        let hasSpark = !samples.isEmpty && !isTwoLine
-        let sparkW = graphOnly ? sparkWidth + 8 : sparkWidth
-        let width = textSlot + (hasSpark ? (graphOnly ? sparkW : gap + sparkW) : 0)
+        // Resolve content width per visual.
+        let width: CGFloat
+        switch visual {
+        case .text(let text):
+            width = textSlot(text, reservedTextWidth, attrs)
+        case .textGraph(let text):
+            width = textSlot(text, reservedTextWidth, attrs) + gap + sparkWidth
+        case .graph:
+            width = sparkWidth + 8
+        case .coreBars(let values):
+            width = CGFloat(max(values.count, 2)) * 4
+        case .battery:
+            width = 25
+        case .ring:
+            width = 16
+        }
 
         let image = NSImage(size: NSSize(width: max(width, 8), height: height))
         image.lockFocus()
         appearance.performAsCurrentDrawingAppearance {
-            if isTwoLine {
-                // Two stacked lines, each right-aligned to the slot's right edge so the
-                // right side (and any following item) never moves as digits change.
-                drawRightAligned(lines[0], attrs: attrs, slot: textSlot, baselineY: height * 0.5)
-                drawRightAligned(lines[1], attrs: attrs, slot: textSlot, baselineY: 0)
-            } else {
-                if !graphOnly {
-                    let textSize = (text as NSString).size(withAttributes: attrs)
-                    let textY = (height - textSize.height) / 2
-                    drawRightAligned(text, attrs: attrs, slot: textSlot, baselineY: textY)
-                }
-
-                if hasSpark {
-                    drawSparkline(samples, in: NSRect(
-                        x: graphOnly ? 0 : textSlot + gap,
-                        y: 3,
-                        width: sparkW,
-                        height: height - 6
-                    ), accent: accent)
-                }
+            switch visual {
+            case .text(let text):
+                drawTextBlock(text, attrs: attrs, slot: textSlot(text, reservedTextWidth, attrs))
+            case .textGraph(let text):
+                let slot = textSlot(text, reservedTextWidth, attrs)
+                drawTextBlock(text, attrs: attrs, slot: slot)
+                drawSparkline(samples, in: NSRect(x: slot + gap, y: 3,
+                                                  width: sparkWidth, height: height - 6),
+                              accent: accent)
+            case .graph:
+                drawSparkline(samples, in: NSRect(x: 0, y: 3,
+                                                  width: sparkWidth + 8, height: height - 6),
+                              accent: accent)
+            case .coreBars(let values):
+                drawCoreBars(values, in: NSRect(x: 0, y: 3, width: width, height: height - 6),
+                             accent: accent)
+            case .battery(let level, let charging):
+                drawBattery(level: level, charging: charging,
+                            in: NSRect(x: 0, y: 0, width: width, height: height))
+            case .ring(let fraction):
+                drawRing(fraction, in: NSRect(x: 1, y: (height - 14) / 2, width: 14, height: 14),
+                         accent: accent)
             }
         }
         image.unlockFocus()
         image.isTemplate = false
         return image
+    }
+
+    /// Slot width for a text: the reserved template width, grown if the actual
+    /// content is wider (rare 100% moments).
+    private static func textSlot(_ text: String, _ reserved: CGFloat,
+                                 _ attrs: [NSAttributedString.Key: Any]) -> CGFloat {
+        let widest = text.components(separatedBy: "\n")
+            .map { ceil(($0 as NSString).size(withAttributes: attrs).width) }
+            .max() ?? 0
+        return max(reserved, widest)
+    }
+
+    /// Single- or two-line right-aligned text (two-line = stacked network rates).
+    private static func drawTextBlock(_ text: String, attrs: [NSAttributedString.Key: Any],
+                                      slot: CGFloat) {
+        let lines = text.components(separatedBy: "\n")
+        if lines.count > 1 {
+            drawRightAligned(lines[0], attrs: attrs, slot: slot, baselineY: height * 0.5)
+            drawRightAligned(lines[1], attrs: attrs, slot: slot, baselineY: 0)
+        } else {
+            let textSize = (text as NSString).size(withAttributes: attrs)
+            drawRightAligned(text, attrs: attrs, slot: slot, baselineY: (height - textSize.height) / 2)
+        }
     }
 
     /// Draws `text` right-aligned so its right edge sits at `slot`.
@@ -176,7 +181,7 @@ final class MetricStatusItem: NSObject {
         for i in 0..<values.count { fill.line(to: point(i)) }
         fill.line(to: NSPoint(x: rect.maxX, y: rect.minY))
         fill.close()
-        accent.withAlphaComponent(0.18).setFill()
+        accent.withAlphaComponent(0.2).setFill()
         fill.fill()
 
         // Line.
@@ -187,5 +192,78 @@ final class MetricStatusItem: NSObject {
         for i in 1..<values.count { line.line(to: point(i)) }
         accent.setStroke()
         line.stroke()
+    }
+
+    /// One 3pt-wide bar per CPU core over a faint full-height track.
+    private static func drawCoreBars(_ values: [Double], in rect: NSRect, accent: NSColor) {
+        guard !values.isEmpty else { return }
+        let barWidth: CGFloat = 3
+        for (i, value) in values.enumerated() {
+            let x = rect.minX + CGFloat(i) * 4
+            let track = NSRect(x: x, y: rect.minY, width: barWidth, height: rect.height)
+            NSColor.labelColor.withAlphaComponent(0.14).setFill()
+            NSBezierPath(roundedRect: track, xRadius: 1, yRadius: 1).fill()
+
+            let h = max(1.5, CGFloat(min(max(value, 0), 1)) * rect.height)
+            let bar = NSRect(x: x, y: rect.minY, width: barWidth, height: h)
+            accent.setFill()
+            NSBezierPath(roundedRect: bar, xRadius: 1, yRadius: 1).fill()
+        }
+    }
+
+    /// Classic battery glyph with a proportional fill and a bolt while charging.
+    private static func drawBattery(level: Double, charging: Bool, in rect: NSRect) {
+        let body = NSRect(x: rect.minX + 0.5, y: rect.midY - 5, width: rect.width - 4, height: 10)
+        let outline = NSBezierPath(roundedRect: body, xRadius: 2.5, yRadius: 2.5)
+        outline.lineWidth = 1
+        NSColor.labelColor.withAlphaComponent(0.55).setStroke()
+        outline.stroke()
+
+        // Terminal nub.
+        let nub = NSRect(x: body.maxX + 1, y: body.midY - 2, width: 2, height: 4)
+        NSColor.labelColor.withAlphaComponent(0.55).setFill()
+        NSBezierPath(roundedRect: nub, xRadius: 1, yRadius: 1).fill()
+
+        // Proportional fill; red when critically low.
+        let inset = body.insetBy(dx: 1.5, dy: 1.5)
+        let clamped = min(max(level, 0), 1)
+        let fillRect = NSRect(x: inset.minX, y: inset.minY,
+                              width: inset.width * CGFloat(clamped), height: inset.height)
+        (clamped <= 0.2 && !charging ? NSColor.systemRed : NSColor.labelColor.withAlphaComponent(0.85)).setFill()
+        NSBezierPath(roundedRect: fillRect, xRadius: 1.5, yRadius: 1.5).fill()
+
+        if charging {
+            let bolt = "⚡" as NSString
+            let attrs: [NSAttributedString.Key: Any] = [
+                .font: NSFont.systemFont(ofSize: 8, weight: .bold),
+                .foregroundColor: NSColor.labelColor
+            ]
+            let size = bolt.size(withAttributes: attrs)
+            bolt.draw(at: NSPoint(x: body.midX - size.width / 2, y: body.midY - size.height / 2),
+                      withAttributes: attrs)
+        }
+    }
+
+    /// Fraction donut (disk usage): faint full track + accent arc from 12 o'clock.
+    private static func drawRing(_ fraction: Double, in rect: NSRect, accent: NSColor) {
+        let center = NSPoint(x: rect.midX, y: rect.midY)
+        let radius = rect.width / 2 - 1.5
+
+        let track = NSBezierPath()
+        track.appendArc(withCenter: center, radius: radius, startAngle: 0, endAngle: 360)
+        track.lineWidth = 2.5
+        NSColor.labelColor.withAlphaComponent(0.18).setStroke()
+        track.stroke()
+
+        let clamped = min(max(fraction, 0), 1)
+        guard clamped > 0.01 else { return }
+        let arc = NSBezierPath()
+        // Start at 12 o'clock (90°) and sweep clockwise.
+        arc.appendArc(withCenter: center, radius: radius,
+                      startAngle: 90, endAngle: 90 - CGFloat(clamped) * 360, clockwise: true)
+        arc.lineWidth = 2.5
+        arc.lineCapStyle = .round
+        accent.setStroke()
+        arc.stroke()
     }
 }

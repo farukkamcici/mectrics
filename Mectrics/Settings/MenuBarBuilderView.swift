@@ -2,10 +2,10 @@ import SwiftUI
 import MetricsKit
 
 /// Visual menu bar builder (Usage-style): a live preview strip of the current menu
-/// bar on top, and a gallery of component tiles below. Tiles show the module's real
-/// live value/graph; click one (or drag it onto the strip) to add that module with
-/// that look, click the active tile again to remove the module. No toggles, no
-/// dropdowns.
+/// bar on top, and a gallery of component tiles below. Tiles render the module's real
+/// live data in the same visual language as the menu bar; click one (or drag it onto
+/// the strip) to add the module with that look or switch it. Removal lives on the
+/// strip's ⓧ only.
 struct MenuBarBuilderView: View {
     @Bindable var model: AppModel
 
@@ -27,9 +27,9 @@ struct MenuBarBuilderView: View {
                 .foregroundStyle(.secondary)
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 12) {
                     ForEach(model.availableModules, id: \.self) { id in
-                        moduleRow(id)
+                        moduleSection(id)
                     }
                 }
                 .padding(.vertical, 2)
@@ -67,7 +67,7 @@ struct MenuBarBuilderView: View {
 
     private func stripItem(_ id: MetricID) -> some View {
         HStack(spacing: 5) {
-            preview(id, effectiveStyle(id))
+            preview(id, model.component(for: id))
             Button {
                 model.setEnabled(false, for: id)
             } label: {
@@ -89,30 +89,25 @@ struct MenuBarBuilderView: View {
 
     // MARK: - Component gallery
 
-    private func moduleRow(_ id: MetricID) -> some View {
-        HStack(spacing: 8) {
+    private func moduleSection(_ id: MetricID) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
             Label(id.localizedName, systemImage: FloatingPanelView.symbol(for: id))
-                .font(.callout)
-                .frame(width: 96, alignment: .leading)
-            ForEach(styles(for: id)) { style in
-                tile(id, style)
+                .font(.callout.weight(.medium))
+            HStack(spacing: 8) {
+                ForEach(MenuBarComponent.available(for: id)) { component in
+                    tile(id, component)
+                }
+                Spacer(minLength: 0)
             }
-            Spacer(minLength: 0)
         }
     }
 
-    /// Looks offered per module: sparkline-capable ones get all three, the rest
-    /// just their value form.
-    private func styles(for id: MetricID) -> [ModuleDisplayStyle] {
-        MenuBarText.showsSparkline(id) ? ModuleDisplayStyle.allCases : [.value]
-    }
-
-    private func tile(_ id: MetricID, _ style: ModuleDisplayStyle) -> some View {
-        let isActive = model.enabledModules.contains(id) && effectiveStyle(id) == style
+    private func tile(_ id: MetricID, _ component: MenuBarComponent) -> some View {
+        let isActive = model.enabledModules.contains(id) && model.component(for: id) == component
         return VStack(spacing: 3) {
-            preview(id, style)
+            preview(id, component)
                 .frame(height: 20)
-            Text(style.localizedName)
+            Text(component.localizedName)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
@@ -130,39 +125,88 @@ struct MenuBarBuilderView: View {
             // Tap only ever adds or switches the look — removal lives on the strip's ⓧ,
             // so exploring tiles can never silently drop items from the menu bar.
             guard !isActive else { return }
-            model.moduleStyles[id] = style
+            model.moduleComponents[id] = component
             model.setEnabled(true, for: id)
         }
-        .draggable("\(id.rawValue)|\(style.rawValue)")
+        .draggable("\(id.rawValue)|\(component.rawValue)")
         .help(isActive
               ? String(localized: "builder.tile.active", defaultValue: "In the menu bar")
               : String(localized: "builder.tile.add", defaultValue: "Click to add"))
     }
 
-    // MARK: - Live previews
+    // MARK: - Live previews (SwiftUI mirror of the menu bar renderer)
 
-    /// Miniature of how the item looks in the menu bar, driven by live data.
     @ViewBuilder
-    private func preview(_ id: MetricID, _ style: ModuleDisplayStyle) -> some View {
-        HStack(spacing: 4) {
-            if style != .graph {
-                Text(previewText(id))
-                    .font(.system(size: 11, weight: .medium))
-                    .monospacedDigit()
-                    .lineLimit(1)
-            }
-            if style != .value && MenuBarText.showsSparkline(id) {
+    private func preview(_ id: MetricID, _ component: MenuBarComponent) -> some View {
+        switch component {
+        case .graph:
+            SparklineView(values: previewSamples(id), accent: model.accentColor)
+                .frame(width: 28, height: 14)
+        case .valueGraph:
+            HStack(spacing: 4) {
+                previewLabel(id, component)
                 SparklineView(values: previewSamples(id), accent: model.accentColor)
                     .frame(width: 26, height: 13)
             }
+        case .coreBars:
+            CoreBarsView(values: coreValues(id), accent: model.accentColor)
+                .frame(width: 36, height: 14)
+        case .ring:
+            ringPreview(fraction: model.latest[id]?.value ?? 0)
+        case .batteryIcon:
+            Image(systemName: batterySymbol(id))
+                .font(.system(size: 13))
+        default:
+            previewLabel(id, component)
         }
     }
 
-    private func previewText(_ id: MetricID) -> String {
+    private func previewLabel(_ id: MetricID, _ component: MenuBarComponent) -> some View {
+        Text(previewText(id, component))
+            .font(.system(size: 11, weight: .medium))
+            .monospacedDigit()
+            .lineLimit(1)
+    }
+
+    private func previewText(_ id: MetricID, _ component: MenuBarComponent) -> String {
         guard let sample = model.latest[id] else { return "—" }
-        // The network item is two stacked lines in the menu bar; flatten for preview.
+        if case .text(let text) = MenuBarText.visual(for: id, component: component, sample: sample) {
+            return text.replacingOccurrences(of: "\n", with: " ")
+        }
         return MenuBarText.string(for: id, sample: sample)
             .replacingOccurrences(of: "\n", with: " ")
+    }
+
+    private func ringPreview(fraction: Double) -> some View {
+        ZStack {
+            Circle().stroke(.secondary.opacity(0.25), lineWidth: 2.5)
+            Circle()
+                .trim(from: 0, to: min(max(fraction, 0), 1))
+                .stroke(model.accentColor, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+        }
+        .frame(width: 14, height: 14)
+    }
+
+    private func batterySymbol(_ id: MetricID) -> String {
+        let sample = model.latest[id]
+        let charging = (sample?.detail["charging"] ?? 0) > 0
+        if charging { return "battery.100percent.bolt" }
+        let level = sample?.value ?? 1
+        switch level {
+        case ..<0.125:  return "battery.0percent"
+        case ..<0.375:  return "battery.25percent"
+        case ..<0.625:  return "battery.50percent"
+        case ..<0.875:  return "battery.75percent"
+        default:        return "battery.100percent"
+        }
+    }
+
+    private func coreValues(_ id: MetricID) -> [Double] {
+        guard let d = model.latest[id]?.detail else { return [0.3, 0.6, 0.4, 0.7] }
+        let cores = Int(d["coreCount"] ?? 0)
+        let values = (0..<cores).compactMap { d["core\($0)"] }
+        return values.isEmpty ? [0.3, 0.6, 0.4, 0.7] : values
     }
 
     private func previewSamples(_ id: MetricID) -> [Double] {
@@ -173,19 +217,16 @@ struct MenuBarBuilderView: View {
 
     // MARK: - Helpers
 
-    private func effectiveStyle(_ id: MetricID) -> ModuleDisplayStyle {
-        MenuBarText.showsSparkline(id) ? model.displayStyle(for: id) : .value
-    }
-
-    /// Handles a "module|style" drag payload dropped on the strip.
+    /// Handles a "module|component" drag payload dropped on the strip.
     private func apply(_ payload: String) -> Bool {
         let parts = payload.split(separator: "|").map(String.init)
         guard parts.count == 2,
               let id = MetricID(rawValue: parts[0]),
-              let style = ModuleDisplayStyle(rawValue: parts[1]),
-              model.availableModules.contains(id)
+              let component = MenuBarComponent(rawValue: parts[1]),
+              model.availableModules.contains(id),
+              MenuBarComponent.available(for: id).contains(component)
         else { return false }
-        model.moduleStyles[id] = style
+        model.moduleComponents[id] = component
         model.setEnabled(true, for: id)
         return true
     }
