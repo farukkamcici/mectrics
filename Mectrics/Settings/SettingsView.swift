@@ -68,7 +68,7 @@ struct SettingsView: View {
             }
             if model.availableModules.count < MetricID.allCases.count {
                 Section {
-                    Text("GPU, Sensors and Fan modules will be added in future releases.")
+                    Text("Sensors and Fan modules will be added in future releases.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }

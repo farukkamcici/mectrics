@@ -81,7 +81,7 @@ struct DetailPopoverView: View {
     private var primaryValueString: String {
         guard let sample else { return "—" }
         switch moduleID {
-        case .cpu, .memory, .disk:
+        case .cpu, .memory, .disk, .gpu:
             return MetricFormat.percent(sample.value, decimals: 1)
         case .battery, .bluetooth:
             return "\(Int((sample.value * 100).rounded()))%"
@@ -148,6 +148,15 @@ struct DetailPopoverView: View {
                 (String(localized: "disk.read", defaultValue: "Read"), MetricFormat.bytesPerSecond(d["readRate"] ?? 0)),
                 (String(localized: "disk.write", defaultValue: "Write"), MetricFormat.bytesPerSecond(d["writeRate"] ?? 0))
             ]
+        case .gpu:
+            var r: [(String, String)] = [
+                (String(localized: "gpu.count", defaultValue: "GPUs"), "\(Int(d["gpuCount"] ?? 1))")
+            ]
+            if let mem = d["inUseMemory"], mem > 0 {
+                r.append((String(localized: "gpu.memory", defaultValue: "In-use memory"),
+                          MetricFormat.bytes(mem)))
+            }
+            return r
         case .bluetooth:
             var r: [(String, String)] = [
                 (String(localized: "bt.deviceCount", defaultValue: "Device count"), "\(Int(d["deviceCount"] ?? 0))")

@@ -97,6 +97,20 @@ final class MetricsKitTests: XCTestCase {
         XCTAssertEqual(MetricFormat.compactRate(2048), "2.0K")
     }
 
+    func testGPUProviderSampleIsNormalized() {
+        // Hardware-dependent: only assert when an accelerator publishes statistics
+        // (true on every Apple Silicon Mac; may be false in a VM/CI box).
+        let provider = GPUProvider()
+        guard provider.isAvailable else { return }
+        let sample = provider.sample()
+        XCTAssertNotNil(sample)
+        if let sample {
+            XCTAssertGreaterThanOrEqual(sample.value, 0)
+            XCTAssertLessThanOrEqual(sample.value, 1)
+            XCTAssertGreaterThanOrEqual(Int(sample.detail["gpuCount"] ?? 0), 1)
+        }
+    }
+
     func testMenuRateIsCompactAndBounded() {
         // Sub-KB/s collapses to "0".
         XCTAssertEqual(MetricFormat.menuRate(0), "0")

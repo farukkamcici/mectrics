@@ -8,7 +8,7 @@ import MetricsKit
 enum MenuBarText {
     static func showsSparkline(_ id: MetricID) -> Bool {
         switch id {
-        case .cpu, .memory: return true
+        case .cpu, .memory, .gpu: return true
         default: return false
         }
     }

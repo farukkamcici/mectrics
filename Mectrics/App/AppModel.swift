@@ -138,7 +138,7 @@ final class AppModel {
         var rules: [MetricID: AlertRule] = [:]
         for id in available {
             switch id {
-            case .cpu, .memory, .disk:
+            case .cpu, .memory, .disk, .gpu:
                 rules[id] = AlertRule(enabled: false, thresholdPercent: 90)
             case .battery:
                 rules[id] = AlertRule(enabled: false, thresholdPercent: 20)

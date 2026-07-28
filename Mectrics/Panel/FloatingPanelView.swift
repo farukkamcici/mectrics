@@ -64,7 +64,7 @@ struct FloatingPanelView: View {
     /// Rate-like modules get a sparkline; capacity-like values stay text-only.
     private static func showsSparkline(_ id: MetricID) -> Bool {
         switch id {
-        case .cpu, .memory, .network: return true
+        case .cpu, .memory, .network, .gpu: return true
         default: return false
         }
     }

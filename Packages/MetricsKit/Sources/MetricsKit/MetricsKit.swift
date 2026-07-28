@@ -2,17 +2,18 @@ import Foundation
 
 /// Public convenience surface of the package.
 public enum MetricsKit {
-    /// All implemented providers. Advanced modules (gpu/sensors/fans) come in later
+    /// All implemented providers. Advanced modules (sensors/fans) come in later
     /// phases. Unavailable modules (e.g. no battery on a desktop, no BT device) are
     /// filtered out by the engine at registration time.
     public static func coreProviders() -> [MetricProvider] {
         [
-            CPUProvider(),      // Phase 1
-            MemoryProvider(),   // Phase 1
-            BatteryProvider(),  // Phase 1
-            NetworkProvider(),  // Phase 2
-            DiskProvider(),     // Phase 2
-            BluetoothProvider() // Phase 2
+            CPUProvider(),       // Phase 1
+            MemoryProvider(),    // Phase 1
+            BatteryProvider(),   // Phase 1
+            NetworkProvider(),   // Phase 2
+            DiskProvider(),      // Phase 2
+            BluetoothProvider(), // Phase 2
+            GPUProvider()        // Phase 3
         ]
     }
 
