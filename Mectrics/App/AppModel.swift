@@ -60,6 +60,11 @@ final class AppModel {
         didSet { defaults.set(hasCompletedOnboarding, forKey: Self.onboardingKey) }
     }
 
+    /// Floating panel shape (horizontal strip / vertical card).
+    var panelLayout: PanelLayout {
+        didSet { defaults.set(panelLayout.rawValue, forKey: Self.panelLayoutKey) }
+    }
+
     /// Embed a small module icon at the leading edge of every menu bar item, so it's
     /// clear which value belongs to which hardware. Off = values only.
     var showMenuBarIcons: Bool {
@@ -102,6 +107,7 @@ final class AppModel {
     private static let onboardingKey = "hasCompletedOnboarding"
     private static let accentKey = "accentChoice"
     private static let menuBarIconsKey = "showMenuBarIcons"
+    private static let panelLayoutKey = "panelLayout"
     private static let alertsKey = "alertRules"
     private static let moduleComponentsKey = "moduleComponents"
     private static let legacyStylesKey = "moduleStyles"
@@ -123,6 +129,7 @@ final class AppModel {
         self.accentChoice = AccentChoice(rawValue: defaults.string(forKey: Self.accentKey) ?? "") ?? .system
         // Icons default to on; only an explicit user choice turns them off.
         self.showMenuBarIcons = defaults.object(forKey: Self.menuBarIconsKey) as? Bool ?? true
+        self.panelLayout = PanelLayout(rawValue: defaults.string(forKey: Self.panelLayoutKey) ?? "") ?? .vertical
         self.alertRules = Self.loadAlertRules(from: defaults, available: available)
         self.enabledComponents = Self.loadEnabledComponents(
             from: defaults, available: available.filter { $0 != .sensors })

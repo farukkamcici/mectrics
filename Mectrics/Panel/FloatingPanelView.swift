@@ -1,73 +1,85 @@
 import SwiftUI
 import MetricsKit
 
-/// Content of the floating panel: one compact chip per enabled module (icon + live
-/// value + mini sparkline where it makes sense), flowing into as many columns as the
-/// window width allows. Stretched wide the panel becomes a single thin strip; narrow,
-/// the chips wrap into rows. The window itself is user-resizable from any edge.
+/// Content of the floating panel in one of two fixed layouts (Settings > General):
+/// - horizontal: a single-row strip — icon + value (+ mini sparkline) per module,
+///   ideal parked along the top of the screen;
+/// - vertical: a card with one module per row — icon + name + sparkline + value.
+/// The panel window sizes itself to this content; there is no manual resizing.
 struct FloatingPanelView: View {
     @Bindable var model: AppModel
-    /// Reports the content's natural height so the window can follow it as chips wrap.
-    var onHeightChange: (CGFloat) -> Void = { _ in }
-
-    private let columns = [
-        GridItem(.adaptive(minimum: 108, maximum: 220), spacing: 6, alignment: .leading)
-    ]
 
     var body: some View {
-        VStack(spacing: 0) {
-            LazyVGrid(columns: columns, alignment: .leading, spacing: 6) {
-                ForEach(model.orderedEnabledModules, id: \.self) { id in
-                    chip(id)
-                }
+        Group {
+            switch model.panelLayout {
+            case .horizontal: horizontalStrip
+            case .vertical:   verticalCard
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .background(
-                GeometryReader { geo in
-                    Color.clear.preference(key: PanelHeightKey.self, value: geo.size.height)
-                }
-            )
-            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .strokeBorder(.primary.opacity(0.08))
         )
-        // Resize affordance: a horizontal-arrows cursor on the left/right edges.
-        .overlay(alignment: .leading) { resizeHoverZone }
-        .overlay(alignment: .trailing) { resizeHoverZone }
-        .onPreferenceChange(PanelHeightKey.self) { onHeightChange($0) }
     }
 
-    private var resizeHoverZone: some View {
-        Color.clear
-            .frame(width: 7)
-            .frame(maxHeight: .infinity)
-            .contentShape(Rectangle())
-            .onHover { inside in
-                if inside { NSCursor.resizeLeftRight.push() } else { NSCursor.pop() }
-            }
-    }
+    // MARK: - Layouts
 
-    private func chip(_ id: MetricID) -> some View {
-        HStack(spacing: 5) {
-            Image(systemName: Self.symbol(for: id))
-                .font(.system(size: 10, weight: .medium))
-                .foregroundStyle(.secondary)
-                .frame(width: 13)
-            Text(valueString(id))
-                .font(.system(size: 11, weight: .semibold))
-                .monospacedDigit()
-                .lineLimit(1)
-            if Self.showsSparkline(id) {
-                SparklineView(values: model.history(id, count: 30), accent: model.accentColor)
-                    .frame(width: 26, height: 11)
+    private var horizontalStrip: some View {
+        HStack(spacing: 14) {
+            ForEach(model.orderedEnabledModules, id: \.self) { id in
+                HStack(spacing: 6) {
+                    icon(id)
+                    valueText(id, size: 11)
+                    if Self.showsSparkline(id) {
+                        SparklineView(values: model.history(id, count: 30), accent: model.accentColor)
+                            .frame(width: 26, height: 12)
+                    }
+                }
+                .help(id.localizedName)
             }
         }
-        .help(id.localizedName)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+    }
+
+    private var verticalCard: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            ForEach(model.orderedEnabledModules, id: \.self) { id in
+                HStack(spacing: 7) {
+                    icon(id)
+                    Text(id.localizedName)
+                        .font(.callout)
+                        .lineLimit(1)
+                    Spacer(minLength: 10)
+                    if Self.showsSparkline(id) {
+                        SparklineView(values: model.history(id, count: 40), accent: model.accentColor)
+                            .frame(width: 44, height: 14)
+                    }
+                    valueText(id, size: 12)
+                        .frame(minWidth: 46, alignment: .trailing)
+                }
+            }
+        }
+        .padding(.horizontal, 13)
+        .padding(.vertical, 11)
+        .frame(width: 240)
+    }
+
+    // MARK: - Pieces
+
+    private func icon(_ id: MetricID) -> some View {
+        Image(systemName: Self.symbol(for: id))
+            .font(.system(size: 10.5, weight: .medium))
+            .foregroundStyle(.secondary)
+            .frame(width: 14)
+    }
+
+    private func valueText(_ id: MetricID, size: CGFloat) -> some View {
+        Text(valueString(id))
+            .font(.system(size: size, weight: .semibold))
+            .monospacedDigit()
+            .lineLimit(1)
     }
 
     // MARK: - Formatting
@@ -114,13 +126,5 @@ struct FloatingPanelView: View {
         case .fans:      return "fan"
         case .clock:     return "clock"
         }
-    }
-}
-
-/// Preference carrying the chip grid's natural height up to the window controller.
-private struct PanelHeightKey: PreferenceKey {
-    static let defaultValue: CGFloat = 44
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
     }
 }

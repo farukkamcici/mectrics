@@ -30,6 +30,11 @@ struct SettingsView: View {
                         LoginItem.setEnabled(newValue)
                     }
                 Toggle("Show floating panel", isOn: $model.showFloatingPanel)
+                Picker("Panel layout", selection: $model.panelLayout) {
+                    ForEach(PanelLayout.allCases) { layout in
+                        Text(layout.localizedName).tag(layout)
+                    }
+                }
                 LabeledContent("Panel hotkey", value: "⌃⌥M")
             }
             Section("Appearance") {
