@@ -69,6 +69,15 @@ final class AppModel {
         didSet { persistAlertRules() }
     }
 
+    /// Per-module menu bar content (value / graph / both) for sparkline-capable modules.
+    var moduleStyles: [MetricID: ModuleDisplayStyle] {
+        didSet { persistModuleStyles(); onAppearanceChanged?() }
+    }
+
+    func displayStyle(for id: MetricID) -> ModuleDisplayStyle {
+        moduleStyles[id] ?? .both
+    }
+
     private let defaults = UserDefaults.standard
     private static let enabledKey = "enabledModules"
     private static let floatingPanelKey = "showFloatingPanel"
@@ -76,11 +85,15 @@ final class AppModel {
     private static let styleKey = "menuBarStyle"
     private static let accentKey = "accentChoice"
     private static let alertsKey = "alertRules"
+    private static let moduleStylesKey = "moduleStyles"
 
     init() {
         let providers = MetricsKit.coreProviders()
         let available = providers.filter { $0.isAvailable }.map { $0.id }
-        self.availableModules = available
+        // Temperatures are not a standalone module: the sensors provider keeps
+        // sampling in the background and its readings surface inside the CPU/GPU
+        // popovers (hardware-domain grouping).
+        self.availableModules = available.filter { $0 != .sensors }
 
         let engine = MetricsEngine()
         engine.register(providers)
@@ -91,6 +104,7 @@ final class AppModel {
         self.menuBarStyle = MenuBarStyle(rawValue: defaults.string(forKey: Self.styleKey) ?? "") ?? .normal
         self.accentChoice = AccentChoice(rawValue: defaults.string(forKey: Self.accentKey) ?? "") ?? .system
         self.alertRules = Self.loadAlertRules(from: defaults, available: available)
+        self.moduleStyles = Self.loadModuleStyles(from: defaults)
 
         // If nothing was persisted, enable all available modules.
         if let raw = defaults.array(forKey: Self.enabledKey) as? [String] {
@@ -168,5 +182,22 @@ final class AppModel {
         if let data = try? JSONEncoder().encode(raw) {
             defaults.set(data, forKey: Self.alertsKey)
         }
+    }
+
+    private static func loadModuleStyles(from defaults: UserDefaults) -> [MetricID: ModuleDisplayStyle] {
+        guard let raw = defaults.dictionary(forKey: Self.moduleStylesKey) as? [String: String]
+        else { return [:] }
+        var styles: [MetricID: ModuleDisplayStyle] = [:]
+        for (key, value) in raw {
+            if let id = MetricID(rawValue: key), let style = ModuleDisplayStyle(rawValue: value) {
+                styles[id] = style
+            }
+        }
+        return styles
+    }
+
+    private func persistModuleStyles() {
+        let raw = Dictionary(uniqueKeysWithValues: moduleStyles.map { ($0.key.rawValue, $0.value.rawValue) })
+        defaults.set(raw, forKey: Self.moduleStylesKey)
     }
 }

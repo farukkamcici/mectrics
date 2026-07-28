@@ -101,14 +101,17 @@ final class MetricStatusItem: NSObject {
 
         let lines = text.components(separatedBy: "\n")
         let isTwoLine = lines.count > 1
+        // Graph-only style: no text slot, just a slightly wider sparkline.
+        let graphOnly = text.isEmpty
 
         // Measure the widest line so the slot never shrinks below real content.
         let lineWidths = lines.map { ceil(($0 as NSString).size(withAttributes: attrs).width) }
         let contentWidth = lineWidths.max() ?? 0
-        let textSlot = max(reservedTextWidth, contentWidth)
+        let textSlot = graphOnly ? 0 : max(reservedTextWidth, contentWidth)
 
         let hasSpark = !samples.isEmpty && !isTwoLine
-        let width = textSlot + (hasSpark ? gap + sparkWidth : 0)
+        let sparkW = graphOnly ? sparkWidth + 8 : sparkWidth
+        let width = textSlot + (hasSpark ? (graphOnly ? sparkW : gap + sparkW) : 0)
 
         let image = NSImage(size: NSSize(width: max(width, 8), height: height))
         image.lockFocus()
@@ -119,15 +122,17 @@ final class MetricStatusItem: NSObject {
                 drawRightAligned(lines[0], attrs: attrs, slot: textSlot, baselineY: height * 0.5)
                 drawRightAligned(lines[1], attrs: attrs, slot: textSlot, baselineY: 0)
             } else {
-                let textSize = (text as NSString).size(withAttributes: attrs)
-                let textY = (height - textSize.height) / 2
-                drawRightAligned(text, attrs: attrs, slot: textSlot, baselineY: textY)
+                if !graphOnly {
+                    let textSize = (text as NSString).size(withAttributes: attrs)
+                    let textY = (height - textSize.height) / 2
+                    drawRightAligned(text, attrs: attrs, slot: textSlot, baselineY: textY)
+                }
 
                 if hasSpark {
                     drawSparkline(samples, in: NSRect(
-                        x: textSlot + gap,
+                        x: graphOnly ? 0 : textSlot + gap,
                         y: 3,
-                        width: sparkWidth,
+                        width: sparkW,
                         height: height - 6
                     ), accent: accent)
                 }

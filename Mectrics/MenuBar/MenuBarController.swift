@@ -37,11 +37,14 @@ final class MenuBarController {
         let compact = model.menuBarStyle == .compact
         for (id, statusItem) in items {
             guard let sample = model.latest[id] else { continue }
+            let capable = MenuBarText.showsSparkline(id)
+            // Compact style forces value-only; otherwise the per-module choice wins.
+            let style: ModuleDisplayStyle = (compact || !capable) ? .value : model.displayStyle(for: id)
             statusItem.update(
-                text: MenuBarText.string(for: id, sample: sample),
+                text: style == .graph ? "" : MenuBarText.string(for: id, sample: sample),
                 samples: model.history(id),
                 accent: accent,
-                showSparkline: !compact && MenuBarText.showsSparkline(id)
+                showSparkline: capable && style != .value
             )
         }
     }
@@ -59,7 +62,7 @@ final class MenuBarController {
 
         let content = DetailPopoverView(model: model, moduleID: id)
         popover.contentViewController = NSHostingController(rootView: content)
-        popover.contentSize = NSSize(width: 300, height: 260)
+        popover.contentSize = NSSize(width: 290, height: DetailPopoverView.height(for: id))
         popoverModuleID = id
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         popover.contentViewController?.view.window?.makeKey()

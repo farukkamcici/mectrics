@@ -7,13 +7,13 @@ struct FloatingPanelView: View {
     @Bindable var model: AppModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             ForEach(model.orderedEnabledModules, id: \.self) { id in
                 row(id)
             }
         }
-        .padding(14)
-        .frame(width: 260)
+        .padding(11)
+        .frame(width: 248)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)

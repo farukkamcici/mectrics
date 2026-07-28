@@ -17,6 +17,22 @@ enum MenuBarStyle: String, CaseIterable, Identifiable {
     }
 }
 
+/// Per-module menu bar item content: just the value, just the sparkline graph, or both.
+/// Only offered for modules whose menu bar item supports a sparkline.
+enum ModuleDisplayStyle: String, CaseIterable, Identifiable {
+    case value, graph, both
+
+    var id: String { rawValue }
+
+    var localizedName: String {
+        switch self {
+        case .value: return String(localized: "moduleStyle.value", defaultValue: "Value")
+        case .graph: return String(localized: "moduleStyle.graph", defaultValue: "Graph")
+        case .both:  return String(localized: "moduleStyle.both", defaultValue: "Value + Graph")
+        }
+    }
+}
+
 /// Accent color used by sparklines and charts everywhere (menu bar, popover, panel).
 /// `system` follows the user's macOS accent color.
 enum AccentChoice: String, CaseIterable, Identifiable {

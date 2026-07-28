@@ -10,17 +10,33 @@ struct DetailPopoverView: View {
     private var sample: MetricSample? { model.latest[moduleID] }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 9) {
             header
             Divider()
             SparklineView(values: model.history(moduleID, count: 60), accent: model.accentColor)
-                .frame(height: 44)
+                .frame(height: 40)
+            if moduleID == .cpu {
+                CoreBarsView(values: coreValues, accent: model.accentColor)
+                    .frame(height: 24)
+            }
             detailRows
             Spacer(minLength: 0)
             footer
         }
-        .padding(14)
-        .frame(width: 300, height: 260)
+        .padding(11)
+        .frame(width: 290, height: Self.height(for: moduleID))
+    }
+
+    /// Popover height per module (CPU carries the extra per-core bar row).
+    static func height(for id: MetricID) -> CGFloat {
+        id == .cpu ? 280 : 248
+    }
+
+    /// Per-core usage fractions for the CPU core bars.
+    private var coreValues: [Double] {
+        guard let d = sample?.detail else { return [] }
+        let cores = Int(d["coreCount"] ?? 0)
+        return (0..<cores).compactMap { d["core\($0)"] }
     }
 
     private var header: some View {
@@ -37,7 +53,7 @@ struct DetailPopoverView: View {
 
     @ViewBuilder
     private var detailRows: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 5) {
             ForEach(rows, id: \.0) { row in
                 HStack {
                     Text(row.0).foregroundStyle(.secondary)
@@ -109,6 +125,12 @@ struct DetailPopoverView: View {
                 r.append((String(localized: "cpu.busiestCore", defaultValue: "Busiest core"),
                           MetricFormat.percent(maxCore, decimals: 0)))
             }
+            // Hardware-domain grouping: the CPU temperature lives here, not in a
+            // separate sensors module.
+            if let t = model.latest[.sensors]?.detail["cpuMax"] {
+                r.append((String(localized: "cpu.temperature", defaultValue: "Temperature"),
+                          String(format: "%.1f°C", t)))
+            }
             return r
         case .memory:
             return [
@@ -157,6 +179,10 @@ struct DetailPopoverView: View {
             if let mem = d["inUseMemory"], mem > 0 {
                 r.append((String(localized: "gpu.memory", defaultValue: "In-use memory"),
                           MetricFormat.bytes(mem)))
+            }
+            if let t = model.latest[.sensors]?.detail["gpuMax"] {
+                r.append((String(localized: "gpu.temperature", defaultValue: "Temperature"),
+                          String(format: "%.1f°C", t)))
             }
             return r
         case .sensors:
