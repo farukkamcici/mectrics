@@ -8,7 +8,7 @@ optional always-on-top floating panel.
 > Battery / Network / Disk / GPU / Temperatures (SMC) / Fans (SMC) (+ Bluetooth when a
 > device with a battery is connected). Unavailable hardware hides itself (e.g. Fans on a
 > fanless MacBook Air). Plus: detail popovers, floating panel (global hotkey **⌃⌥M**),
-> three-step onboarding, accent themes + compact menu bar style, notification thresholds,
+> two-step onboarding, accent themes + compact menu bar style, notification thresholds,
 > settings, launch-at-login, and small/medium/large WidgetKit widgets. Remaining for v1.0:
 > the premium experience pass, Sparkle updates, and the public release.
 

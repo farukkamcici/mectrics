@@ -75,9 +75,20 @@ final class AppModel {
     /// Called by the Help menu to present the optional onboarding again.
     @ObservationIgnored var onOpenOnboarding: (() -> Void)?
 
-    /// One-shot flag: the first-launch onboarding has been shown and dismissed.
+    /// One-shot flag for the current onboarding experience. Versioning lets a
+    /// substantially redesigned welcome appear once for existing users without
+    /// repeatedly interrupting them on ordinary launches.
     var hasCompletedOnboarding: Bool {
-        didSet { defaults.set(hasCompletedOnboarding, forKey: Self.onboardingKey) }
+        didSet {
+            if hasCompletedOnboarding {
+                defaults.set(
+                    Self.currentOnboardingVersion,
+                    forKey: Self.onboardingVersionKey
+                )
+            } else {
+                defaults.removeObject(forKey: Self.onboardingVersionKey)
+            }
+        }
     }
 
     /// Floating panel shape (horizontal strip / vertical card).
@@ -130,7 +141,8 @@ final class AppModel {
     private let defaults = UserDefaults.standard
     private static let enabledKey = "enabledModules"
     private static let floatingPanelKey = "showFloatingPanel"
-    private static let onboardingKey = "hasCompletedOnboarding"
+    private static let onboardingVersionKey = "completedOnboardingVersion"
+    private static let currentOnboardingVersion = 2
     private static let accentKey = "accentChoice"
     private static let menuBarIconsKey = "showMenuBarIcons"
     private static let panelLayoutKey = "panelLayout"
@@ -152,7 +164,8 @@ final class AppModel {
         self.engine = engine
 
         self.showFloatingPanel = defaults.bool(forKey: Self.floatingPanelKey)
-        self.hasCompletedOnboarding = defaults.bool(forKey: Self.onboardingKey)
+        self.hasCompletedOnboarding =
+            defaults.integer(forKey: Self.onboardingVersionKey) >= Self.currentOnboardingVersion
         self.accentChoice = AccentChoice(rawValue: defaults.string(forKey: Self.accentKey) ?? "") ?? .system
         // Icons default to on; only an explicit user choice turns them off.
         self.showMenuBarIcons = defaults.object(forKey: Self.menuBarIconsKey) as? Bool ?? true
