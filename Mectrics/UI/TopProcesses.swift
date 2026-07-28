@@ -74,31 +74,46 @@ struct TopProcessesView: View {
     @State private var entries: [TopProcessEntry] = []
 
     var body: some View {
-        DisclosureGroup(isExpanded: $expanded) {
-            VStack(alignment: .leading, spacing: 4) {
-                ForEach(entries) { entry in
-                    HStack {
-                        Text(entry.name)
-                            .lineLimit(1)
-                            .truncationMode(.tail)
-                        Spacer(minLength: 12)
-                        Text(mode == .cpu
-                             ? String(format: "%.1f%%", entry.value)
-                             : String(format: "%.0f MB", entry.value))
-                            .monospacedDigit()
-                            .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 6) {
+            // Custom collapsible header — DisclosureGroup's built-in chevron collides
+            // with its label in this narrow layout.
+            Button {
+                withAnimation(.easeInOut(duration: 0.15)) { expanded.toggle() }
+            } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 9, weight: .semibold))
+                        .rotationEffect(.degrees(expanded ? 90 : 0))
+                    Text("Top processes")
+                        .font(.callout)
+                    Spacer(minLength: 0)
+                }
+                .foregroundStyle(.secondary)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if expanded {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(entries) { entry in
+                        HStack {
+                            Text(entry.name)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                            Spacer(minLength: 12)
+                            Text(mode == .cpu
+                                 ? String(format: "%.1f%%", entry.value)
+                                 : String(format: "%.0f MB", entry.value))
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                        }
+                        .font(.caption)
+                        .contentShape(Rectangle())
+                        .onTapGesture { TopProcesses.openActivityMonitor() }
+                        .help(String(localized: "topProcs.open", defaultValue: "Open Activity Monitor"))
                     }
-                    .font(.caption)
-                    .contentShape(Rectangle())
-                    .onTapGesture { TopProcesses.openActivityMonitor() }
-                    .help(String(localized: "topProcs.open", defaultValue: "Open Activity Monitor"))
                 }
             }
-            .padding(.top, 4)
-        } label: {
-            Text("Top processes")
-                .font(.callout)
-                .foregroundStyle(.secondary)
         }
         .task(id: expanded) {
             guard expanded else { return }
