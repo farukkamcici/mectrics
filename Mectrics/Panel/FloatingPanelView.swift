@@ -73,7 +73,8 @@ struct FloatingPanelView: View {
         }
     }
 
-    private static func symbol(for id: MetricID) -> String {
+    /// SF Symbol per module — shared with the settings menu bar builder.
+    static func symbol(for id: MetricID) -> String {
         switch id {
         case .cpu:       return "cpu"
         case .memory:    return "memorychip"

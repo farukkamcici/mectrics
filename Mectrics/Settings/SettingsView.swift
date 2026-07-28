@@ -57,39 +57,8 @@ struct SettingsView: View {
     }
 
     private var modulesTab: some View {
-        Form {
-            Section("Show in menu bar") {
-                ForEach(model.availableModules, id: \.self) { id in
-                    HStack {
-                        Toggle(id.localizedName, isOn: Binding(
-                            get: { model.enabledModules.contains(id) },
-                            set: { model.setEnabled($0, for: id) }
-                        ))
-                        // Sparkline-capable modules choose their item content.
-                        if MenuBarText.showsSparkline(id) {
-                            Picker("", selection: styleBinding(id)) {
-                                ForEach(ModuleDisplayStyle.allCases) { style in
-                                    Text(style.localizedName).tag(style)
-                                }
-                            }
-                            .labelsHidden()
-                            .pickerStyle(.menu)
-                            .fixedSize()
-                            .disabled(!model.enabledModules.contains(id))
-                        }
-                    }
-                }
-            }
-            if model.availableModules.count < MetricID.allCases.count {
-                Section {
-                    Text("Sensors and Fan modules will be added in future releases.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-        .formStyle(.grouped)
-        .frame(height: 320)
+        MenuBarBuilderView(model: model)
+            .frame(height: 460)
     }
 
     private var alertsTab: some View {
@@ -127,13 +96,6 @@ struct SettingsView: View {
             }
             .disabled(!rule.wrappedValue.enabled)
         }
-    }
-
-    private func styleBinding(_ id: MetricID) -> Binding<ModuleDisplayStyle> {
-        Binding(
-            get: { model.displayStyle(for: id) },
-            set: { model.moduleStyles[id] = $0 }
-        )
     }
 
     private func ruleBinding(_ id: MetricID) -> Binding<AlertRule> {
