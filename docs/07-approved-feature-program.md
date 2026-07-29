@@ -449,7 +449,10 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
 
   Scope:
 
-  - Add exactly three initial presets: Minimal, Laptop, and Developer.
+  - Add exactly three initial presets that vary along one axis — how much detail the
+    user wants: Essentials, Recommended, and Detailed. Naming them for density rather
+    than for hardware or profession keeps the user from having to place themselves on
+    three different scales at once.
   - Define each preset as ordered module/component selections using the same model as the
     visual builder.
   - Make Reset to Recommended restore the current product default for the detected Mac.
@@ -562,7 +565,8 @@ The following work is not part of this approved program:
 - Fan control or any other write access to SMC.
 - Cloud accounts, telemetry, remote monitoring, or automatic diagnostics upload.
 - Wi-Fi name collection, serial-number collection, or hardware fingerprinting.
-- Additional layout presets beyond Minimal, Laptop, and Developer without new evidence.
+- Additional layout presets beyond Essentials, Recommended, and Detailed without new
+  evidence.
 
 ## Primary research references
 

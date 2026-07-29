@@ -6,22 +6,23 @@ struct MenuBarLayoutEntry: Equatable {
     let component: MenuBarComponent
 }
 
+/// A ready-made menu bar layout.
+///
+/// The three presets vary along one axis — how much detail you want — and each is a
+/// superset or subset of the next, so moving between them is predictable. Earlier
+/// presets mixed axes (density, hardware, profession) and asked the user to place
+/// themselves on three different scales at once.
 struct MenuBarLayoutPreset: Identifiable, Equatable {
     let id: String
     let name: String
-    let summary: String
     let entries: [MenuBarLayoutEntry]
 
     static let all: [MenuBarLayoutPreset] = [
         MenuBarLayoutPreset(
-            id: "minimal",
+            id: "essentials",
             name: String(
-                localized: "preset.minimal.name",
-                defaultValue: "Minimal"
-            ),
-            summary: String(
-                localized: "preset.minimal.summary",
-                defaultValue: "Essential usage and battery at a glance"
+                localized: "preset.essentials.name",
+                defaultValue: "Essentials"
             ),
             entries: [
                 MenuBarLayoutEntry(metricID: .cpu, component: .value),
@@ -33,80 +34,42 @@ struct MenuBarLayoutPreset: Identifiable, Equatable {
             ]
         ),
         MenuBarLayoutPreset(
-            id: "laptop",
-            name: String(
-                localized: "preset.laptop.name",
-                defaultValue: "Laptop"
-            ),
-            summary: String(
-                localized: "preset.laptop.summary",
-                defaultValue: "Battery, workload, memory, and network"
-            ),
-            entries: [
-                MenuBarLayoutEntry(metricID: .cpu, component: .valueGraph),
-                MenuBarLayoutEntry(metricID: .memory, component: .value),
-                MenuBarLayoutEntry(
-                    metricID: .battery,
-                    component: .batteryIcon
-                ),
-                MenuBarLayoutEntry(metricID: .battery, component: .value),
-                MenuBarLayoutEntry(
-                    metricID: .network,
-                    component: .netActivity
-                )
-            ]
-        ),
-        MenuBarLayoutPreset(
-            id: "developer",
-            name: String(
-                localized: "preset.developer.name",
-                defaultValue: "Developer"
-            ),
-            summary: String(
-                localized: "preset.developer.summary",
-                defaultValue: "Detailed compute, memory, disk, and network activity"
-            ),
-            entries: [
-                MenuBarLayoutEntry(metricID: .cpu, component: .valueGraph),
-                MenuBarLayoutEntry(metricID: .cpu, component: .coreBars),
-                MenuBarLayoutEntry(
-                    metricID: .memory,
-                    component: .valueGraph
-                ),
-                MenuBarLayoutEntry(
-                    metricID: .network,
-                    component: .netActivity
-                ),
-                MenuBarLayoutEntry(metricID: .disk, component: .freeBytes),
-                MenuBarLayoutEntry(metricID: .gpu, component: .valueGraph)
-            ]
-        )
-    ]
-
-    static func recommended(
-        available: Set<MetricID>
-    ) -> MenuBarLayoutPreset {
-        let preferred: [MetricID] = [
-            .cpu, .memory, .battery, .network
-        ]
-        return MenuBarLayoutPreset(
             id: "recommended",
             name: String(
                 localized: "preset.recommended.name",
                 defaultValue: "Recommended"
             ),
-            summary: String(
-                localized: "preset.recommended.summary",
-                defaultValue: "The current product default for this Mac"
+            entries: recommendedEntries
+        ),
+        MenuBarLayoutPreset(
+            id: "detailed",
+            name: String(
+                localized: "preset.detailed.name",
+                defaultValue: "Detailed"
             ),
-            entries: preferred.compactMap { id in
-                guard available.contains(id) else { return nil }
-                return MenuBarLayoutEntry(
-                    metricID: id,
-                    component: .default(for: id)
-                )
-            }
+            // Recommended plus free disk space. GPU is left out on purpose: it idles
+            // near zero for most people, so a permanent item earns little.
+            entries: recommendedEntries + [
+                MenuBarLayoutEntry(metricID: .disk, component: .freeBytes)
+            ]
         )
+    ]
+
+    private static let recommendedEntries: [MenuBarLayoutEntry] = [
+        MenuBarLayoutEntry(metricID: .cpu, component: .valueGraph),
+        MenuBarLayoutEntry(metricID: .memory, component: .valueGraph),
+        MenuBarLayoutEntry(metricID: .battery, component: .value),
+        MenuBarLayoutEntry(metricID: .network, component: .netActivity)
+    ]
+
+    static var recommended: MenuBarLayoutPreset {
+        all.first { $0.id == "recommended" } ?? all[0]
+    }
+
+    /// How many menu bar items this preset actually adds on this Mac — a desktop drops
+    /// the battery entries, so the count has to be resolved rather than declared.
+    func itemCount(available: Set<MetricID>) -> Int {
+        resolved(available: available).values.reduce(0) { $0 + $1.count }
     }
 
     func resolved(

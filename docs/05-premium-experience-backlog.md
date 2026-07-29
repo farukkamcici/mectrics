@@ -207,7 +207,7 @@ existing functionality is sufficient to build a premium v1 experience.
   - Keep a live, accurate preview using real values, including for modules that are not
     in the menu bar yet.
   - Add keyboard alternatives, undo, Reset to Recommended, and exactly three initial
-    presets: Minimal, Laptop, and Developer.
+    presets that vary along one axis: Essentials, Recommended, and Detailed.
   - Explain the `Command`-drag macOS menu bar behavior in context, once.
   - Acceptance: a first-time user can create a menu layout without reading
     documentation, and PX-012A is complete.

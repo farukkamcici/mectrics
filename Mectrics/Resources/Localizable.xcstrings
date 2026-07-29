@@ -2159,72 +2159,6 @@
         }
       }
     },
-    "preset.developer.name": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Developer"
-          }
-        }
-      }
-    },
-    "preset.developer.summary": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Detailed compute, memory, disk, and network activity"
-          }
-        }
-      }
-    },
-    "preset.laptop.name": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Laptop"
-          }
-        }
-      }
-    },
-    "preset.laptop.summary": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Battery, workload, memory, and network"
-          }
-        }
-      }
-    },
-    "preset.minimal.name": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Minimal"
-          }
-        }
-      }
-    },
-    "preset.minimal.summary": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Essential usage and battery at a glance"
-          }
-        }
-      }
-    },
     "preset.recommended.name": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -2232,17 +2166,6 @@
           "stringUnit": {
             "state": "new",
             "value": "Recommended"
-          }
-        }
-      }
-    },
-    "preset.recommended.summary": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "The current product default for this Mac"
           }
         }
       }

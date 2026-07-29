@@ -6,7 +6,7 @@ final class MenuBarLayoutPresetTests: XCTestCase {
     func testExactlyThreeDeterministicPresetsUseValidComponents() {
         XCTAssertEqual(
             MenuBarLayoutPreset.all.map(\.id),
-            ["minimal", "laptop", "developer"]
+            ["essentials", "recommended", "detailed"]
         )
         for preset in MenuBarLayoutPreset.all {
             for entry in preset.entries {
@@ -26,14 +26,49 @@ final class MenuBarLayoutPresetTests: XCTestCase {
         }
     }
 
+    /// The presets vary along one axis, so each has to contain the one before it.
+    func testPresetsAreOrderedByDensity() {
+        let all: Set<MetricID> = [
+            .cpu, .memory, .battery, .network, .disk, .gpu
+        ]
+        XCTAssertEqual(
+            MenuBarLayoutPreset.all.map { $0.itemCount(available: all) },
+            [3, 4, 5]
+        )
+
+        let recommended = MenuBarLayoutPreset.recommended
+            .resolved(available: all)
+        let detailed = try! XCTUnwrap(
+            MenuBarLayoutPreset.all.first { $0.id == "detailed" }
+        ).resolved(available: all)
+        for (id, components) in recommended {
+            XCTAssertTrue(
+                components.isSubset(of: detailed[id] ?? []),
+                "Detailed must build on Recommended"
+            )
+        }
+    }
+
+    func testItemCountReflectsThisMacRatherThanTheDeclaredEntries() {
+        let desktop: Set<MetricID> = [.cpu, .memory, .network, .disk]
+        XCTAssertEqual(
+            MenuBarLayoutPreset.recommended.itemCount(available: desktop),
+            3
+        )
+        XCTAssertEqual(
+            MenuBarLayoutPreset.all[0].itemCount(available: desktop),
+            2
+        )
+    }
+
     func testUnsupportedModulesAreOmittedWithoutBrokenEntries() {
         let desktop: Set<MetricID> = [
             .cpu, .memory, .disk, .network
         ]
-        let developer = try! XCTUnwrap(
-            MenuBarLayoutPreset.all.first { $0.id == "developer" }
+        let detailed = try! XCTUnwrap(
+            MenuBarLayoutPreset.all.first { $0.id == "detailed" }
         )
-        let resolved = developer.resolved(available: desktop)
+        let resolved = detailed.resolved(available: desktop)
 
         XCTAssertNil(resolved[.battery])
         XCTAssertNil(resolved[.gpu])
@@ -56,29 +91,22 @@ final class MenuBarLayoutPresetTests: XCTestCase {
         let noGPU: Set<MetricID> = [
             .cpu, .memory, .battery, .network
         ]
+        let recommended = MenuBarLayoutPreset.recommended
 
         XCTAssertEqual(
-            Set(MenuBarLayoutPreset.recommended(
-                available: laptop
-            ).resolved(available: laptop).keys),
+            Set(recommended.resolved(available: laptop).keys),
             [.cpu, .memory, .battery, .network]
         )
         XCTAssertEqual(
-            Set(MenuBarLayoutPreset.recommended(
-                available: desktop
-            ).resolved(available: desktop).keys),
+            Set(recommended.resolved(available: desktop).keys),
             [.cpu, .memory, .network]
         )
         XCTAssertEqual(
-            Set(MenuBarLayoutPreset.recommended(
-                available: fanless
-            ).resolved(available: fanless).keys),
+            Set(recommended.resolved(available: fanless).keys),
             [.cpu, .memory, .battery, .network]
         )
         XCTAssertEqual(
-            Set(MenuBarLayoutPreset.recommended(
-                available: noGPU
-            ).resolved(available: noGPU).keys),
+            Set(recommended.resolved(available: noGPU).keys),
             [.cpu, .memory, .battery, .network]
         )
     }

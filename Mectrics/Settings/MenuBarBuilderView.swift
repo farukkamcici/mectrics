@@ -65,16 +65,20 @@ struct MenuBarBuilderView: View {
 
     private var presetsMenu: some View {
         Menu("Presets") {
-            Button("Recommended") {
-                apply(
-                    MenuBarLayoutPreset.recommended(
-                        available: Set(model.availableModules)
-                    )
-                )
-            }
-            Divider()
             ForEach(MenuBarLayoutPreset.all) { preset in
-                Button(preset.name) { apply(preset) }
+                // The count is what a preset costs in menu bar space, which is the
+                // scarce resource here, so it is part of the choice.
+                let count = preset.itemCount(
+                    available: Set(model.availableModules)
+                )
+                Button(
+                    String(
+                        localized: "preset.menuTitle",
+                        defaultValue: "\(preset.name) — \(count) items"
+                    )
+                ) {
+                    apply(preset)
+                }
             }
         }
         .menuStyle(.borderlessButton)
