@@ -134,29 +134,27 @@ struct AlertsSettingsTab: View {
                 Text("When a rule alerts it notifies you, marks the Compact Health item, and is recorded in the Attention Log. A rule rests for 15 minutes after it alerts.")
             }
 
-            Section("Notifications") {
-                if notificationAccess == .authorized {
-                    Button("Send a Test Notification") {
-                        sendTestNotification()
-                    }
-                } else {
+            Section {
+                if notificationAccess != .authorized {
                     LabeledContent(
                         "Permission",
                         value: notificationAccess.localizedName
                     )
-                    HStack {
-                        if notificationAccess == .notDetermined {
-                            Button("Allow Notifications…") {
-                                requestNotificationAccess()
-                            }
-                        } else {
-                            Button("Open Notification Settings") {
-                                NotificationPermissionManager.openSystemSettings()
-                            }
+                }
+                HStack {
+                    // macOS only offers its prompt while the choice is unmade; after
+                    // that System Settings is the only route, so that button is always
+                    // available rather than appearing once the user is already stuck.
+                    if notificationAccess == .notDetermined {
+                        Button("Allow Notifications…") {
+                            requestNotificationAccess()
                         }
-                        Button("Send a Test Notification") {
-                            sendTestNotification()
-                        }
+                    }
+                    Button("Open Notification Settings") {
+                        NotificationPermissionManager.openSystemSettings()
+                    }
+                    Button("Send a Test Notification") {
+                        sendTestNotification()
                     }
                 }
                 if let testResult {
@@ -164,6 +162,10 @@ struct AlertsSettingsTab: View {
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
+            } header: {
+                Text("Notifications")
+            } footer: {
+                Text("macOS owns notification permission and decides how alerts are presented. Mectrics cannot show one until you allow it there.")
             }
         }
         .formStyle(.grouped)
@@ -582,7 +584,15 @@ struct AlertsSettingsTab: View {
 
     private func requestNotificationAccess() {
         NotificationPermissionManager.request { state in
-            Task { @MainActor in notificationAccess = state }
+            Task { @MainActor in
+                notificationAccess = state
+                // macOS shows its prompt at most once per install. If the answer is
+                // still unmade, no prompt appeared and System Settings is the only
+                // way through — go there rather than leaving the button inert.
+                if state == .notDetermined {
+                    NotificationPermissionManager.openSystemSettings()
+                }
+            }
         }
     }
 }

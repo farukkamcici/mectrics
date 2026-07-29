@@ -361,12 +361,28 @@ enum NotificationPermissionManager {
         }
     }
 
+    /// Opens Notification settings, preferring this app's own row.
+    ///
+    /// The per-app query parameter and the pane identifier have both changed across
+    /// macOS releases, so each candidate is tried in turn rather than assuming one
+    /// works — a button that silently does nothing is worse than a less specific
+    /// destination.
     @MainActor
-    static func openSystemSettings() {
-        guard let url = URL(
-            string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension?id=com.mectrics.app"
-        ) else { return }
-        NSWorkspace.shared.open(url)
+    @discardableResult
+    static func openSystemSettings() -> Bool {
+        let bundleID = Bundle.main.bundleIdentifier ?? "com.mectrics.app"
+        let candidates = [
+            "x-apple.systempreferences:com.apple.Notifications-Settings.extension?id=\(bundleID)",
+            "x-apple.systempreferences:com.apple.Notifications-Settings.extension",
+            "x-apple.systempreferences:com.apple.preference.notifications"
+        ]
+        for candidate in candidates {
+            if let url = URL(string: candidate),
+               NSWorkspace.shared.open(url) {
+                return true
+            }
+        }
+        return false
     }
 
     private static func accessState(
