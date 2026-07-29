@@ -61,6 +61,52 @@ struct EnergyGuardInput: Equatable {
     var visibleHeavyMetricIDs: Set<MetricID>
 }
 
+/// Why the guard settled on its current mode. Shown next to the mode so the policy
+/// is never an unexplained label.
+enum EnergyGuardReason: Equatable {
+    case disabled
+    case sleeping
+    case thermalState
+    case lowPowerMode
+    case onBattery
+    case none
+
+    var localizedName: String {
+        switch self {
+        case .disabled:
+            return String(
+                localized: "energyGuard.reason.disabled",
+                defaultValue: "adapting is off"
+            )
+        case .sleeping:
+            return String(
+                localized: "energyGuard.reason.sleeping",
+                defaultValue: "the Mac is asleep"
+            )
+        case .thermalState:
+            return String(
+                localized: "energyGuard.reason.thermal",
+                defaultValue: "the Mac is running hot"
+            )
+        case .lowPowerMode:
+            return String(
+                localized: "energyGuard.reason.lowPowerMode",
+                defaultValue: "Low Power Mode is on"
+            )
+        case .onBattery:
+            return String(
+                localized: "energyGuard.reason.onBattery",
+                defaultValue: "on battery"
+            )
+        case .none:
+            return String(
+                localized: "energyGuard.reason.none",
+                defaultValue: "plugged in and cool"
+            )
+        }
+    }
+}
+
 struct EnergyGuardDecision: Equatable {
     let mode: EnergyGuardMode
     let runtimePolicy: SamplingRuntimePolicy
@@ -111,6 +157,20 @@ final class EnergyGuardStateMachine {
             return .reduced
         }
         return .normal
+    }
+
+    /// The single condition that decided the mode, following the same precedence as
+    /// `targetMode`.
+    static func reason(_ input: EnergyGuardInput) -> EnergyGuardReason {
+        guard input.isEnabled else { return .disabled }
+        if input.isSleeping { return .sleeping }
+        if input.thermalState == .serious
+            || input.thermalState == .critical {
+            return .thermalState
+        }
+        if input.isLowPowerModeEnabled { return .lowPowerMode }
+        if input.isOnBattery { return .onBattery }
+        return .none
     }
 
     static func decision(
@@ -231,19 +291,18 @@ final class EnergyGuardController: NSObject {
 
     private func recompute(now: Date = Date()) {
         let info = ProcessInfo.processInfo
-        let decision = stateMachine.update(
-            input: EnergyGuardInput(
-                isEnabled: model.adaptMonitoringToEnergyState,
-                isOnBattery: onBattery,
-                isLowPowerModeEnabled: info.isLowPowerModeEnabled,
-                thermalState: EnergyThermalState(info.thermalState),
-                isSleeping: isSleeping,
-                visibleHeavyMetricIDs: visibleHeavyMetricIDs
-            ),
-            now: now
+        let input = EnergyGuardInput(
+            isEnabled: model.adaptMonitoringToEnergyState,
+            isOnBattery: onBattery,
+            isLowPowerModeEnabled: info.isLowPowerModeEnabled,
+            thermalState: EnergyThermalState(info.thermalState),
+            isSleeping: isSleeping,
+            visibleHeavyMetricIDs: visibleHeavyMetricIDs
         )
+        let decision = stateMachine.update(input: input, now: now)
         model.engine.updateRuntimePolicy(decision.runtimePolicy)
         model.energyGuardMode = decision.mode
+        model.energyGuardReason = EnergyGuardStateMachine.reason(input)
         if decision.mode != lastMode {
             recordTransition(
                 from: lastMode,
