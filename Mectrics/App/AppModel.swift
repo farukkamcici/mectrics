@@ -459,7 +459,12 @@ final class AppModel {
                 }
             }
         }
-        return rules
+        // Where an alert appears is fixed policy, not a stored per-rule choice.
+        return rules.mapValues {
+            var rule = $0
+            rule.destinations = AlertsSettingsTab.alertDestinations
+            return rule
+        }
     }
 
     private func persistAlertRules() {
@@ -574,14 +579,22 @@ final class AppModel {
                   from: data
               )
         else {
-            return rules
+            return rules.mapValues {
+                var rule = $0
+                rule.destinations = AlertsSettingsTab.alertDestinations
+                return rule
+            }
         }
         for (key, rule) in raw {
             if let signal = SystemAlertSignal(rawValue: key) {
                 rules[signal] = rule
             }
         }
-        return rules
+        return rules.mapValues {
+            var rule = $0
+            rule.destinations = AlertsSettingsTab.alertDestinations
+            return rule
+        }
     }
 
     private func persistSystemAlertRules() {

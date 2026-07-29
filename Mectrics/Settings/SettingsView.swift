@@ -83,6 +83,7 @@ struct AlertsSettingsTab: View {
     var body: some View {
         Form {
             Section {
+                notificationWarning
                 ForEach(ruleKeys) { key in
                     ruleRow(key)
                 }
@@ -96,7 +97,7 @@ struct AlertsSettingsTab: View {
                         .monospacedDigit()
                 }
             } footer: {
-                Text("An alerting rule shows on the Compact Health item and is recorded in the Attention Log; Notify me adds a macOS notification. A rule rests for 15 minutes after it alerts.")
+                Text("When a rule alerts it notifies you, marks the Compact Health item, and is recorded in the Attention Log. A rule rests for 15 minutes after it alerts.")
             }
 
             Section("Notifications") {
@@ -208,17 +209,10 @@ struct AlertsSettingsTab: View {
                         .monospacedDigit()
                     Spacer()
                     durationPicker(key)
-                    Toggle("Notify me", isOn: notifyBinding(key))
-                        .toggleStyle(.checkbox)
-                        .help(String(
-                            localized: "alerts.notify.help",
-                            defaultValue: "Also send a macOS notification while this rule is alerting"
-                        ))
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .controlSize(.small)
-                notificationWarning(key)
             }
         }
     }
@@ -305,20 +299,24 @@ struct AlertsSettingsTab: View {
         .fixedSize()
     }
 
-    /// A rule that asks for notifications is silent until macOS allows them.
+    /// Rules that are on cannot notify until macOS allows it — a fact about the app,
+    /// not about any one rule, so it is stated once above the list.
     @ViewBuilder
-    private func notificationWarning(_ key: RuleKey) -> some View {
-        if destinations(for: key).contains(.notification),
+    private var notificationWarning: some View {
+        if ruleKeys.contains(where: { isEnabled($0) }),
            notificationAccess == .denied
             || notificationAccess == .deliveryDisabled
             || notificationAccess == .notDetermined {
-            HStack(spacing: ExperienceSpacing.xSmall) {
+            HStack(spacing: ExperienceSpacing.small) {
                 Label(
-                    "Notifications are not allowed yet, so this rule will stay silent.",
+                    "macOS is not allowing notifications yet, so rules can only show on the Compact Health item.",
                     systemImage: "exclamationmark.triangle"
                 )
                 .foregroundStyle(.orange)
-                Button("Allow…") {
+                Spacer()
+                Button(notificationAccess == .notDetermined
+                       ? "Allow…"
+                       : "Open Settings…") {
                     if notificationAccess == .notDetermined {
                         requestNotificationAccess()
                     } else {
@@ -518,22 +516,21 @@ struct AlertsSettingsTab: View {
         Binding(
             get: { isEnabled(key) },
             set: { enabled in
-                let notify = destinations(for: key).contains(.notification)
                 switch key {
                 case .metric(let id):
                     guard var rule = model.alertRules[id] else { return }
                     rule.enabled = enabled
-                    rule.destinations = Self.destinations(notify: notify)
+                    rule.destinations = Self.alertDestinations
                     model.alertRules[id] = rule
                 case .system(let signal):
                     guard var rule = model.systemAlertRules[signal] else {
                         return
                     }
                     rule.enabled = enabled
-                    rule.destinations = Self.destinations(notify: notify)
+                    rule.destinations = Self.alertDestinations
                     model.systemAlertRules[signal] = rule
                 }
-                if enabled, notify { requestNotificationAccess() }
+                if enabled { requestNotificationAccess() }
             }
         )
     }
@@ -547,34 +544,12 @@ struct AlertsSettingsTab: View {
         }
     }
 
-    /// An alerting rule is always on the Compact Health item and in the Attention Log;
-    /// the only choice a rule offers is whether it also interrupts with a notification.
-    private static func destinations(notify: Bool) -> Set<AlertDestination> {
-        notify
-            ? [.notification, .compactHealth, .attentionLog]
-            : [.compactHealth, .attentionLog]
-    }
-
-    private func notifyBinding(_ key: RuleKey) -> Binding<Bool> {
-        Binding(
-            get: { destinations(for: key).contains(.notification) },
-            set: { notify in
-                switch key {
-                case .metric(let id):
-                    guard var rule = model.alertRules[id] else { return }
-                    rule.destinations = Self.destinations(notify: notify)
-                    model.alertRules[id] = rule
-                case .system(let signal):
-                    guard var rule = model.systemAlertRules[signal] else {
-                        return
-                    }
-                    rule.destinations = Self.destinations(notify: notify)
-                    model.systemAlertRules[signal] = rule
-                }
-                if notify { requestNotificationAccess() }
-            }
-        )
-    }
+    /// Turning a rule on *is* the request to be told about it, so an alerting rule
+    /// notifies, marks the Compact Health item, and is recorded — there is no second
+    /// opt-in to forget.
+    static let alertDestinations: Set<AlertDestination> = [
+        .notification, .compactHealth, .attentionLog
+    ]
 
     private func sendTestNotification() {
         NotificationPermissionManager.sendTest { state in
