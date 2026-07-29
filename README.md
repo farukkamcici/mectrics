@@ -2,12 +2,12 @@
 
 A lightweight, private, modern macOS menu bar system monitor.
 Shows CPU, Memory, Battery and more as live **sparklines** in the menu bar, with an
-optional always-on-top floating panel.
+optional Compact Health item that speaks up only when something needs attention.
 
 > Status: **v0.5 — Phases 1–2 complete, Phase 3 providers done.** Modules: CPU / Memory /
 > Battery / Network / Disk / GPU / Temperatures (SMC) / Fans (SMC) (+ Bluetooth when a
 > device with a battery is connected). Unavailable hardware hides itself (e.g. Fans on a
-> fanless MacBook Air). Plus: detail popovers, floating panel (global hotkey **⌃⌥M**),
+> fanless MacBook Air). Plus: detail popovers, the Compact Health item, Attention Log,
 > two-step onboarding, accent themes + compact menu bar style, notification thresholds,
 > settings, launch-at-login, and small/medium/large WidgetKit widgets. Remaining for v1.0:
 > the premium experience pass, Sparkle updates, and the public release.

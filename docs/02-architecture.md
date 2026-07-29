@@ -10,7 +10,7 @@
 | Language | **Swift 5.9+** | Native, low resource use; ecosystem standard. |
 | UI | **SwiftUI + AppKit hybrid** | SwiftUI: settings/popover/panels (fast, modern). AppKit (`NSStatusItem`): needed to draw a live sparkline in the menu bar — pure SwiftUI `MenuBarExtra` is limited for custom drawing. |
 | Menu bar | **`NSStatusItem` + custom `NSView`**, SwiftUI inside the popover | Live text+sparkline render, ⌘-drag reordering, precise width control. |
-| Widget | **WidgetKit** extension + own **floating `NSPanel`** | WidgetKit = system-native but throttled (minutes). Floating panel = real-time live widget. Both are offered. |
+| Widget | **WidgetKit** extension | System-native but throttled (minutes); the menu bar itself covers the real-time need. |
 | Metric engine | **Local Swift Package `MetricsKit`** | Testable, UI-independent, shareable with the widget extension. |
 | Sharing | **App Group + shared container** | Main app ↔ widget extension data sharing. |
 | Reactivity | **Combine / `@Observable`** | sampler → store → view model → UI flow. |
@@ -130,19 +130,20 @@ final class SamplingScheduler {
 - Redraw on `MetricStore` updates (~1–2s); throttle when hidden/full-screen.
 - ⌘-drag reordering is native; `NSStatusItem.autosaveName` preserves position.
 
-## 5. Floating panel (live widget)
-- `NSPanel` (nonactivating, `.floating` level), rounded corners, translucent blur
-  (`NSVisualEffectView`).
-- SwiftUI content (`NSHostingView`) bound to `MetricStore` — real-time.
-- Drag-to-position, screen snap, "always on top" toggle, size presets.
-- Multiple panels, each a different module.
+## 5. Compact Health item (removed: floating panel)
+- The always-on-top floating `NSPanel` was **removed**. It duplicated the menu bar
+  without adding an answer the menu bar could not give, and it carried per-display
+  placement, a global hotkey, and two layout modes of its own.
+- The optional **Compact Health** status item replaces it: a single stable-width item
+  that stays quiet and turns into a warning only when an alert routed to it activates.
+- Real-time viewing therefore lives entirely in the menu bar and its popovers.
 
 ## 6. WidgetKit extension
 - `TimelineProvider` reads the last snapshot from the App Group (`SharedSnapshotReader`).
 - The main app periodically writes a snapshot + short history (`SharedSnapshotWriter`) and
   calls `WidgetCenter.shared.reloadTimelines`.
 - **Constraint:** the system throttles update frequency (not real-time). This is explained
-  to the user; the floating panel serves the real-time need, WidgetKit serves "at a glance".
+  to the user; the menu bar serves the real-time need, WidgetKit serves "at a glance".
 - Small/Medium/Large; Lock Screen/Notification Center.
 
 ## 7. Power & performance strategy (the differentiation promise)

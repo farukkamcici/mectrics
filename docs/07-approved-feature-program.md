@@ -25,7 +25,8 @@ The following decisions are fixed for this program:
 - Add new alert signals and delivery choices without silently replacing existing rules.
 - Keep all event, metric, summary, and diagnostic data local.
 - Do not add continuous Battery or Disk history charts.
-- Keep the existing 30-day archive and CSV export as a data portability feature.
+- The 30-day archive and its CSV export were removed; the Attention Log is the record
+  of what happened, and its own export covers portability.
 - Keep separate menu bar items available when the optional compact health item ships.
 - Use native SwiftUI, AppKit, WidgetKit, UserNotifications, and Foundation behavior.
 - Keep every new user-facing string in the String Catalog.

@@ -12,15 +12,18 @@
 3. **General MacBook users** — battery health, a quick "why is it slow?", a clean look.
 
 ## Positioning & differentiation
-See `00-research.md §4`. Three pillars: **sparkline-first menu bar**, **dual widget modes
-(WidgetKit + live floating panel)**, **radical lightness + privacy**.
+See `00-research.md §4`. Three pillars: **sparkline-first menu bar**, **one calm overview
+surface (the Compact Health item)**, **radical lightness + privacy**.
+
+> The originally planned always-on-top floating panel was built and then removed: it
+> repeated the menu bar without answering a new question. See `02-architecture.md §5`.
 
 ---
 
 ## Feature list (modules)
 
 Each module: menu bar indicator (number + optional sparkline) → detail popover on click →
-optional floating panel / widget.
+optional widget. A module owns at most one menu bar item.
 
 > **Decision:** the product is **fully free & open source** (see `03-roadmap.md`). There is
 > **no** Free/Pro split — all modules are available to everyone. The "Order" column only
@@ -42,8 +45,8 @@ optional floating panel / widget.
 
 ### Cross-cutting experience features
 - **Sparkline-first**: every module shows a live mini graph of the last ~60 samples.
-- **Floating panel (live widget)**: draggable, optional always-on-top, real-time — a true
-  "live widget" beyond WidgetKit's throttle limit.
+- **Compact Health item**: one optional menu bar item that stays quiet until an alert
+  routed to it activates.
 - **WidgetKit desktop/Notification Center widget**: system-native, low-frequency
   (small/medium/large).
 - **Notification thresholds**: per-module rules (CPU > 90% for 30s; battery < 20%; disk
@@ -86,5 +89,5 @@ No paywall, no license key, no Free/Pro split. All modules are available to ever
 ## Release targets (summary — details in the roadmap)
 - **v0.1 (MVP):** CPU + Memory + Battery in the menu bar, sparkline, popover, settings,
   launch-at-login.
-- **v0.5:** Network, Disk, Bluetooth, floating panel, onboarding, themes, notifications.
+- **v0.5:** Network, Disk, Bluetooth, onboarding, themes, notifications.
 - **v1.0:** WidgetKit widget, advanced modules (GPU/Sensors/Fans), notarization + distribution.

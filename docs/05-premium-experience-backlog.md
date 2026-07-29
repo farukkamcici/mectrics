@@ -61,13 +61,12 @@ Primary sources:
 
 - Stable-width, monospaced menu bar rendering.
 - Native SwiftUI/AppKit surfaces and standard controls.
-- Working menu bar modules, detail popovers, floating panel, widget snapshot pipeline,
-  alerts, and Settings.
+- Working menu bar modules, detail popovers, the Compact Health item, widget snapshot
+  pipeline, alerts, and Settings.
 - A centered Settings window with close-to-menu-bar lifecycle behavior.
 - Three-step onboarding and useful defaults.
 - A visual menu bar builder rather than a checkbox-only configuration screen.
-- Persistent 30-day history, CSV export, zero telemetry, and a notarized direct-download
-  build.
+- Zero telemetry and a notarized direct-download build.
 
 ### Largest quality gaps
 
@@ -142,7 +141,7 @@ existing functionality is sufficient to build a premium v1 experience.
   - Pair each recoverable state with one direct action and one plain-language reason.
   - Preserve the last valid value during short refreshes and mark it stale when necessary.
   - Acceptance: every provider state has a deterministic representation in the menu bar,
-    popover, floating panel, widget, and Settings preview.
+    popover, widget, and Settings preview.
 
 - [ ] **PX-006 — Make accessibility a release gate** `L`
   - Add meaningful VoiceOver labels, values, hints, grouping, and reading order.
@@ -183,10 +182,11 @@ existing functionality is sufficient to build a premium v1 experience.
 
 - [ ] **PX-010 — Reconsider a dedicated history experience** `XL / Deferred`
   - Do not implement this task in the approved feature program.
-  - Keep the 30-day archive and CSV export available for portability.
+  - The 30-day archive and its CSV export have been **removed**: the archive existed
+    only to feed the export, and no surface asked a question that needed it.
   - Do not add continuous Battery or Disk history charts.
   - Reopen this task only when a specific user question cannot be answered by the
-    Attention Log, current details, alerts, or CSV export.
+    Attention Log, current details, or alerts.
   - Acceptance: a new product decision defines the question, metrics, retention,
     accessibility summary, and measurable user value before implementation begins.
 
@@ -202,21 +202,21 @@ existing functionality is sufficient to build a premium v1 experience.
     rows that help interpret that module.
 
 - [ ] **PX-012 — Make the menu bar builder a flagship interaction** `L`
-  - Use direct manipulation for add, remove, and reorder with clear drop targets.
-  - Keep a live, accurate preview using real values when available.
+  - One module owns at most one menu bar item, chosen from a single list row, so the
+    pane is a set of decisions rather than a grid of toggles.
+  - Keep a live, accurate preview using real values, including for modules that are not
+    in the menu bar yet.
   - Add keyboard alternatives, undo, Reset to Recommended, and exactly three initial
     presets: Minimal, Laptop, and Developer.
   - Explain the `Command`-drag macOS menu bar behavior in context, once.
-  - Acceptance: a first-time user can create and reorder a menu layout without reading
+  - Acceptance: a first-time user can create a menu layout without reading
     documentation, and PX-012A is complete.
 
-- [ ] **PX-013 — Polish the floating panel as a native utility** `M`
-  - Restore position per display and recover gracefully when a display disappears.
-  - Add edge snapping with a subtle threshold and no forced movement.
-  - Reveal secondary controls on hover/focus without hiding essential status.
-  - Ensure panel close means hide panel, not quit or stop monitoring.
-  - Acceptance: the panel remains readable over light and dark content and behaves
-    predictably across Spaces and full-screen apps.
+- [x] **PX-013 — ~~Polish the floating panel as a native utility~~** `Removed`
+  - The floating panel, its global hotkey, its two layout modes, and its per-display
+    placement were removed. It answered the same question as the menu bar while costing
+    a second rendering surface to maintain.
+  - The optional Compact Health item is the supported overview surface.
 
 - [ ] **PX-014 — Unify widgets with the app** `M`
   - Restore native widget gallery discovery and App Group data sharing before visual

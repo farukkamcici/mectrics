@@ -36,7 +36,7 @@ with the window background, and Increased Contrast strengthens boundaries.
 | Needs attention | Three consecutive attempts failed | Preserve and mark the last valid value | Refresh |
 
 `MetricDataState.resolve` owns precedence. The app publishes the resolved state with
-WidgetKit snapshots so the menu bar, popover, floating panel, widget, and Menu Bar
+WidgetKit snapshots so the menu bar, popover, widget, and Menu Bar
 Settings preview use the same result.
 
 ## Terminology and formatting

@@ -38,13 +38,10 @@ popover on click; toggle modules in settings; launch at login.
       **Bluetooth** (IORegistry battery). Menu bar + popover integration, tests. *(Clock later)*
 - [x] English-first + i18n architecture (String Catalog), CLAUDE.md/AGENTS.md conventions.
 - [x] Menu bar width stability (fixed reserved width, right-aligned text).
-- [x] **Floating panel** (NSPanel live widget) — draggable, always-on-top, position
-      persistence, toggle from Settings/popover.
 - [x] **Onboarding** (3 steps: welcome / modules / setup), shown once on first launch.
 - [x] **Themes & accent** (9 accent choices incl. system), compact/normal menu bar mode.
 - [x] **Notification thresholds** (CPU/Memory/Disk above, Battery below; crossing-edge
       trigger + 15 min cooldown per module).
-- [x] **Global hotkey** (⌃⌥M toggles the floating panel — Carbon, no permissions needed).
 - **Output:** a daily-usable, "beta-ready" product.
 
 ## Phase 3 — Advanced modules & distribution (v1.0)
@@ -55,7 +52,9 @@ popover on click; toggle modules in settings; launch at login.
       Verified on Apple Silicon; Intel uses the same key protocol (untested hardware).
 - [x] **WidgetKit extension** (small/medium/large, App Group snapshot).
 - [x] Sustained-threshold notifications (configurable 0/30/60/120/300-second duration).
-- [x] Rolling 30-day hourly history with CSV export.
+- [x] ~~Rolling 30-day hourly history with CSV export~~ — **removed.** The archive only
+      ever fed a CSV export; the Attention Log covers "what happened" and popover
+      sparklines read the in-memory ring buffer.
 - [x] **Hardened Runtime + notarized DMG packaging**.
 - [ ] **Sparkle** auto-update.
 - [x] LICENSE, README, and privacy statement.
@@ -75,9 +74,8 @@ Sources: iStat Menus 7 feature list, Stats (exelban) most-upvoted issues, MacRum
 **High value, medium effort**
 - [ ] **Combined mode** — one menu bar item opening an all-modules overview popover
       (top-voted Stats issue #1084; iStat 7 headline feature).
-- [ ] **Attention Log** — keep 30-day hourly persistence and CSV export for portability,
-      but present meaningful activation/recovery events instead of adding continuous
-      Battery or Disk history charts (tracked as PX-021).
+- [ ] **Attention Log** — present meaningful activation/recovery events instead of
+      continuous Battery or Disk history charts (tracked as PX-021).
 - [ ] **Per-app breakdowns** — top apps by network and disk I/O (iStat has both;
       `nettop`/`fs_usage`-style sampling on popover open, like our Top processes).
 - [ ] **Data Today** — daily network totals with per-day rollover (Usage), persisted.
@@ -116,12 +114,12 @@ Sources: iStat Menus 7 feature list, Stats (exelban) most-upvoted issues, MacRum
 | SMC/GPU keys differ and are fragile on Apple Silicon | Reference Stats' open source; test on a hardware matrix; keep sensors optional. |
 | App Store sandbox blocks sensors | Direct distribution first; App Store as a separate, limited SKU later. |
 | The app itself eats battery/CPU (the iStat complaint) | Adaptive sampling + visibility-aware redraw baked into the architecture. |
-| Expectation that WidgetKit is real-time | Feature the floating panel as the "live widget"; position WidgetKit as "at a glance". |
+| Expectation that WidgetKit is real-time | Feature the menu bar as the live surface; position WidgetKit as "at a glance". |
 | A broken update can damage release trust | Sign the Sparkle feed, publish from the same notarized artifact, and test upgrades on a clean account. |
 
 ## Where we are now
 **Phase 3 product work is underway:** GPU/Sensors/Fans, WidgetKit, and sustained-threshold
-notifications, rolling history/CSV export, and notarized DMG packaging are complete.
+notifications and notarized DMG packaging are complete.
 Next: the [premium experience pass](05-premium-experience-backlog.md), Sparkle, and the
 public open-source release. The approved follow-on work and closure criteria are in the
 [approved feature program](07-approved-feature-program.md).

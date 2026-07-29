@@ -48,8 +48,24 @@ Do **not** commit: `Mectrics.xcodeproj/`, `DerivedData/`, `.build/` (see `.gitig
 - Use `NSFont.monospacedDigitSystemFont` so digits are equal width.
 - If you add a module or change a format, update its template so real values never exceed
   the reserved width.
+- **One module owns at most one menu bar item.** Choosing a look replaces the previous
+  one (`AppModel.setComponent(_:for:)`); it never adds a second item for that module.
+- **Absence is not zero.** When a reading is missing, render a dash and never fabricate
+  `0%` / `0`. Do not offer a component whose data this Mac cannot report.
 
-## 4. Performance & privacy invariants
+## 4. Surfaces and Settings
+
+- **The menu bar is the only live surface.** The always-on-top floating panel and its
+  global hotkey were removed; the optional **Compact Health** item is the supported
+  overview. Do not reintroduce a second always-visible rendering surface.
+- **Settings holds configuration, not actions.** Quit, copy, and export belong to the
+  surfaces that own them (popover, Diagnostics, Attention Log), not to a preferences pane.
+- Every Settings pane uses `Form(.grouped)` and shares one window size — switching tabs
+  moves the selection, never the window.
+- Prefer progressive disclosure over dimmed controls: hide a control that cannot act yet
+  and show its current value as text instead.
+
+## 5. Performance & privacy invariants
 
 - **Zero telemetry.** The only network calls allowed are (optional) update checks. No usage
   or hardware data ever leaves the device.
@@ -58,7 +74,7 @@ Do **not** commit: `Mectrics.xcodeproj/`, `DerivedData/`, `.build/` (see `.gitig
 - Targets: < 60 MB RAM, low/steady CPU, "Energy Impact: Low" in Activity Monitor.
 - Heavy providers (SMC/GPU/sensors) use `cost = .heavy` and are sampled less often.
 
-## 5. Adding a metric provider
+## 6. Adding a metric provider
 
 1. Add a `MetricProvider` in `Packages/MetricsKit/Sources/MetricsKit/Providers/`.
 2. Return `isAvailable = false` when the hardware/permission is absent (module auto-hides).
@@ -67,7 +83,7 @@ Do **not** commit: `Mectrics.xcodeproj/`, `DerivedData/`, `.build/` (see `.gitig
 5. Add popover rows + primary value in `DetailPopoverView` (localized labels).
 6. Add a sanity test in `MetricsKitTests`.
 
-## 6. Build / test / run
+## 7. Build / test / run
 
 ```bash
 # Core engine (no Xcode)
@@ -78,7 +94,7 @@ xcodegen generate
 xcodebuild -project Mectrics.xcodeproj -scheme Mectrics -configuration Debug build
 ```
 
-## 7. Commits
+## 8. Commits
 
 - English, imperative-ish subject; concise body explaining the *why*.
 - **Never add Claude (or any AI agent) as a commit contributor/author.** Do not add
@@ -86,13 +102,13 @@ xcodebuild -project Mectrics.xcodeproj -scheme Mectrics -configuration Debug bui
   authored solely by the human contributor.
 - Commit or push only when the user asks. Branch before committing on `main` if unsure.
 
-## 8. Product decisions (fixed)
+## 9. Product decisions (fixed)
 
 - Distribution: **Direct / DMG** (Developer ID + notarization).
 - Minimum macOS: **15 (Sequoia)**.
 - License/model: **free & open source** (no Free/Pro split, no licensing code).
 
-## 9. Extending these rules
+## 10. Extending these rules
 
 When the user establishes a new convention, add it here (and reflect it in `CLAUDE.md` if
 Claude-specific). Keep this file the single source of truth.
