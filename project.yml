@@ -12,6 +12,9 @@ options:
 packages:
   MetricsKit:
     path: Packages/MetricsKit
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.9.4
 
 targets:
   Mectrics:
@@ -19,11 +22,32 @@ targets:
     platform: macOS
     sources:
       - path: Mectrics
+        excludes:
+          - Info.plist
+      - path: MectricsShared
     dependencies:
       - package: MetricsKit
         product: MetricsKit
       - target: MectricsWidget
         embed: true
+      - sdk: Security.framework
+      - package: Sparkle
+        product: Sparkle
+    info:
+      path: Mectrics/Info.plist
+      properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        SUEnableAutomaticChecks: false
+        SUFeedURL: https://raw.githubusercontent.com/farukkamcici/mectrics/main/appcast.xml
+        SUPublicEDKey: 3waOnY63hGNluXrW0DoG+raMzWhoRH4gnvBW+KUG4qU=
+        CFBundleURLTypes:
+          - CFBundleTypeRole: Viewer
+            CFBundleURLName: com.mectrics.app
+            CFBundleURLSchemes:
+              - mectrics
+        LSApplicationCategoryType: public.app-category.utilities
+        NSHumanReadableCopyright: "© 2026 Mectrics"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.mectrics.app
@@ -38,11 +62,14 @@ targets:
         SWIFT_EMIT_LOC_STRINGS: YES
         SWIFT_VERSION: "5.0"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        DEVELOPMENT_TEAM: ""
         CODE_SIGN_STYLE: Automatic
+        REGISTER_APP_GROUPS: YES
         # Sandbox off for local IOKit access during development (hardened runtime at release).
         ENABLE_HARDENED_RUNTIME: NO
       configs:
+        Debug:
+          DEVELOPMENT_TEAM: G88QSG6V2M
+          CODE_SIGN_ENTITLEMENTS: Mectrics/Mectrics.entitlements
         Release:
           DEVELOPMENT_TEAM: G88QSG6V2M
           CODE_SIGN_ENTITLEMENTS: Mectrics/Mectrics.entitlements
@@ -56,6 +83,7 @@ targets:
         excludes:
           - Info.plist
           - MectricsWidget.entitlements
+      - path: MectricsShared
     dependencies:
       - package: MetricsKit
         product: MetricsKit
@@ -67,14 +95,32 @@ targets:
         CURRENT_PROJECT_VERSION: "1"
         INFOPLIST_FILE: MectricsWidget/Info.plist
         CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: ""
         SWIFT_VERSION: "5.0"
         DEVELOPMENT_LANGUAGE: en
         SWIFT_EMIT_LOC_STRINGS: YES
         APPLICATION_EXTENSION_API_ONLY: YES
+        REGISTER_APP_GROUPS: YES
         SKIP_INSTALL: YES
       configs:
+        Debug:
+          DEVELOPMENT_TEAM: G88QSG6V2M
+          CODE_SIGN_ENTITLEMENTS: MectricsWidget/MectricsWidget.entitlements
+          ENABLE_APP_SANDBOX: YES
         Release:
           DEVELOPMENT_TEAM: G88QSG6V2M
           CODE_SIGN_ENTITLEMENTS: MectricsWidget/MectricsWidget.entitlements
+          ENABLE_APP_SANDBOX: YES
           ENABLE_HARDENED_RUNTIME: YES
+
+  MectricsTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: MectricsTests
+    dependencies:
+      - target: Mectrics
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mectrics.app.tests
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "5.0"
