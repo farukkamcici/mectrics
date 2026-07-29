@@ -34,8 +34,8 @@ popover on click; toggle modules in settings; launch at login.
 
 ## Phase 2 — Core expansion (v0.5)
 **Goal:** the full free core + experience features.
-- [x] Providers: **Network** (getifaddrs Δ), **Disk** (capacity + IOKit throughput),
-      **Bluetooth** (IORegistry battery). Menu bar + popover integration, tests. *(Clock later)*
+- [x] Providers: **Network** (interface counter Δ), **Disk** (capacity + IOKit throughput),
+      **Bluetooth** (IORegistry battery). Menu bar + popover integration, tests.
 - [x] English-first + i18n architecture (String Catalog), CLAUDE.md/AGENTS.md conventions.
 - [x] Menu bar width stability (fixed reserved width, right-aligned text).
 - [x] **Onboarding** (3 steps: welcome / modules / setup), shown once on first launch.
@@ -56,9 +56,11 @@ popover on click; toggle modules in settings; launch at login.
       ever fed a CSV export; the Attention Log covers "what happened" and popover
       sparklines read the in-memory ring buffer.
 - [x] **Hardened Runtime + notarized DMG packaging**.
-- [ ] **Sparkle** auto-update.
+- [x] **Sparkle** auto-update integrated (feed configured, automatic checks off). The
+      appcast still has to be published; tracked as PX-017A.
 - [x] LICENSE, README, and privacy statement.
-- [ ] Public GitHub repository, landing page, and GitHub Releases.
+- [x] Public GitHub repository (2026-07-29).
+- [ ] Landing page, README screenshots, and the first GitHub Release.
 - **Output:** a public, open-source v1.0.
 
 ## Phase 4 — v1.x+ (later)
@@ -71,24 +73,27 @@ popover on click; toggle modules in settings; launch at login.
 Sources: iStat Menus 7 feature list, Stats (exelban) most-upvoted issues, MacRumors
 "iStat vs Stats" thread, Usage app. Ordered by expected value/effort:
 
-**High value, medium effort**
-- [ ] **Combined mode** — one menu bar item opening an all-modules overview popover
+**Shipped**
+- [x] **Combined mode** — the optional Compact Health item opens a prioritized overview
       (top-voted Stats issue #1084; iStat 7 headline feature).
-- [ ] **Attention Log** — present meaningful activation/recovery events instead of
-      continuous Battery or Disk history charts (tracked as PX-021).
+- [x] **Attention Log** — meaningful activation/recovery events instead of continuous
+      Battery or Disk history charts (PX-021).
+- [x] **Hardware-domain grouping** — temperatures live inside CPU and GPU, not in a
+      separate Sensors module.
+- [x] **Visual menu bar builder** — click live preview chips instead of dense checkboxes.
+
+**Still open**
 - [ ] **Per-app breakdowns** — top apps by network and disk I/O (iStat has both;
       `nettop`/`fs_usage`-style sampling on popover open, like our Top processes).
 - [ ] **Data Today** — daily network totals with per-day rollover (Usage), persisted.
-
-**Differentiators nobody has (our openings)**
-- [ ] **Hardware-domain grouping** (already ours — temps live in CPU/GPU, keep leaning in).
 - [ ] **Zero-telemetry + fully offline as a headline** — iStat shows public IP via
       network calls; we can make "makes literally zero network requests" a verifiable
-      claim (document it, CI check for network symbols).
-- [ ] **Visual menu bar builder** (already ours — Stats/iStat both use dense settings
-      checkboxes; polish and screenshot it for the README).
-- [ ] **Alert on kernel memory-pressure level** (we surface the real kernel signal;
-      iStat/Stats only do % thresholds).
+      claim (document it, CI check for network symbols). Sparkle's update check is the
+      one deliberate exception and only runs when the user asks for it.
+
+**Dropped**
+- **Alert on kernel memory-pressure level** — implemented, then removed: it restated the
+  memory usage rule in vocabulary most people cannot act on.
 
 **Deliberately out (privacy/scope)**
 - Weather, world clocks, calendar (iStat) — needs network + location; not a monitor's job.
@@ -105,8 +110,7 @@ Sources: iStat Menus 7 feature list, Stats (exelban) most-upvoted issues, MacRum
    simpler architecture.
 
 ## Still to finalize (small)
-- **Public brand review:** confirm final capitalization and copy before the public release.
-- **GitHub org/repo** and Sponsors (optional) — at the distribution phase.
+- **Sponsors** (optional) — not enabled; decide alongside the first release.
 
 ## Risks & mitigations
 | Risk | Mitigation |
@@ -118,8 +122,12 @@ Sources: iStat Menus 7 feature list, Stats (exelban) most-upvoted issues, MacRum
 | A broken update can damage release trust | Sign the Sparkle feed, publish from the same notarized artifact, and test upgrades on a clean account. |
 
 ## Where we are now
-**Phase 3 product work is underway:** GPU/Sensors/Fans, WidgetKit, and sustained-threshold
-notifications and notarized DMG packaging are complete.
-Next: the [premium experience pass](05-premium-experience-backlog.md), Sparkle, and the
-public open-source release. The approved follow-on work and closure criteria are in the
-[approved feature program](07-approved-feature-program.md).
+**Phase 3 product work is done.** GPU/Sensors/Fans, WidgetKit, sustained-threshold
+notifications, notarized DMG packaging, the
+[premium experience pass](05-premium-experience-backlog.md), and the
+[approved feature program](07-approved-feature-program.md) are all complete and verified
+on the reference Mac; the repository is public.
+
+What is left before v1.0 is release plumbing rather than product work: publish the
+appcast and the first GitHub Release, measure a Release build against the performance
+budgets, run the clean-account Gatekeeper check, and add a landing page with screenshots.

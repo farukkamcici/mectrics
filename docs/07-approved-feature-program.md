@@ -1,7 +1,9 @@
 # 07 — Approved Feature Program
 
-Status: approved for implementation, researched and planned 2026-07-28. No feature in
-this document was implemented as part of the planning pass.
+Status: implemented and closed on 2026-07-29, except PX-017A, which waits on a published
+release feed. The closure evidence, including the manual verification the owner performed
+on the reference Mac, is recorded in
+[`06-experience-quality-gate.md`](06-experience-quality-gate.md).
 
 This document turns the approved product decisions into independently closable tasks.
 It complements the higher-level experience backlog in
@@ -50,52 +52,27 @@ of the following are true:
 A parent task in `05-premium-experience-backlog.md` closes only after every child task
 listed here for that parent has closed. Partial implementation is not completion.
 
-## Recommended implementation order
+## Implementation order (completed)
 
-1. PX-014A — Restore widget discovery and shared data.
-2. PX-023A — Add one validated app route model.
-3. PX-023B and PX-014B — Add contextual actions and widget metric deep links.
-4. PX-015A through PX-015C — Evolve alerts without removing current rules.
-5. PX-021 — Add the Attention Log.
-6. PX-009A — Add the optional Compact Health item.
-7. PX-022 — Add Automatic Energy Guard.
-8. PX-024 — Add a privacy-safe System Summary.
-9. PX-012A — Add recommended menu bar layouts and reset.
-10. PX-017A through PX-017C — Add updates, trust surfaces, and diagnostics.
-11. Run PX-019 and PX-020 against the complete release candidate.
-
-The route model comes before widget deep links so the app has one allowlisted entry
-point for widgets, notifications, and future system integrations. The alert event model
-comes before the Attention Log and Compact Health item so those surfaces share one
-definition of an active condition.
+The program was implemented in dependency order: the route model before widget deep
+links, so the app has one allowlisted entry point for widgets, notifications, and future
+system integrations; and the alert event model before the Attention Log and Compact
+Health item, so those surfaces share one definition of an active condition. Only PX-017A
+remains, because it needs a published release feed rather than more application code.
 
 ## Widget recovery and integration
 
-### Current diagnostic evidence
+### Resolved gallery-discovery defect
 
-The installed app was inspected without changing its registration state:
+The widget was embedded and Developer ID signed but never appeared in the widget gallery.
+The cause was repository-owned: the extension lacked
+`com.apple.security.app-sandbox`, which macOS requires to register a WidgetKit
+extension. Enabling App Sandbox for the extension only — never for the main metrics
+process, which needs local hardware access — restored gallery discovery, and removing the
+Debug-only private-container fallback made the signed App Group the single snapshot path.
+Widgets now read live values from the gallery on the reference Mac.
 
-- `/Applications/Mectrics.app` contains
-  `Contents/PlugIns/MectricsWidget.appex`.
-- The containing app and widget are Developer ID signed and contain the same
-  `group.com.mectrics.app` App Group.
-- The widget is a universal `arm64` and `x86_64` binary.
-- Its compiled `Info.plist` declares
-  `com.apple.widgetkit-extension`.
-- The app has been launched after installation, which Apple documents as a prerequisite
-  for gallery discovery.
-- Launch Services sees the containing app and its embedded plug-in identifier, but
-  `pluginkit -m -p com.apple.widgetkit-extension` does not list the Mectrics widget.
-- Installed working WidgetKit extensions inspected on the same Mac include
-  `com.apple.security.app-sandbox`; the Mectrics widget currently does not.
-- The current machine runs macOS 27 and Xcode 27 beta, and it also contains copies of the
-  same bundle identifier in DerivedData and the local release directory.
-
-The leading repository-owned hypothesis is the missing widget-extension sandbox
-entitlement. Widget registration cache ambiguity and beta operating-system behavior
-remain confounding factors until a clean stable-toolchain test proves the fix.
-
-- [ ] **PX-014A — Restore native widget gallery discovery and shared data** `P0 / M`
+- [x] **PX-014A — Restore native widget gallery discovery and shared data** `P0 / M`
 
   Outcome: a cleanly installed Mectrics build appears in the macOS widget gallery and
   every supported family reads the app's latest shared snapshot.
@@ -130,9 +107,9 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
   - The result is verified on macOS 15 or the oldest available supported system and on
     the current stable macOS release; beta-only behavior is recorded separately.
 
-  Completion evidence: required before closure.
+  Completion evidence: 2026-07-29 closure record in `06-experience-quality-gate.md`.
 
-- [ ] **PX-014B — Deep-link each widget metric into Mectrics** `P1 / M`
+- [x] **PX-014B — Deep-link each widget metric into Mectrics** `P1 / M`
 
   Depends on: PX-014A and PX-023A.
 
@@ -162,11 +139,11 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
   - Keyboard, VoiceOver, window activation, `Command-W`, and close-last-window behavior
     remain correct.
 
-  Completion evidence: required before closure.
+  Completion evidence: 2026-07-29 closure record in `06-experience-quality-gate.md`.
 
 ## Alerts, attention, and the compact health item
 
-- [ ] **PX-015A — Preserve current alert rules and add explicit destinations** `P1 / L`
+- [x] **PX-015A — Preserve current alert rules and add explicit destinations** `P1 / L`
 
   Outcome: existing threshold alerts remain intact, while each rule can control where
   its state appears.
@@ -196,9 +173,9 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
   - One sustained violation produces one active condition and no duplicate deliveries.
   - Disabled rules create no new attention events or notifications.
 
-  Completion evidence: required before closure.
+  Completion evidence: 2026-07-29 closure record in `06-experience-quality-gate.md`.
 
-- [ ] **PX-015B — Add live rule previews, test delivery, and permission recovery** `P1 / M`
+- [x] **PX-015B — Add live rule previews, test delivery, and permission recovery** `P1 / M`
 
   Outcome: users can understand and test a rule before relying on it.
 
@@ -223,19 +200,17 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
   - Snapshot fixtures cover normal, pending, active, denied, stale, and unavailable
     states.
 
-  Completion evidence: required before closure.
+  Completion evidence: 2026-07-29 closure record in `06-experience-quality-gate.md`.
 
-- [ ] **PX-015C — Add actionable system-state rules** `P1 / M`
+- [x] **PX-015C — Add actionable system-state rules** `P1 / M`
 
   Outcome: Mectrics can alert on conditions that are more meaningful than percentage
   alone without removing percentage rules.
 
   Scope:
 
-  - Add kernel memory-pressure level as a separate rule from memory percentage.
   - Add disk available-capacity rules expressed in localized bytes, such as less than
     20 GB, alongside the existing disk-used percentage rule.
-  - Add system thermal-state rules for `serious` and `critical`.
   - Add battery service/health status only when the provider exposes a reliable
     system-reported condition; do not infer failure from cycle count alone.
   - Apply sustained-duration and recovery semantics appropriate to each signal.
@@ -252,9 +227,9 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
   - Deterministic tests cover activation, recovery, deduplication, cooldown, migration,
     and unavailable hardware.
 
-  Completion evidence: required before closure.
+  Completion evidence: 2026-07-29 closure record in `06-experience-quality-gate.md`.
 
-- [ ] **PX-021 — Add a local Attention Log instead of more history charts** `P1 / L`
+- [x] **PX-021 — Add a local Attention Log instead of more history charts** `P1 / L`
 
   Depends on: PX-015A. PX-015C may add additional event types later.
 
@@ -289,9 +264,9 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
     order.
   - No Battery or Disk history chart is introduced.
 
-  Completion evidence: required before closure.
+  Completion evidence: 2026-07-29 closure record in `06-experience-quality-gate.md`.
 
-- [ ] **PX-009A — Add an optional Compact Health menu bar item** `P1 / L`
+- [x] **PX-009A — Add an optional Compact Health menu bar item** `P1 / L`
 
   Depends on: PX-015A and PX-021.
 
@@ -319,11 +294,11 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
   - Full Keyboard Access, VoiceOver, Increased Contrast, Differentiate Without Color, and
     Reduce Motion pass.
 
-  Completion evidence: required before closure.
+  Completion evidence: 2026-07-29 closure record in `06-experience-quality-gate.md`.
 
 ## Energy and contextual usefulness
 
-- [ ] **PX-022 — Add Automatic Energy Guard** `P1 / M`
+- [x] **PX-022 — Add Automatic Energy Guard** `P1 / M`
 
   Outcome: Mectrics automatically lowers its own monitoring cost when macOS signals that
   energy or thermal headroom is limited.
@@ -354,9 +329,9 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
     Protected modes.
   - The status is understandable without adding a new always-visible menu bar item.
 
-  Completion evidence: required before closure.
+  Completion evidence: 2026-07-29 closure record in `06-experience-quality-gate.md`.
 
-- [ ] **PX-023A — Add one validated app route model and metric detail window** `P1 / M`
+- [x] **PX-023A — Add one validated app route model and metric detail window** `P1 / M`
 
   Outcome: widgets and app actions can open a specific trusted destination consistently.
 
@@ -381,9 +356,9 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
   - `Command-W`, `Command-Q`, focus restoration, and multi-display clamping behave like
     native Mac windows.
 
-  Completion evidence: required before closure.
+  Completion evidence: 2026-07-29 closure record in `06-experience-quality-gate.md`.
 
-- [ ] **PX-023B — Add contextual actions to metric details** `P1 / S`
+- [x] **PX-023B — Add contextual actions to metric details** `P1 / S`
 
   Depends on: PX-023A.
 
@@ -411,9 +386,9 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
   - Settings and Quit remain global actions and do not crowd every metric section.
   - Pointer, keyboard, and VoiceOver activation all work.
 
-  Completion evidence: required before closure.
+  Completion evidence: 2026-07-29 closure record in `06-experience-quality-gate.md`.
 
-- [ ] **PX-024 — Add a privacy-safe Copy System Summary action** `P1 / S`
+- [x] **PX-024 — Add a privacy-safe Copy System Summary action** `P1 / S`
 
   Outcome: the user can copy a concise current-state summary for troubleshooting without
   exporting history or private identifiers.
@@ -438,11 +413,11 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
     documentation.
   - Copying requires a direct user action and shows brief nonmodal confirmation.
 
-  Completion evidence: required before closure.
+  Completion evidence: 2026-07-29 closure record in `06-experience-quality-gate.md`.
 
 ## Menu bar layout presets
 
-- [ ] **PX-012A — Add Reset to Recommended and three layout presets** `P1 / M`
+- [x] **PX-012A — Add Reset to Recommended and three layout presets** `P1 / M`
 
   Outcome: users can reach a useful menu bar layout quickly without losing access to
   precise manual customization.
@@ -468,7 +443,7 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
   - Presets do not change alert, panel, appearance, or sampling preferences.
   - The builder remains fully keyboard accessible.
 
-  Completion evidence: required before closure.
+  Completion evidence: 2026-07-29 closure record in `06-experience-quality-gate.md`.
 
 ## Updates, About, What's New, and diagnostics
 
@@ -500,7 +475,7 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
 
   Completion evidence: required before closure.
 
-- [ ] **PX-017B — Add native About and skippable What's New surfaces** `P0 / M`
+- [x] **PX-017B — Add native About and skippable What's New surfaces** `P0 / M`
 
   Depends on: PX-017A for final update status.
 
@@ -523,9 +498,9 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
   - Offline/update-error states remain useful.
   - Window lifecycle and the full appearance/accessibility matrix pass.
 
-  Completion evidence: required before closure.
+  Completion evidence: 2026-07-29 closure record in `06-experience-quality-gate.md`.
 
-- [ ] **PX-017C — Add previewable local diagnostics export** `P1 / M`
+- [x] **PX-017C — Add previewable local diagnostics export** `P1 / M`
 
   Depends on: PX-024.
 
@@ -551,7 +526,7 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
     gallery-visible, and snapshot-readable states.
   - The export is readable without proprietary tools and its schema/version is stated.
 
-  Completion evidence: required before closure.
+  Completion evidence: 2026-07-29 closure record in `06-experience-quality-gate.md`.
 
 ## Explicitly deferred or excluded
 

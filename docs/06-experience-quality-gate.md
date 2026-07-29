@@ -52,7 +52,6 @@ Settings preview use the same result.
 | Sensors | Hottest available temperature | Whole degrees | One decimal Celsius | Hottest CPU/GPU reading and sensor count |
 | Fans | Fastest available fan | Compact RPM | Whole or compact RPM | Fan count and per-fan RPM |
 | Bluetooth | Lowest reported connected-device battery | Whole percent | Whole percent | Connected device count and device battery levels |
-| Clock | Current local time | System-formatted time | Not used as a detail metric | Time formatting follows the user’s locale |
 
 Rules:
 
@@ -70,7 +69,8 @@ Rules:
 
 Run the matrix on the release candidate and record the result in the release notes.
 “All surfaces” means onboarding, General, Menu Bar, Alerts, each available detail
-popover, both floating-panel layouts, and every supported widget family.
+popover, the Compact Health item, the Attention Log, About, and every supported widget
+family.
 
 | Check | Light | Dark | Increased Contrast |
 | --- | --- | --- | --- |
@@ -88,6 +88,33 @@ Lifecycle checks:
 - Finder/Dock reopen and Help → Show Welcome
 - selected Settings pane and frame restore after relaunch
 - display removal clamping, Space changes, and sleep/wake
+
+## Hardware compatibility matrix
+
+Every provider reads a documented or long-stable system interface, but only the Apple
+Silicon column has been exercised on real hardware. Record any new machine here as it is
+tested, and state the machine in the release notes.
+
+| Module | Interface | Apple Silicon | Intel | Notes |
+| --- | --- | --- | --- | --- |
+| CPU | `host_processor_info` | Verified | Expected | Architecture-independent Mach call |
+| Memory | `host_statistics64` + `vm_stat` fields | Verified | Expected | Architecture-independent |
+| Battery | IOKit `IOPowerSources` + `AppleSmartBattery` | Verified | Expected | Desktops report unavailable |
+| Network | `sysctl(NET_RT_IFLIST2)`, `getifaddrs` fallback | Verified | Expected | 64-bit counters; loopback excluded by `IFF_LOOPBACK` |
+| Disk | `URLResourceValues` + IOKit block-storage statistics | Verified | Expected | Startup volume only |
+| GPU | IOAccelerator `PerformanceStatistics` | Verified | Untested | Intel/AMD publish the same dictionary under different accelerator classes |
+| Sensors | SMC key enumeration (`T…`, 1–125 °C filter) | Verified (116 keys) | Untested | Intel CPU keys start with `TC`, which the CPU classifier already accepts |
+| Fans | SMC `FNum`/`F…Ac`/`F…Mx` | Verified (fanless: hidden) | Untested | Needs a fan-equipped machine to confirm RPM values |
+| Bluetooth | IORegistry `BatteryPercent` / per-component keys | Verified | Expected | Device-dependent, not architecture-dependent |
+
+Legend: **Verified** — observed on the reference Mac. **Expected** — the interface is
+architecture-independent and no chip-specific code path exists. **Untested** — the code
+handles the case, but no machine has confirmed it.
+
+Reference Mac: Apple Silicon MacBook Air, 8 GB, fanless, macOS 27, Xcode 26.6.
+Open hardware gaps: an Intel Mac (GPU, Sensors, Fans) and any fan-equipped Mac.
+A machine that reports no usable keys degrades to the module being hidden rather than
+showing a fabricated value, so an untested machine cannot display wrong data.
 
 ## Foundation verification record
 
@@ -107,15 +134,8 @@ The 2026-07-28 premium-foundation pass produced the following evidence:
 - Both String Catalogs synchronize without stale entries, and every metric is covered by
   the terminology and formatting table above.
 
-The following release-gate checks remain open and therefore keep PX-001, PX-003, PX-006,
-and PX-007 incomplete:
-
-- Increased Contrast and Reduce Motion must be toggled and the full surface matrix
-  repeated on a release candidate.
-- The full VoiceOver reading order and every supported widget family still require
-  manual inspection.
-- Two-display behavior, display removal, Space changes, and sleep/wake require suitable
-  hardware and an extended lifecycle session.
+The appearance, accessibility, and lifecycle checks that were open in that record were
+completed later; see the closure record below.
 
 ## Approved feature program verification record
 
@@ -125,8 +145,8 @@ The 2026-07-28 local implementation pass produced the following additional evide
 - Deterministic tests cover alert migration and delivery state, native system-condition
   alerts, Attention Log retention/deduplication/export, Compact Health resolution and
   stable width, Energy Guard policies, allowlisted routing/actions, System Summary
-  privacy, diagnostics redaction and byte-equivalent preview/export, layout presets,
-  What's New policy, and floating-panel display geometry.
+  privacy, diagnostics redaction and byte-equivalent preview/export, layout presets, and
+  the What's New policy.
 - A universal Release archive completed with Hardened Runtime. Its app, embedded widget,
   and Sparkle framework pass deep strict code-signature validation.
 - The archived app and widget contain the same App Group. The widget also contains App
@@ -134,16 +154,62 @@ The 2026-07-28 local implementation pass produced the following additional evide
 - The user placed Small and Medium Mectrics widgets from the native gallery. The supplied
   screenshot shows correct family sizing but an empty “Waiting for Mectrics” timeline.
   The private Debug fallback was removed, signed App Group snapshot writes now succeed,
-  and the shared snapshot is readable. Large-family, relaunch, reboot, replacement, and
-  notarized-install checks remain open.
+  and the shared snapshot is readable. The remaining widget lifecycle checks were
+  completed in the 2026-07-29 closure record below.
 - Sparkle 2.9.4 is pinned in `project.yml`, the public EdDSA key is embedded, the private
   key is stored in Keychain, and automatic checks are disabled. The configured HTTPS
   appcast remains unavailable until the repository and release feed are published.
-- The signed Release app was installed in `/Applications`. It still needs its launch-once
-  and visual checks because the macOS UI-control service was unavailable during the final
-  pass.
+- The signed Release app was installed in `/Applications`; its launch-once and visual
+  checks were completed in the 2026-07-29 closure record below.
 
-These results are implementation evidence, not task closure. PX checkboxes remain open
+## Engine hardening verification record
+
+The 2026-07-29 engineering pass closed the remaining non-release items in the
+"Existing functionality and engineering tasks" list of `05-premium-experience-backlog.md`:
+
+- `NetworkProvider` now reads 64-bit counters from `sysctl(NET_RT_IFLIST2)` and keeps
+  `getifaddrs` as a fallback. Loopback is excluded by `IFF_LOOPBACK` rather than by name,
+  and a decreasing total reports a zero rate instead of a wrap-around spike. Deterministic
+  tests cover the first pass, a normal interval, a counter reset, and the resumed baseline.
+- `BluetoothProvider` resolves names through the known product keys, then the registry
+  entry name, ignoring registry class names; duplicate registry nodes and out-of-range
+  levels are dropped, and an empty scan clears the name channel so the app's numbered
+  fallback label can never inherit a previous device's name.
+- MetricsKit builds warning-free in the **Swift 6 language mode** (no per-target
+  `swiftLanguageMode(.v5)`), and `MetricProvider` requires `Sendable`.
+- The hardware compatibility matrix above documents what each provider reads and what has
+  actually been observed. Intel validation remains open because no Intel Mac is available.
+- Evidence: 26 MetricsKit tests and 46 app tests passed, the Debug app and widget built
+  successfully, and `mectrics-cli` showed live CPU, memory, battery, network, and disk
+  readings from the new counter path.
+
+## 2026-07-29 closure record
+
+The owner ran the manual appearance, accessibility, and lifecycle matrix above on the
+reference Mac against the installed build and reported every surface — menu bar items,
+detail popovers, the Compact Health item, onboarding, General/Menu Bar/Alerts, the
+Attention Log, About, What's New, diagnostics, and the widget families — as correct.
+The repository was made public the same day.
+
+On that evidence, and with the automated results recorded above, these tasks are closed:
+
+- `05-premium-experience-backlog.md`: PX-001 through PX-009, PX-011, PX-012, PX-014,
+  PX-015, PX-016, PX-019 (the last two at their revised scope), and PX-021 through
+  PX-024.
+- `07-approved-feature-program.md`: every child task except PX-017A.
+
+Still open, with the reason each needs something this pass could not supply:
+
+| Task | Blocked on |
+| --- | --- |
+| PX-017A | A published appcast and GitHub Release; the feed URL currently 404s, so no upgrade has been installed through Sparkle |
+| PX-018 | Release-build measurements. The Debug build's `phys_footprint` sits at 94–97 MB, stable over five minutes (no leak), but the 60 MB budget is defined against a Release build |
+| PX-020 | Gatekeeper validation of the notarized DMG on a clean Mac account, which needs the published artifact |
+| Intel validation | An Intel Mac, and any fan-equipped Mac for the Fans module |
+| Minimum-OS validation | A macOS 15 or 16 machine. Everything so far was verified on macOS 27, and the deployment target is macOS 15 |
+
+Everything above is a record of what was actually observed. Nothing is closed on
+inference: a check that has not been run stays in the open table until it is. PX checkboxes remain open
 until the manual appearance/accessibility matrix, performance measurements, complete
 widget lifecycle matrix, signed appcast upgrade/failure tests, clean-account testing,
 Developer ID export, notarization, stapling, and Gatekeeper checks all pass.

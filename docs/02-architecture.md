@@ -7,7 +7,7 @@
 
 | Layer | Choice | Why |
 |-------|--------|-----|
-| Language | **Swift 5.9+** | Native, low resource use; ecosystem standard. |
+| Language | **Swift 6** (MetricsKit builds in the Swift 6 language mode) | Native, low resource use; strict concurrency checks the queue boundaries the engine crosses. |
 | UI | **SwiftUI + AppKit hybrid** | SwiftUI: settings/popover/panels (fast, modern). AppKit (`NSStatusItem`): needed to draw a live sparkline in the menu bar — pure SwiftUI `MenuBarExtra` is limited for custom drawing. |
 | Menu bar | **`NSStatusItem` + custom `NSView`**, SwiftUI inside the popover | Live text+sparkline render, ⌘-drag reordering, precise width control. |
 | Widget | **WidgetKit** extension | System-native but throttled (minutes); the menu bar itself covers the real-time need. |
@@ -16,7 +16,6 @@
 | Reactivity | **Combine / `@Observable`** | sampler → store → view model → UI flow. |
 | Persistence | **UserDefaults (App Group)** + small JSON snapshot | Settings + last snapshot for the widget. No heavy DB needed. |
 | Updates | **Sparkle** (direct distribution) | Standard macOS auto-update. |
-| Global hotkey | **`KeyboardShortcuts` (sindresorhus)** or Carbon `RegisterEventHotKey` | Show/hide the panel. |
 | Login item | **`SMAppService`** (macOS 13+) | Modern launch-at-login API. |
 
 **Minimum target:** **macOS 15 Sequoia** (decided). Dev machine: macOS 27 / Xcode 26.6 /
@@ -41,7 +40,7 @@ all modules are available to everyone.
 │       │              └── ...                                  │
 │       │                                                       │
 │       ├── PopoverManager (SwiftUI detail views)              │
-│       ├── FloatingPanelManager (NSPanel live widgets)        │
+│       ├── Compact Health item (optional single status item)  │
 │       ├── SettingsWindow (SwiftUI)                           │
 │       └── NotificationEngine (threshold rules)               │
 │                          ▲                                     │
@@ -80,7 +79,7 @@ struct MetricSample {
     let detail: [String: Double] // per-core, used/wired, up/down, etc.
 }
 
-protocol MetricProvider: AnyObject {
+protocol MetricProvider: AnyObject, Sendable {
     var id: MetricID { get }          // .cpu, .memory, ...
     var isAvailable: Bool { get }     // hardware/permission present?
     var cost: SamplingCost { get }    // light/medium/heavy → scheduling
@@ -106,7 +105,7 @@ final class SamplingScheduler {
 | CPU | `host_processor_info(PROCESSOR_CPU_LOAD_INFO)` / `host_statistics64` | Diff of two consecutive samples = usage. Per-core from here. |
 | Memory | `host_statistics64(vm_statistics64)` + `sysctl(hw.memsize)` | Pressure from `vm.memory_pressure` / compressed pages. |
 | Battery | **IOKit** `IOPSCopyPowerSourcesInfo`, `IOPSCopyPowerSourcesList`; health/cycle from `IORegistry AppleSmartBattery` | Cycle count from IORegistry. |
-| Network | `getifaddrs` + `if_data` (ibytes/obytes) or `sysctl net.route` | Δbytes/Δt = rate. Per-process via `nettop`/`libnetstat` (harder, later). |
+| Network | `sysctl(NET_RT_IFLIST2)` + `if_data64` (ibytes/obytes), `getifaddrs` fallback | Δbytes/Δt = rate. 64-bit counters survive long uptimes; loopback filtered by `IFF_LOOPBACK`. |
 | Disk (space) | `statfs` / `URL.resourceValues(.volumeAvailableCapacity...)` | Simple. |
 | Disk (throughput) | **IOKit** `IOBlockStorageDriver` statistics | Δ read/write bytes. |
 | GPU | **IOKit** `IOAccelerator`/`AGXAccelerator` "Device Utilization %"; VRAM via `Metal`/IORegistry | Keys differ on Apple Silicon; needs testing. |
@@ -130,7 +129,7 @@ final class SamplingScheduler {
 - Redraw on `MetricStore` updates (~1–2s); throttle when hidden/full-screen.
 - ⌘-drag reordering is native; `NSStatusItem.autosaveName` preserves position.
 
-## 5. Compact Health item (removed: floating panel)
+## 5. Compact Health item (it replaced the floating panel)
 - The always-on-top floating `NSPanel` was **removed**. It duplicated the menu bar
   without adding an answer the menu bar could not give, and it carried per-display
   placement, a global hotkey, and two layout modes of its own.

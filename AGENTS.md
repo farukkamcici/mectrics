@@ -22,6 +22,9 @@ may write in Turkish). Nothing from that chat leaks into the repo in another lan
 - `Packages/MetricsKit/` — UI-independent metric engine (SwiftPM). Providers, scheduler,
   ring-buffer store, engine. **No UI, no localization** (data-only, English identifiers).
   - `swift build`, `swift test`, `swift run mectrics-cli` (live terminal readout).
+  - Builds in the **Swift 6 language mode** and must stay warning-free. `MetricProvider`
+    requires `Sendable`; providers are `@unchecked Sendable` because the engine samples
+    them on one serial queue. Guard anything read outside that queue with a lock.
 - `Mectrics/` — the menu bar app (SwiftUI + AppKit).
 - `project.yml` — XcodeGen project definition. **This is the source**; `Mectrics.xcodeproj`
   is generated. After editing `project.yml` **or adding/removing source files**, run
@@ -111,6 +114,12 @@ xcodebuild -project Mectrics.xcodeproj -scheme Mectrics -configuration Debug bui
 - Distribution: **Direct / DMG** (Developer ID + notarization).
 - Minimum macOS: **15 (Sequoia)**.
 - License/model: **free & open source** (no Free/Pro split, no licensing code).
+- Repository: **public** since 2026-07-29 (`github.com/farukkamcici/mectrics`). Assume
+  anything committed is publicly readable; never commit keys, notary credentials, or
+  personal identifiers.
+- Decisions that were tried and reversed — the floating panel and its global hotkey, the
+  30-day archive and CSV export, kernel memory-pressure and thermal-state alert rules —
+  stay reversed. The reasons are in `docs/05-premium-experience-backlog.md`.
 
 ## 10. Extending these rules
 

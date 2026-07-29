@@ -41,7 +41,6 @@ optional widget. A module owns at most one menu bar item.
 | **Sensors / Temperature** | Selected sensor °C | All SMC/thermal sensors, CPU/GPU/SSD temps | Later |
 | **Fans** | RPM | Per-fan RPM, min/max | Later |
 | **Bluetooth** | — (popover) | Connected device battery levels (AirPods, keyboard, mouse) | Later |
-| **Clock / Time zone** | Multiple TZ (optional) | Extra time zones | Later |
 
 ### Cross-cutting experience features
 - **Sparkline-first**: every module shows a live mini graph of the last ~60 samples.
@@ -51,11 +50,10 @@ optional widget. A module owns at most one menu bar item.
   (small/medium/large).
 - **Notification thresholds**: per-module rules (CPU > 90% for 30s; battery < 20%; disk
   < 10 GB; temperature > 90°C).
-- **Keyboard shortcut**: global hotkey to open/close the main panel.
 - **Theme & accent**: light/dark, accent color, sparkline style, menu bar density
   (compact/normal).
-- **Onboarding**: 3 steps — pick profile (Simple / Developer / Creator) → pick modules →
-  permissions.
+- **Onboarding**: 3 steps — a live menu bar preview → pick modules (recommended set
+  preselected) → launch at login. Skippable, and reopenable from Help.
 - **Power-aware sampling**: lower the sampling frequency on battery/sleep (lightness +
   battery friendliness).
 - **Privacy**: zero telemetry; nothing leaves the device.
@@ -66,7 +64,7 @@ optional widget. A module owns at most one menu bar item.
 ## Monetization — **Fully free & open source** (decided)
 
 No paywall, no license key, no Free/Pro split. All modules are available to everyone.
-- **License:** open source (proposal: MIT or GPLv3 — finalized in `03-roadmap.md`).
+- **License:** MIT (see `LICENSE`).
 - **Distribution:** signed + notarized **DMG** via GitHub Releases; Homebrew Cask later.
 - **Sustainability (optional, no pressure):** GitHub Sponsors / "Buy me a coffee" link —
   never gates any feature.

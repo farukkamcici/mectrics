@@ -48,9 +48,16 @@ Positioning pillars:
 2. **Dual widget modes** — (a) a WidgetKit desktop widget (low frequency, system-native),
    (b) the app's own live **floating panel** (real-time, draggable, always-on-top). The user
    picks either or both.
+   > Revised 2026-07-28: the floating panel was built and then removed — it repeated the
+   > menu bar without answering a new question. The optional **Compact Health** item is
+   > the second surface instead. See `02-architecture.md §5`.
 3. **Radical lightness** — native SwiftUI/AppKit, sampling frequency adapted to power/sleep
    (slow down on battery), target < 60 MB RAM and low CPU.
-4. **Onboarding + smart defaults** — a 3-step first run; "Simple" and "Pro" profiles.
+4. **Onboarding + smart defaults** — a 3-step first run.
+   > Revised 2026-07-29: shipped without "Simple"/"Pro" profiles. Onboarding preselects a
+   > recommended module set, and the menu bar builder offers Essentials / Recommended /
+   > Detailed presets, which vary along one axis — how much detail you want — instead of
+   > asking people to place themselves in a profession.
 5. **Privacy guarantee** — zero telemetry, sandbox/hardened runtime, clear privacy statement.
 6. **Fair model** — a strong free core; free & open source (no per-version paywall).
 

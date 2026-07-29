@@ -4,17 +4,18 @@ A lightweight, private, modern macOS menu bar system monitor.
 Shows CPU, Memory, Battery and more as live **sparklines** in the menu bar, with an
 optional Compact Health item that speaks up only when something needs attention.
 
-> Status: **v0.5 — Phases 1–2 complete, Phase 3 providers done.** Modules: CPU / Memory /
+> Status: **feature complete, preparing the first release.** Modules: CPU / Memory /
 > Battery / Network / Disk / GPU / Temperatures (SMC) / Fans (SMC) (+ Bluetooth when a
 > device with a battery is connected). Unavailable hardware hides itself (e.g. Fans on a
 > fanless MacBook Air). Plus: detail popovers, the Compact Health item, Attention Log,
-> two-step onboarding, accent themes + compact menu bar style, notification thresholds,
-> settings, launch-at-login, and small/medium/large WidgetKit widgets. Remaining for v1.0:
-> the premium experience pass, Sparkle updates, and the public release.
+> Energy Guard, three-step onboarding, accent themes, alert rules with previews and test
+> delivery, a visual menu bar builder with layout presets, launch-at-login, local-only
+> diagnostics, and small/medium/large WidgetKit widgets. Remaining for v1.0: publishing
+> the update feed and the first GitHub Release.
 
-**Lightweight & private by design:** ~25 MB memory, ~3% CPU with adaptive sampling
-(slower on battery), zero telemetry, and fixed-width menu bar items that never jitter
-as values change.
+**Lightweight & private by design:** adaptive sampling (slower on battery), Energy Guard
+that backs off under Low Power Mode and thermal pressure, zero telemetry, and fixed-width
+menu bar items that never jitter as values change.
 
 ## Positioning
 *iStat's depth + Stats' open spirit + lighter and more modern than either.* See [`docs/`](docs/).
@@ -40,11 +41,13 @@ mectrics/
 │   ├── App/                 # AppDelegate, AppModel, LoginItem
 │   ├── MenuBar/             # NSStatusItem controller + live sparkline drawing
 │   ├── UI/                  # popover, sparkline, formatting, localization, themes
-│   ├── Panel/               # floating always-on-top live panel (NSPanel)
 │   ├── Onboarding/          # three-step first-launch flow
-│   ├── Alerts/              # notification threshold monitor
-│   ├── Hotkey/              # global hotkey (Carbon)
-│   ├── Settings/            # settings window (General / Modules / Alerts)
+│   ├── Alerts/              # alert rules and threshold monitor
+│   ├── Attention/           # local Attention Log
+│   ├── Energy/              # Energy Guard sampling policy
+│   ├── Diagnostics/         # local-only system summary and diagnostics export
+│   ├── Release/             # About, What's New, update status
+│   ├── Settings/            # settings window (General / Menu Bar / Alerts)
 │   └── Resources/           # Localizable.xcstrings (String Catalog)
 ├── MectricsWidget/          # small/medium/large WidgetKit overview
 └── Packages/MetricsKit/     # UI-independent metric engine (SwiftPM)
@@ -54,7 +57,7 @@ mectrics/
 ```
 
 ## Requirements
-- macOS 15+ (development: Xcode 16+/26, Swift 5.10+)
+- macOS 15+ (development: Xcode 16+/26, Swift 6)
 - [XcodeGen](https://github.com/yonaskolb/XcodeGen): `brew install xcodegen`
 
 ## Development
@@ -80,9 +83,10 @@ English-first, fully localizable. User-facing strings use `String(localized:)` /
 `Mectrics/Resources/Localizable.xcstrings` in Xcode and translate.
 
 ## Privacy
-Zero telemetry. The app makes no network requests; no usage or hardware data ever
-leaves the device. All metrics come from local system interfaces (public APIs plus the
-same read-only SMC/IORegistry paths every open-source monitor uses).
+Zero telemetry. No usage or hardware data ever leaves the device. All metrics come from
+local system interfaces (public APIs plus the same read-only SMC/IORegistry paths every
+open-source monitor uses). The only network request the app can make is an update check,
+and only when you choose **Check for Updates…** — automatic checks are off.
 See the full [`PRIVACY.md`](PRIVACY.md) statement.
 
 ## License
