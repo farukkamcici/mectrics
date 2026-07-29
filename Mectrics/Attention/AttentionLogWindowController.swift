@@ -166,20 +166,10 @@ private struct AttentionLogView: View {
                 localized: "attention.trigger.energyGuard",
                 defaultValue: "Monitoring changed to \(energyGuardMode(event.observedValue).localizedName) to reduce Mectrics energy use"
             )
-        case SystemAlertSignal.memoryPressure.conditionKey:
-            return String(
-                localized: "attention.trigger.memoryPressure",
-                defaultValue: "Memory pressure reached \(SystemSignalFormat.pressure(event.observedValue)) for \(event.durationSeconds) seconds"
-            )
         case SystemAlertSignal.diskAvailableCapacity.conditionKey:
             return String(
                 localized: "attention.trigger.diskCapacity",
                 defaultValue: "Available disk space fell below \(MetricFormat.bytes(event.thresholdValue)) for \(event.durationSeconds) seconds"
-            )
-        case SystemAlertSignal.thermalState.conditionKey:
-            return String(
-                localized: "attention.trigger.thermalState",
-                defaultValue: "Thermal state reached \(SystemSignalFormat.thermal(event.observedValue)) for \(event.durationSeconds) seconds"
             )
         case SystemAlertSignal.batteryService.conditionKey:
             return String(

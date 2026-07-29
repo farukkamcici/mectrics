@@ -243,8 +243,9 @@ remain confounding factors until a clean stable-toolchain test proves the fix.
   Acceptance:
 
   - Each new rule has a plain-language trigger, preview, active state, and recovery state.
-  - Memory pressure and thermal state use their system signals rather than invented
-    percentages.
+  - Kernel memory pressure and thermal state were **removed** after review: both are
+    power-user vocabulary that most people cannot act on, and each restated a rule that
+    already exists in plainer terms (memory usage, CPU temperature).
   - Disk headroom uses the same capacity meaning shown in the Disk detail and declares
     any required-reason API use in `PrivacyInfo.xcprivacy`.
   - Battery health never reports a service condition without a supported provider value.

@@ -30,12 +30,8 @@ struct ActiveAlertCondition: Equatable, Identifiable {
         for update: AlertConditionUpdate
     ) -> AttentionSeverity {
         guard update.state == .active else { return .info }
-        if update.conditionKey == SystemAlertSignal.thermalState.conditionKey,
-           update.measuredValue >= 3 {
-            return .critical
-        }
-        if update.conditionKey == SystemAlertSignal.memoryPressure.conditionKey,
-           update.measuredValue >= 4 {
+        // A battery macOS wants serviced is a hardware fault, not a passing spike.
+        if update.conditionKey == SystemAlertSignal.batteryService.conditionKey {
             return .critical
         }
         return .warning
@@ -312,20 +308,10 @@ extension AttentionSeverity {
 private extension ActiveAlertCondition {
     var summary: String {
         switch conditionKey {
-        case SystemAlertSignal.memoryPressure.conditionKey:
-            return String(
-                localized: "health.condition.memoryPressure",
-                defaultValue: "Memory pressure is \(SystemSignalFormat.pressure(measuredValue))"
-            )
         case SystemAlertSignal.diskAvailableCapacity.conditionKey:
             return String(
                 localized: "health.condition.diskCapacity",
                 defaultValue: "\(MetricFormat.bytes(measuredValue)) disk space remains"
-            )
-        case SystemAlertSignal.thermalState.conditionKey:
-            return String(
-                localized: "health.condition.thermal",
-                defaultValue: "Thermal state is \(SystemSignalFormat.thermal(measuredValue))"
             )
         case SystemAlertSignal.batteryService.conditionKey:
             return String(

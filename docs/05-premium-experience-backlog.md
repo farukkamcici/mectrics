@@ -235,8 +235,9 @@ existing functionality is sufficient to build a premium v1 experience.
   - Add per-rule previews and a test-notification action.
   - Explain threshold, sustained duration, cooldown, and current state inline.
   - Show permission status with a direct system-settings recovery action.
-  - Add memory pressure, available disk capacity, and thermal state as first-class signals
-    alongside existing percentage rules.
+  - Add available disk capacity and macOS battery service as first-class signals
+    alongside the existing percentage rules. Kernel memory pressure and thermal state
+    were tried and removed: power-user vocabulary that restated an existing rule.
   - Acceptance: PX-015A, PX-015B, and PX-015C are complete, and users can predict exactly
     when an alert will activate and where it will appear.
 

@@ -344,16 +344,7 @@ final class AppModel {
             active.insert(id)
         }
         for (signal, rule) in systemAlertRules where rule.enabled {
-            switch signal {
-            case .memoryPressure:
-                active.insert(.memory)
-            case .diskAvailableCapacity:
-                active.insert(.disk)
-            case .batteryService:
-                active.insert(.battery)
-            case .thermalState:
-                break
-            }
+            active.insert(signal.metricID)
         }
         if active.contains(.cpu) || active.contains(.gpu) {
             active.insert(.sensors)
@@ -475,18 +466,7 @@ final class AppModel {
     }
 
     var systemConditionReadings: [SystemAlertSignal: SystemConditionReading] {
-        var readings: [SystemAlertSignal: SystemConditionReading] = [
-            .thermalState: SystemConditionReading(
-                .thermalState,
-                value: Self.thermalStateValue(ProcessInfo.processInfo.thermalState)
-            )
-        ]
-        if let pressure = latest[.memory]?.detail["pressureLevel"] {
-            readings[.memoryPressure] = SystemConditionReading(
-                .memoryPressure,
-                value: pressure
-            )
-        }
+        var readings: [SystemAlertSignal: SystemConditionReading] = [:]
         if let free = latest[.disk]?.detail["free"] {
             readings[.diskAvailableCapacity] = SystemConditionReading(
                 .diskAvailableCapacity,
@@ -535,32 +515,12 @@ final class AppModel {
         )
     }
 
-    private static func thermalStateValue(
-        _ state: ProcessInfo.ThermalState
-    ) -> Double {
-        switch state {
-        case .nominal: return 0
-        case .fair: return 1
-        case .serious: return 2
-        case .critical: return 3
-        @unknown default: return 0
-        }
-    }
-
     private static func defaultSystemAlertRules()
         -> [SystemAlertSignal: SystemAlertRule] {
         [
-            .memoryPressure: SystemAlertRule(
-                enabled: false,
-                thresholdValue: 2
-            ),
             .diskAvailableCapacity: SystemAlertRule(
                 enabled: false,
                 thresholdValue: 20 * 1_024 * 1_024 * 1_024
-            ),
-            .thermalState: SystemAlertRule(
-                enabled: false,
-                thresholdValue: 2
             ),
             .batteryService: SystemAlertRule(
                 enabled: false,

@@ -252,13 +252,6 @@ struct AlertsSettingsTab: View {
     private func systemThresholdControl(_ signal: SystemAlertSignal) -> some View {
         let rule = systemRuleBinding(signal)
         switch signal {
-        case .memoryPressure:
-            Picker("Pressure level", selection: rule.thresholdValue) {
-                Text("Warning").tag(2.0)
-                Text("Critical").tag(4.0)
-            }
-            .labelsHidden()
-            .fixedSize()
         case .diskAvailableCapacity:
             Picker("Available capacity", selection: rule.thresholdValue) {
                 ForEach([5, 10, 20, 50], id: \.self) { gigabytes in
@@ -269,13 +262,6 @@ struct AlertsSettingsTab: View {
                     )
                     .tag(Double(gigabytes) * 1_024 * 1_024 * 1_024)
                 }
-            }
-            .labelsHidden()
-            .fixedSize()
-        case .thermalState:
-            Picker("Thermal state", selection: rule.thresholdValue) {
-                Text("Serious").tag(2.0)
-                Text("Critical").tag(3.0)
             }
             .labelsHidden()
             .fixedSize()
@@ -363,12 +349,8 @@ struct AlertsSettingsTab: View {
         case .system(let signal):
             let value = model.systemAlertRules[signal]?.thresholdValue ?? 0
             switch signal {
-            case .memoryPressure:
-                return SystemSignalFormat.pressure(value)
             case .diskAvailableCapacity:
                 return MetricFormat.bytes(value)
-            case .thermalState:
-                return SystemSignalFormat.thermal(value)
             case .batteryService:
                 return String(
                     localized: "alerts.threshold.macOS",
@@ -399,12 +381,8 @@ struct AlertsSettingsTab: View {
                 )
             }
             switch signal {
-            case .memoryPressure:
-                return SystemSignalFormat.pressure(reading.value)
             case .diskAvailableCapacity:
                 return MetricFormat.bytes(reading.value)
-            case .thermalState:
-                return SystemSignalFormat.thermal(reading.value)
             case .batteryService:
                 return reading.value >= 1
                     ? String(
@@ -629,20 +607,10 @@ private extension AlertConditionState {
 private extension SystemAlertSignal {
     var triggerLabel: String {
         switch self {
-        case .memoryPressure:
-            return String(
-                localized: "alerts.system.memoryPressure",
-                defaultValue: "Memory pressure reaches"
-            )
         case .diskAvailableCapacity:
             return String(
                 localized: "alerts.system.diskCapacity",
                 defaultValue: "Free disk space below"
-            )
-        case .thermalState:
-            return String(
-                localized: "alerts.system.thermalState",
-                defaultValue: "Thermal state reaches"
             )
         case .batteryService:
             return String(

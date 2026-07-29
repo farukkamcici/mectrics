@@ -3,7 +3,7 @@ import XCTest
 @testable import Mectrics
 
 final class SystemConditionMonitorTests: XCTestCase {
-    func testMemoryPressureSustainsActivatesOnceAndRecovers() {
+    func testSustainedConditionActivatesOnceAndRecovers() {
         var deliveries = 0
         var updates: [AlertConditionUpdate] = []
         let monitor = SystemConditionMonitor { _, _, _ in deliveries += 1 }
@@ -11,44 +11,44 @@ final class SystemConditionMonitorTests: XCTestCase {
         let start = Date(timeIntervalSince1970: 1_000)
         let rule = SystemAlertRule(
             enabled: true,
-            thresholdValue: 2,
+            thresholdValue: 1,
             durationSeconds: 30,
             destinations: [.notification, .attentionLog]
         )
 
         evaluate(
             monitor,
-            .memoryPressure,
-            value: 2,
+            .batteryService,
+            value: 1,
             rule: rule,
             now: start
         )
         evaluate(
             monitor,
-            .memoryPressure,
-            value: 4,
+            .batteryService,
+            value: 1,
             rule: rule,
             now: start.addingTimeInterval(30)
         )
         evaluate(
             monitor,
-            .memoryPressure,
-            value: 4,
+            .batteryService,
+            value: 1,
             rule: rule,
             now: start.addingTimeInterval(60)
         )
 
-        XCTAssertEqual(monitor.state(for: .memoryPressure), .active)
+        XCTAssertEqual(monitor.state(for: .batteryService), .active)
         XCTAssertEqual(deliveries, 1)
 
         evaluate(
             monitor,
-            .memoryPressure,
-            value: 1,
+            .batteryService,
+            value: 0,
             rule: rule,
             now: start.addingTimeInterval(61)
         )
-        XCTAssertEqual(monitor.state(for: .memoryPressure), .normal)
+        XCTAssertEqual(monitor.state(for: .batteryService), .normal)
         XCTAssertEqual(
             updates.map(\.transition),
             [.pending, .activated, .recovered]
@@ -56,7 +56,7 @@ final class SystemConditionMonitorTests: XCTestCase {
         XCTAssertTrue(
             updates.allSatisfy {
                 $0.conditionKey
-                    == SystemAlertSignal.memoryPressure.conditionKey
+                    == SystemAlertSignal.batteryService.conditionKey
             }
         )
     }
@@ -118,15 +118,7 @@ final class SystemConditionMonitorTests: XCTestCase {
         XCTAssertEqual(deliveries, 2)
     }
 
-    func testThermalCriticalAndBatteryProviderValuesUseNativeSignals() {
-        XCTAssertFalse(SystemConditionMonitor.isViolating(
-            SystemConditionReading(.thermalState, value: 1),
-            threshold: 2
-        ))
-        XCTAssertTrue(SystemConditionMonitor.isViolating(
-            SystemConditionReading(.thermalState, value: 2),
-            threshold: 2
-        ))
+    func testBatteryServiceUsesNativeSignalValues() {
         XCTAssertFalse(SystemConditionMonitor.isViolating(
             SystemConditionReading(.batteryService, value: 0),
             threshold: 1

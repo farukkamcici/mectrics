@@ -91,7 +91,6 @@
     "Optional": {},
     "Permission": {},
     "Presets": {},
-    "Pressure level": {},
     "Quit": {},
     "Quit Mectrics": {},
     "Recommended": {},
@@ -99,7 +98,6 @@
     "Save Diagnostics…": {},
     "Save…": {},
     "Select the sections to include, then review the exact local export.": {},
-    "Serious": {},
     "Settings": {},
     "Skip Setup": {},
     "Start Mectrics automatically after you sign in.": {},
@@ -107,7 +105,6 @@
     "System summary copied.": {},
     "Test Notification": {},
     "The diagnostics file could not be saved.": {},
-    "Thermal state": {},
     "This is exactly what will be written to the file.": {},
     "Top processes": {},
     "Updates": {},
@@ -402,50 +399,6 @@
         }
       }
     },
-    "alert.system.memoryPressure.body": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Kernel memory pressure reached %arg."
-          }
-        }
-      }
-    },
-    "alert.system.memoryPressure.title": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Memory pressure needs attention"
-          }
-        }
-      }
-    },
-    "alert.system.thermal.body": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "The system thermal state reached %arg."
-          }
-        }
-      }
-    },
-    "alert.system.thermal.title": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Mac thermal state needs attention"
-          }
-        }
-      }
-    },
     "alert.test.body": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -585,28 +538,6 @@
           "stringUnit": {
             "state": "new",
             "value": "Available disk space below"
-          }
-        }
-      }
-    },
-    "alerts.system.memoryPressure": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Memory pressure reaches"
-          }
-        }
-      }
-    },
-    "alerts.system.thermalState": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Thermal state reaches"
           }
         }
       }
@@ -820,17 +751,6 @@
         }
       }
     },
-    "attention.trigger.memoryPressure": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Memory pressure reached %1$arg for %2$arg seconds"
-          }
-        }
-      }
-    },
     "attention.trigger.summary": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -838,17 +758,6 @@
           "stringUnit": {
             "state": "new",
             "value": "%1$arg %2$arg %3$arg%4$arg for %5$arg seconds"
-          }
-        }
-      }
-    },
-    "attention.trigger.thermalState": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Thermal state reached %1$arg for %2$arg seconds"
           }
         }
       }
@@ -1590,17 +1499,6 @@
         }
       }
     },
-    "health.condition.memoryPressure": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Memory pressure is %arg"
-          }
-        }
-      }
-    },
     "health.condition.pending": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -1608,17 +1506,6 @@
           "stringUnit": {
             "state": "new",
             "value": "%arg, waiting for sustained duration"
-          }
-        }
-      }
-    },
-    "health.condition.thermal": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Thermal state is %arg"
           }
         }
       }
@@ -2730,50 +2617,6 @@
           "stringUnit": {
             "state": "new",
             "value": "Mectrics System Summary"
-          }
-        }
-      }
-    },
-    "thermal.critical": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Critical"
-          }
-        }
-      }
-    },
-    "thermal.fair": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Fair"
-          }
-        }
-      }
-    },
-    "thermal.nominal": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Nominal"
-          }
-        }
-      }
-    },
-    "thermal.serious": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Serious"
           }
         }
       }

@@ -31,8 +31,8 @@ final class CompactHealthTests: XCTestCase {
                     condition(
                         state: .active,
                         conditionKey:
-                            SystemAlertSignal.thermalState.conditionKey,
-                        measured: 3
+                            SystemAlertSignal.batteryService.conditionKey,
+                        measured: 1
                     )
                 ],
                 configuredMetricStates: [.live]

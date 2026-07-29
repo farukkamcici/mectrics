@@ -2,17 +2,18 @@ import Foundation
 import MetricsKit
 import UserNotifications
 
+/// Conditions macOS reports directly, rather than thresholds on a sampled value.
+///
+/// Kernel memory pressure and thermal state were removed: they are power-user
+/// concepts that most people cannot act on, and each duplicated a rule that is
+/// already here in plainer terms.
 enum SystemAlertSignal: String, Codable, CaseIterable, Hashable {
-    case memoryPressure
     case diskAvailableCapacity
-    case thermalState
     case batteryService
 
     var metricID: MetricID {
         switch self {
-        case .memoryPressure: return .memory
         case .diskAvailableCapacity: return .disk
-        case .thermalState: return .sensors
         case .batteryService: return .battery
         }
     }
@@ -20,7 +21,7 @@ enum SystemAlertSignal: String, Codable, CaseIterable, Hashable {
     var unit: MetricUnit {
         switch self {
         case .diskAvailableCapacity: return .bytes
-        case .memoryPressure, .thermalState, .batteryService: return .count
+        case .batteryService: return .count
         }
     }
 
@@ -152,7 +153,7 @@ final class SystemConditionMonitor {
         switch reading.signal {
         case .diskAvailableCapacity:
             return reading.value <= threshold
-        case .memoryPressure, .thermalState, .batteryService:
+        case .batteryService:
             return reading.value >= threshold
         }
     }
@@ -247,20 +248,10 @@ final class SystemConditionMonitor {
 private extension SystemAlertSignal {
     var notificationTitle: String {
         switch self {
-        case .memoryPressure:
-            return String(
-                localized: "alert.system.memoryPressure.title",
-                defaultValue: "Memory pressure needs attention"
-            )
         case .diskAvailableCapacity:
             return String(
                 localized: "alert.system.diskCapacity.title",
                 defaultValue: "Disk space is running low"
-            )
-        case .thermalState:
-            return String(
-                localized: "alert.system.thermal.title",
-                defaultValue: "Mac thermal state needs attention"
             )
         case .batteryService:
             return String(
@@ -272,72 +263,15 @@ private extension SystemAlertSignal {
 
     func notificationBody(value: Double, threshold: Double) -> String {
         switch self {
-        case .memoryPressure:
-            return String(
-                localized: "alert.system.memoryPressure.body",
-                defaultValue: "Kernel memory pressure reached \(SystemSignalFormat.pressure(value))."
-            )
         case .diskAvailableCapacity:
             return String(
                 localized: "alert.system.diskCapacity.body",
                 defaultValue: "\(MetricFormat.bytes(value)) remains, below your \(MetricFormat.bytes(threshold)) limit."
             )
-        case .thermalState:
-            return String(
-                localized: "alert.system.thermal.body",
-                defaultValue: "The system thermal state reached \(SystemSignalFormat.thermal(value))."
-            )
         case .batteryService:
             return String(
                 localized: "alert.system.batteryService.body",
                 defaultValue: "macOS reports that the battery needs service."
-            )
-        }
-    }
-}
-
-enum SystemSignalFormat {
-    static func pressure(_ value: Double) -> String {
-        switch Int(value) {
-        case 2:
-            return String(
-                localized: "pressure.warning",
-                defaultValue: "Warning"
-            )
-        case 4:
-            return String(
-                localized: "pressure.critical",
-                defaultValue: "Critical"
-            )
-        default:
-            return String(
-                localized: "pressure.normal",
-                defaultValue: "Normal"
-            )
-        }
-    }
-
-    static func thermal(_ value: Double) -> String {
-        switch Int(value) {
-        case 1:
-            return String(
-                localized: "thermal.fair",
-                defaultValue: "Fair"
-            )
-        case 2:
-            return String(
-                localized: "thermal.serious",
-                defaultValue: "Serious"
-            )
-        case 3...:
-            return String(
-                localized: "thermal.critical",
-                defaultValue: "Critical"
-            )
-        default:
-            return String(
-                localized: "thermal.nominal",
-                defaultValue: "Nominal"
             )
         }
     }
