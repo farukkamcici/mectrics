@@ -190,11 +190,28 @@ struct CompactHealthPopoverView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: ExperienceSpacing.medium) {
-            Label(
-                model.compactHealthState.localizedName,
-                systemImage: model.compactHealthState.symbolName
-            )
-            .font(.headline)
+            HStack {
+                Label(
+                    model.compactHealthState.localizedName,
+                    systemImage: model.compactHealthState.symbolName
+                )
+                .font(.headline)
+                Spacer()
+                // The popover already follows the sampling cycle; this is for the
+                // moment someone wants a reading now rather than in a second or six.
+                Button {
+                    model.refreshMetrics()
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.callout.weight(.medium))
+                }
+                .buttonStyle(.borderless)
+                .help(String(
+                    localized: "health.refresh.help",
+                    defaultValue: "Take a reading now"
+                ))
+                .accessibilityLabel("Refresh now")
+            }
 
             if model.compactHealthConditions.isEmpty {
                 Text("Mectrics will show selected alert conditions here.")

@@ -192,6 +192,39 @@ final class MetricsKitTests: XCTestCase {
         engine.stop()
     }
 
+    func testExplicitRefreshReadsProvidersTheRuntimePolicyHeldBack() {
+        let heavy = HeavyTestProvider()
+        let engine = MetricsEngine()
+        engine.register([heavy])
+        engine.updateRuntimePolicy(
+            SamplingRuntimePolicy(
+                intervalMultiplier: 3,
+                heavyEveryNCycles: 8,
+                pausedMetricIDs: [.sensors]
+            )
+        )
+
+        let paused = expectation(description: "paused refresh")
+        engine.requestRefresh()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { paused.fulfill() }
+        wait(for: [paused], timeout: 2)
+        XCTAssertEqual(
+            heavy.sampleCount,
+            0,
+            "A background refresh must respect the energy policy"
+        )
+
+        let forced = expectation(description: "explicit refresh")
+        engine.requestRefresh(includingHeavy: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { forced.fulfill() }
+        wait(for: [forced], timeout: 2)
+        XCTAssertEqual(
+            heavy.sampleCount,
+            1,
+            "An explicit refresh must read what the policy paused"
+        )
+    }
+
     func testRuntimeSamplingPolicyClampsUnsafeValues() {
         let policy = SamplingRuntimePolicy(
             intervalMultiplier: 0,
@@ -369,6 +402,18 @@ final class MetricsKitTests: XCTestCase {
             XCTAssertLessThanOrEqual(MetricFormat.menuRate(v).count, 4,
                                      "menuRate(\(v)) too wide")
         }
+    }
+}
+
+/// A heavy provider, which the runtime policy is allowed to slow down or pause.
+private final class HeavyTestProvider: MetricProvider {
+    let id = MetricID.sensors
+    let cost = SamplingCost.heavy
+    private(set) var sampleCount = 0
+
+    func sample() -> MetricSample? {
+        sampleCount += 1
+        return MetricSample(value: 42, unit: .celsius)
     }
 }
 

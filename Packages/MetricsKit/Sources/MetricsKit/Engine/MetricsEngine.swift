@@ -70,9 +70,15 @@ public final class MetricsEngine: @unchecked Sendable {
     }
 
     /// Requests an immediate pass on the serial sampling queue.
-    public func requestRefresh() {
+    /// Samples every active provider immediately.
+    ///
+    /// `includingHeavy` overrides the runtime policy's slowdown and pausing, which
+    /// exists to save energy in the background. When the user explicitly asks for a
+    /// reading, returning stale sensor or GPU values would answer a different
+    /// question than the one they asked.
+    public func requestRefresh(includingHeavy: Bool = false) {
         queue.async { [weak self] in
-            self?.tick()
+            self?.tick(forcingAllProviders: includingHeavy)
         }
     }
 
@@ -110,17 +116,18 @@ public final class MetricsEngine: @unchecked Sendable {
         t.resume()
     }
 
-    private func tick() {
+    private func tick(forcingAllProviders: Bool = false) {
         cycleCount &+= 1
-        let runHeavy =
-            cycleCount % max(1, runtimePolicy.heavyEveryNCycles) == 0
+        let runHeavy = forcingAllProviders
+            || cycleCount % max(1, runtimePolicy.heavyEveryNCycles) == 0
         var updated: [MetricID: MetricSample] = [:]
         var failed: Set<MetricID> = []
         var attemptedAnyProvider = false
 
         for provider in providers {
             if let activeMetricIDs, !activeMetricIDs.contains(provider.id) { continue }
-            if runtimePolicy.pausedMetricIDs.contains(provider.id) { continue }
+            if !forcingAllProviders,
+               runtimePolicy.pausedMetricIDs.contains(provider.id) { continue }
             if provider.cost == .heavy && !runHeavy { continue }
             attemptedAnyProvider = true
             if let sample = provider.sample() {

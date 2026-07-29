@@ -323,7 +323,9 @@ final class AppModel {
     }
 
     func refreshMetrics() {
-        engine.requestRefresh()
+        // An explicit refresh reads everything, including whatever Energy Guard has
+        // been slowing down or holding back.
+        engine.requestRefresh(includingHeavy: true)
     }
 
     /// Temporarily samples the recommended onboarding metrics without changing the
