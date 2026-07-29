@@ -348,27 +348,33 @@ struct MenuBarBuilderView: View {
         let sample = model.latest[id]
         let level = min(max(sample?.value ?? 0, 0), 1)
         let charging = (sample?.detail["charging"] ?? 0) > 0
+        let charge = Text("\(Int((level * 100).rounded()))")
+            .font(.system(size: 7.5, weight: .bold).monospacedDigit())
         return HStack(spacing: 1) {
             ZStack {
-                RoundedRectangle(cornerRadius: 2.5, style: .continuous)
-                    .strokeBorder(.primary.opacity(0.55), lineWidth: 1)
-                GeometryReader { proxy in
-                    RoundedRectangle(cornerRadius: 1.5, style: .continuous)
-                        .fill(
-                            level <= 0.2 && !charging
-                                ? Color.red
-                                : Color.primary.opacity(0.85)
-                        )
-                        .frame(width: proxy.size.width * level)
+                // Solid digits where the body is empty…
+                charge
+                // …knocked out of the fill where it is not, matching the menu bar.
+                ZStack {
+                    GeometryReader { proxy in
+                        RoundedRectangle(cornerRadius: 1.5, style: .continuous)
+                            .fill(
+                                level <= 0.2 && !charging
+                                    ? Color.red
+                                    : Color.primary.opacity(0.9)
+                            )
+                            .frame(width: proxy.size.width * level)
+                    }
+                    .padding(1.8)
+                    charge.blendMode(.destinationOut)
                 }
-                .padding(1.5)
-                Text("\(Int((level * 100).rounded()))")
-                    .font(.system(size: 7.5, weight: .bold).monospacedDigit())
-                    .blendMode(.difference)
+                .compositingGroup()
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .strokeBorder(.primary.opacity(0.75), lineWidth: 1.2)
             }
             .frame(width: 24, height: 11)
             RoundedRectangle(cornerRadius: 1, style: .continuous)
-                .fill(.primary.opacity(0.55))
+                .fill(.primary.opacity(0.75))
                 .frame(width: 2, height: 4)
         }
     }

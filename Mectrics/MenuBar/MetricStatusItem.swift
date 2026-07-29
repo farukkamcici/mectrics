@@ -364,43 +364,36 @@ final class MetricStatusItem: NSObject {
         showsPercent: Bool,
         in rect: NSRect
     ) {
-        let body = NSRect(x: rect.minX + 0.5, y: rect.midY - 5, width: rect.width - 4, height: 10)
-        let outline = NSBezierPath(roundedRect: body, xRadius: 2.5, yRadius: 2.5)
-        outline.lineWidth = 1
-        NSColor.labelColor.withAlphaComponent(0.55).setStroke()
+        let body = NSRect(
+            x: rect.minX + 0.5,
+            y: rect.midY - 5.5,
+            width: rect.width - 4,
+            height: 11
+        )
+        let outline = NSBezierPath(roundedRect: body, xRadius: 3, yRadius: 3)
+        outline.lineWidth = 1.2
+        NSColor.labelColor.withAlphaComponent(0.75).setStroke()
         outline.stroke()
 
         // Terminal nub.
         let nub = NSRect(x: body.maxX + 1, y: body.midY - 2, width: 2, height: 4)
-        NSColor.labelColor.withAlphaComponent(0.55).setFill()
+        NSColor.labelColor.withAlphaComponent(0.75).setFill()
         NSBezierPath(roundedRect: nub, xRadius: 1, yRadius: 1).fill()
 
         // Proportional fill; red when critically low.
-        let inset = body.insetBy(dx: 1.5, dy: 1.5)
+        let inset = body.insetBy(dx: 1.8, dy: 1.8)
         let clamped = min(max(level, 0), 1)
         let fillRect = NSRect(x: inset.minX, y: inset.minY,
                               width: inset.width * CGFloat(clamped), height: inset.height)
-        (clamped <= 0.2 && !charging ? NSColor.systemRed : NSColor.labelColor.withAlphaComponent(0.85)).setFill()
+        (clamped <= 0.2 && !charging ? NSColor.systemRed : NSColor.labelColor.withAlphaComponent(0.9)).setFill()
         NSBezierPath(roundedRect: fillRect, xRadius: 1.5, yRadius: 1.5).fill()
 
         if showsPercent {
-            // Drawn with a contrasting blend so the digits stay readable over both the
-            // filled and the empty part of the body.
-            let text = "\(Int((clamped * 100).rounded()))" as NSString
-            let attrs: [NSAttributedString.Key: Any] = [
-                .font: batteryLabelFont,
-                .foregroundColor: NSColor.labelColor
-            ]
-            let size = text.size(withAttributes: attrs)
-            NSGraphicsContext.current?.compositingOperation = .difference
-            text.draw(
-                at: NSPoint(
-                    x: body.midX - size.width / 2,
-                    y: body.midY - size.height / 2
-                ),
-                withAttributes: attrs
+            drawBatteryCharge(
+                percent: Int((clamped * 100).rounded()),
+                in: body,
+                over: fillRect
             )
-            NSGraphicsContext.current?.compositingOperation = .sourceOver
         }
 
         if charging {
@@ -415,6 +408,49 @@ final class MetricStatusItem: NSObject {
             bolt.draw(at: NSPoint(x: x, y: body.midY - size.height / 2),
                       withAttributes: attrs)
         }
+    }
+
+    /// Draws the charge inside the battery the way macOS does: solid where the body is
+    /// empty, and knocked out of the fill where it is not.
+    ///
+    /// A single colour cannot work here — the digits straddle the boundary between
+    /// filled and empty as the charge drops, so any fixed colour disappears against one
+    /// side or the other. Cutting them out of the fill instead lets the menu bar behind
+    /// show through, which keeps the same contrast at every level and in both
+    /// appearances.
+    private static func drawBatteryCharge(
+        percent: Int,
+        in body: NSRect,
+        over fillRect: NSRect
+    ) {
+        let text = "\(percent)" as NSString
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: batteryLabelFont,
+            .foregroundColor: NSColor.labelColor
+        ]
+        let size = text.size(withAttributes: attributes)
+        let origin = NSPoint(
+            x: body.midX - size.width / 2,
+            y: body.midY - size.height / 2
+        )
+
+        guard let context = NSGraphicsContext.current else { return }
+
+        // Where the body is empty: ordinary digits.
+        context.saveGraphicsState()
+        let empty = NSBezierPath(rect: body)
+        empty.append(NSBezierPath(rect: fillRect))
+        empty.windingRule = .evenOdd
+        empty.setClip()
+        text.draw(at: origin, withAttributes: attributes)
+        context.restoreGraphicsState()
+
+        // Where it is filled: remove the digits from the fill.
+        context.saveGraphicsState()
+        NSBezierPath(rect: fillRect).setClip()
+        context.compositingOperation = .destinationOut
+        text.draw(at: origin, withAttributes: attributes)
+        context.restoreGraphicsState()
     }
 
     /// Fraction donut (disk usage): faint full track + accent arc from 12 o'clock.

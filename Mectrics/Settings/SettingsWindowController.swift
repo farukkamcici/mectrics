@@ -155,7 +155,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
 
     private func makeTab(_ view: some View, label: String,
                          symbol: String) -> NSTabViewItem {
-        let host = NSHostingController(rootView: view)
+        let host = NSHostingController(rootView: view.quietFocusRing())
         // The window owns sizing. SwiftUI fills the available content area without
         // trying to resize the AppKit window as live metric values change.
         host.sizingOptions = []

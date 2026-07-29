@@ -36,7 +36,9 @@ final class AboutWindowController: NSObject, NSWindowDelegate {
     }
 
     private func makeWindow() -> NSWindow {
-        let host = NSHostingController(rootView: AboutMectricsView())
+        let host = NSHostingController(
+            rootView: AboutMectricsView().quietFocusRing()
+        )
         host.sizingOptions = []
         let window = NSWindow(contentViewController: host)
         window.title = String(
@@ -77,9 +79,12 @@ final class WhatsNewWindowController: NSObject, NSWindowDelegate {
     }
 
     private func makeWindow() -> NSWindow {
-        let host = NSHostingController(rootView: WhatsNewView {
-            self.window?.performClose(nil)
-        })
+        let host = NSHostingController(
+            rootView: WhatsNewView {
+                self.window?.performClose(nil)
+            }
+            .quietFocusRing()
+        )
         host.sizingOptions = []
         let window = NSWindow(contentViewController: host)
         window.title = String(

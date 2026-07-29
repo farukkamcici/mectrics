@@ -1,4 +1,20 @@
 import AppKit
+import SwiftUI
+
+extension View {
+    /// Hides the keyboard focus ring, unless the user navigates by keyboard.
+    ///
+    /// SwiftUI focuses the first control in a window or popover as it appears, so a
+    /// row or button the user never chose is drawn as selected. Clearing the responder
+    /// once is not enough: SwiftUI re-establishes focus during its own first layout
+    /// pass, after any such cleanup has run.
+    ///
+    /// The ring still appears for anyone using Full Keyboard Access, where it is the
+    /// only way to tell what a key press will act on.
+    func quietFocusRing() -> some View {
+        focusEffectDisabled(!NSApp.isFullKeyboardAccessEnabled)
+    }
+}
 
 extension NSWindow {
     /// Presents without a keyboard focus ring around the first control.

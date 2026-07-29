@@ -95,7 +95,7 @@ final class MetricDetailWindowController: NSObject, NSWindowDelegate {
             )
                 .frame(maxWidth: .infinity)
         }
-        let host = NSHostingController(rootView: content)
+        let host = NSHostingController(rootView: content.quietFocusRing())
         host.sizingOptions = []
         window?.contentViewController = host
     }

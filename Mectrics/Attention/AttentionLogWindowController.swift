@@ -29,7 +29,9 @@ final class AttentionLogWindowController: NSObject, NSWindowDelegate {
     }
 
     private func makeWindow() -> NSWindow {
-        let host = NSHostingController(rootView: AttentionLogView(store: store))
+        let host = NSHostingController(
+            rootView: AttentionLogView(store: store).quietFocusRing()
+        )
         host.sizingOptions = []
         let window = NSWindow(contentViewController: host)
         window.title = String(

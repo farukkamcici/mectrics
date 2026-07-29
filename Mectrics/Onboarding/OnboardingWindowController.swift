@@ -35,7 +35,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         let view = OnboardingView(model: model) { [weak self] in
             self?.window?.close()
         }
-        let host = NSHostingController(rootView: view)
+        let host = NSHostingController(rootView: view.quietFocusRing())
         let window = OnboardingWindow(contentViewController: host)
         window.styleMask = [.titled, .closable]
         window.title = String(

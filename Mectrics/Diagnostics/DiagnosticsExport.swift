@@ -449,7 +449,7 @@ final class DiagnosticsWindowController: NSObject, NSWindowDelegate {
     private func makeWindow() -> NSWindow {
         let input = DiagnosticsBuilder.capture(model: model)
         let host = NSHostingController(
-            rootView: DiagnosticsView(input: input)
+            rootView: DiagnosticsView(input: input).quietFocusRing()
         )
         host.sizingOptions = []
         let window = NSWindow(contentViewController: host)

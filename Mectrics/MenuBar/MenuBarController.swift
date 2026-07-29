@@ -88,7 +88,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
         }
 
         let content = DetailPopoverView(model: model, moduleID: id)
-        let host = NSHostingController(rootView: content)
+        let host = NSHostingController(rootView: content.quietFocusRing())
         // Content height varies (top-processes list expands/collapses) — let SwiftUI
         // drive the popover size instead of pinning it.
         host.sizingOptions = .preferredContentSize
@@ -114,7 +114,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
         }
 
         let host = NSHostingController(
-            rootView: CompactHealthPopoverView(model: model)
+            rootView: CompactHealthPopoverView(model: model).quietFocusRing()
         )
         host.sizingOptions = .preferredContentSize
         popover.contentViewController = host
