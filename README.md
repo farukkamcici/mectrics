@@ -25,6 +25,8 @@ as values change.
 - [03 — Roadmap](docs/03-roadmap.md)
 - [04 — Release and Notarization](docs/04-releasing.md)
 - [05 — Premium Experience Backlog](docs/05-premium-experience-backlog.md)
+- [06 — Experience Quality Gate](docs/06-experience-quality-gate.md)
+- [07 — Approved Feature Program](docs/07-approved-feature-program.md)
 
 Conventions for contributors: [`AGENTS.md`](AGENTS.md) (source of truth) and
 [`CLAUDE.md`](CLAUDE.md).

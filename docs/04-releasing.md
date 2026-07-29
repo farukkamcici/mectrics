@@ -31,6 +31,29 @@ MECTRICS_NOTARY_PROFILE="mectrics-notary" \
 The notarized artifact is written to `build/release/Mectrics.dmg`. The `build/`
 directory is local output and must not be committed.
 
-Sparkle requires a stable HTTPS appcast URL and an EdDSA public key. Add it only after
-the public GitHub repository and release URL are final, then generate the appcast from
-the same notarized DMG.
+## Sparkle updates
+
+The application embeds Sparkle's public EdDSA key and reads its appcast from:
+
+`https://raw.githubusercontent.com/farukkamcici/mectrics/main/appcast.xml`
+
+The corresponding private key lives only in the release operator's macOS Keychain.
+Never export it into this repository, CI logs, or a release directory. Automatic checks
+are disabled; Mectrics accesses the feed only after the user chooses
+**Check for Updates…**.
+
+After notarization and stapling, generate the appcast from the exact DMG that will be
+published:
+
+```bash
+SPARKLE_BIN="$(find "$HOME/Library/Developer/Xcode/DerivedData" \
+  -path '*/SourcePackages/artifacts/sparkle/Sparkle/bin' \
+  -type d -print -quit)"
+"$SPARKLE_BIN/generate_appcast" build/release
+```
+
+Verify that the appcast's version and build match the DMG, publish both without
+modification, and test an older signed build against the feed. If an update fails
+signature, notarization, download, or installation validation, do not replace the
+current app. Keep the current signed DMG available for manual recovery; roll forward
+with a higher build number rather than rewriting a published artifact.

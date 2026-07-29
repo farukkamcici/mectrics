@@ -116,3 +116,34 @@ and PX-007 incomplete:
   manual inspection.
 - Two-display behavior, display removal, Space changes, and sleep/wake require suitable
   hardware and an extended lifecycle session.
+
+## Approved feature program verification record
+
+The 2026-07-28 local implementation pass produced the following additional evidence:
+
+- All 23 MetricsKit tests and all 44 app tests passed with stable Xcode 26.6.
+- Deterministic tests cover alert migration and delivery state, native system-condition
+  alerts, Attention Log retention/deduplication/export, Compact Health resolution and
+  stable width, Energy Guard policies, allowlisted routing/actions, System Summary
+  privacy, diagnostics redaction and byte-equivalent preview/export, layout presets,
+  What's New policy, and floating-panel display geometry.
+- A universal Release archive completed with Hardened Runtime. Its app, embedded widget,
+  and Sparkle framework pass deep strict code-signature validation.
+- The archived app and widget contain the same App Group. The widget also contains App
+  Sandbox, and both privacy manifests are present and valid.
+- The user placed Small and Medium Mectrics widgets from the native gallery. The supplied
+  screenshot shows correct family sizing but an empty “Waiting for Mectrics” timeline.
+  The private Debug fallback was removed, signed App Group snapshot writes now succeed,
+  and the shared snapshot is readable. Large-family, relaunch, reboot, replacement, and
+  notarized-install checks remain open.
+- Sparkle 2.9.4 is pinned in `project.yml`, the public EdDSA key is embedded, the private
+  key is stored in Keychain, and automatic checks are disabled. The configured HTTPS
+  appcast remains unavailable until the repository and release feed are published.
+- The signed Release app was installed in `/Applications`. It still needs its launch-once
+  and visual checks because the macOS UI-control service was unavailable during the final
+  pass.
+
+These results are implementation evidence, not task closure. PX checkboxes remain open
+until the manual appearance/accessibility matrix, performance measurements, complete
+widget lifecycle matrix, signed appcast upgrade/failure tests, clean-account testing,
+Developer ID export, notarization, stapling, and Gatekeeper checks all pass.

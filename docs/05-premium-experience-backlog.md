@@ -1,6 +1,10 @@
 # 05 — Premium Experience Backlog
 
-Status: proposed implementation sequence, researched 2026-07-28.
+Status: approved implementation sequence, researched 2026-07-28.
+
+Detailed closure units for the approved follow-on features are defined in
+[`07-approved-feature-program.md`](07-approved-feature-program.md). A parent task in this
+document remains open until every child task assigned to it in that program is accepted.
 
 ## Product experience goal
 
@@ -57,7 +61,8 @@ Primary sources:
 
 - Stable-width, monospaced menu bar rendering.
 - Native SwiftUI/AppKit surfaces and standard controls.
-- Working menu bar modules, detail popovers, floating panel, widgets, alerts, and Settings.
+- Working menu bar modules, detail popovers, floating panel, widget snapshot pipeline,
+  alerts, and Settings.
 - A centered Settings window with close-to-menu-bar lifecycle behavior.
 - Three-step onboarding and useful defaults.
 - A visual menu bar builder rather than a checkbox-only configuration screen.
@@ -69,14 +74,18 @@ Primary sources:
 - First launch explains features before demonstrating a live result.
 - There is no shared visual system for spacing, type hierarchy, materials, chart styling,
   empty states, and status treatments.
-- Historical data is persisted but not presented as a useful history experience.
-- Small sparklines show shape but not time, range, average, selection, or meaning.
+- Historical data is persisted and exportable, but continuous Battery and Disk history
+  charts are deliberately excluded from the approved program. Meaningful events will be
+  presented through the planned Attention Log instead.
+- Small live sparklines show immediate shape but are not presented as historical analysis.
 - Loading, unavailable, disabled, permission, and failure states are not designed as one
   coherent system.
 - VoiceOver, Full Keyboard Access, Increased Contrast, Reduce Transparency, Differentiate
   Without Color, and Reduce Motion are not release-gated.
 - Preferences and contextual customization are not yet separated rigorously.
 - Update, release-note, About, and recovery flows are incomplete.
+- The installed widget extension is embedded and signed but is not currently registered
+  in the macOS widget gallery; PX-014A is a release blocker.
 - Visual regression coverage and a multi-display/macOS appearance QA matrix are missing.
 
 ## Execution plan
@@ -165,23 +174,21 @@ existing functionality is sufficient to build a premium v1 experience.
 ### Milestone B — Signature Mectrics experience (P1)
 
 - [ ] **PX-009 — Build a calm combined overview** `L`
-  - Add an optional single menu bar item that opens an all-modules overview.
-  - Lead with current status and the few conditions that need attention, not a wall of
-    equal-weight cards.
+  - Implement the optional Compact Health item specified by PX-009A.
+  - Lead with active conditions selected for the health surface, not a wall of
+    equal-weight modules.
   - Let users reach module detail in one click and retain separate menu bar items as an
     alternative mode.
-  - Acceptance: the overview is useful at its default size without scrolling on the
-    reference display and remains fully keyboard accessible.
+  - Acceptance: PX-009A is complete.
 
-- [ ] **PX-010 — Turn stored history into insight** `XL`
-  - Add a History window with 1h, 24h, 7d, and 30d ranges.
-  - Use consistent Swift Charts axes, units, grid density, and color semantics.
-  - Support pointer scrubbing with a large plot-area hit target.
-  - Show current, minimum, average, maximum, and an objective text summary.
-  - Add annotations for alert threshold crossings and power-source changes where useful.
-  - Do not hide essential information behind chart interaction.
-  - Acceptance: every chart has a stated question, a visible time range, a useful empty
-    state, VoiceOver values, a summary, and correct Light/Dark rendering.
+- [ ] **PX-010 — Reconsider a dedicated history experience** `XL / Deferred`
+  - Do not implement this task in the approved feature program.
+  - Keep the 30-day archive and CSV export available for portability.
+  - Do not add continuous Battery or Disk history charts.
+  - Reopen this task only when a specific user question cannot be answered by the
+    Attention Log, current details, alerts, or CSV export.
+  - Acceptance: a new product decision defines the question, metrics, retention,
+    accessibility summary, and measurable user value before implementation begins.
 
 - [ ] **PX-011 — Refine menu bar items and detail popovers** `L`
   - Create one consistent popover anatomy: identity, primary value, chart, supporting
@@ -197,10 +204,11 @@ existing functionality is sufficient to build a premium v1 experience.
 - [ ] **PX-012 — Make the menu bar builder a flagship interaction** `L`
   - Use direct manipulation for add, remove, and reorder with clear drop targets.
   - Keep a live, accurate preview using real values when available.
-  - Add keyboard alternatives, undo, and Reset to Recommended.
+  - Add keyboard alternatives, undo, Reset to Recommended, and exactly three initial
+    presets: Minimal, Laptop, and Developer.
   - Explain the `Command`-drag macOS menu bar behavior in context, once.
   - Acceptance: a first-time user can create and reorder a menu layout without reading
-    documentation.
+    documentation, and PX-012A is complete.
 
 - [ ] **PX-013 — Polish the floating panel as a native utility** `M`
   - Restore position per display and recover gracefully when a display disappears.
@@ -211,18 +219,26 @@ existing functionality is sufficient to build a premium v1 experience.
     predictably across Spaces and full-screen apps.
 
 - [ ] **PX-014 — Unify widgets with the app** `M`
+  - Restore native widget gallery discovery and App Group data sharing before visual
+    polish.
   - Share typography, color semantics, state language, and chart style.
   - Design explicit collecting, stale, and unavailable timelines.
-  - Deep-link a selected widget metric into the relevant app detail/history surface.
-  - Acceptance: all widget families pass snapshot review in Light, Dark, tinted, and
-    missing-data states.
+  - Deep-link a selected widget metric into the relevant app detail surface.
+  - Acceptance: PX-014A and PX-014B are complete, and all widget families pass snapshot
+    review in Light, Dark, tinted, and missing-data states.
 
 - [ ] **PX-015 — Make alerts explainable and testable** `M`
+  - Preserve all existing threshold rules and migrate their settings without silently
+    enabling a new delivery.
+  - Let each rule choose among Notification, Compact Health item, and Attention Log
+    destinations.
   - Add per-rule previews and a test-notification action.
   - Explain threshold, sustained duration, cooldown, and current state inline.
   - Show permission status with a direct system-settings recovery action.
-  - Add memory-pressure level as a first-class rule rather than only a percentage.
-  - Acceptance: users can predict exactly when an alert will fire before enabling it.
+  - Add memory pressure, available disk capacity, and thermal state as first-class signals
+    alongside existing percentage rules.
+  - Acceptance: PX-015A, PX-015B, and PX-015C are complete, and users can predict exactly
+    when an alert will activate and where it will appear.
 
 ### Milestone C — Release-grade trust and delight (P1)
 
@@ -239,8 +255,9 @@ existing functionality is sufficient to build a premium v1 experience.
     status.
   - Add concise release notes and a skippable What's New surface for meaningful changes.
   - Make support diagnostics explicit and local-only, with preview before export.
-  - Acceptance: install, update, rollback/recovery messaging, About, privacy, and quit
-    paths are understandable without external documentation.
+  - Acceptance: PX-017A, PX-017B, and PX-017C are complete, and install, update,
+    rollback/recovery messaging, About, privacy, diagnostics, and quit paths are
+    understandable without external documentation.
 
 - [ ] **PX-018 — Set and enforce performance budgets** `M`
   - Measure cold launch, first sample, idle CPU, memory, wakeups, and energy impact with
@@ -269,14 +286,39 @@ existing functionality is sufficient to build a premium v1 experience.
   - Acceptance: no P0/P1 issue remains and the notarized DMG passes Gatekeeper validation
     on a clean Mac account.
 
+### Milestone D — Approved local intelligence (P1)
+
+- [ ] **PX-021 — Add a local Attention Log** `L`
+  - Record meaningful condition activation and recovery, not continuous Battery or Disk
+    charts.
+  - Keep records bounded, local, deduplicated, and free of personal identifiers.
+  - Acceptance: the independently closable PX-021 task in
+    `07-approved-feature-program.md` is complete.
+
+- [ ] **PX-022 — Add Automatic Energy Guard** `M`
+  - Adapt heavy sampling to Low Power Mode, thermal state, power source, visibility, and
+    sleep/wake without hiding the behavior.
+  - Acceptance: the independently closable PX-022 task in
+    `07-approved-feature-program.md` is complete.
+
+- [ ] **PX-023 — Add validated routing and contextual actions** `M`
+  - Give widgets and metric details one allowlisted route model and useful native next
+    actions.
+  - Acceptance: PX-023A and PX-023B are complete.
+
+- [ ] **PX-024 — Add a privacy-safe System Summary** `S`
+  - Copy a concise allowlisted current-state summary without personal identifiers.
+  - Acceptance: the independently closable PX-024 task in
+    `07-approved-feature-program.md` is complete.
+
 ## Existing functionality and engineering tasks
 
 These tasks already exist in the code or roadmap. They should not displace the premium
 experience milestones unless they block a release:
 
-- [ ] Sparkle update integration and public GitHub Release workflow.
+- [ ] Sparkle update integration and public GitHub Release workflow; tracked as PX-017A.
 - [ ] Combined mode; tracked as PX-009.
-- [ ] History UI; persistence and CSV export are complete, UI is tracked as PX-010.
+- [ ] Attention Log; tracked as PX-021. Dedicated history UI is deferred as PX-010.
 - [ ] Top applications by network and disk I/O.
 - [ ] Daily network totals with persisted day rollover.
 - [ ] Kernel memory-pressure alert; tracked as part of PX-015.
@@ -307,5 +349,5 @@ Complete these tasks together because each changes the next:
 4. PX-003 and PX-004 — window lifecycle and Settings architecture.
 5. PX-006, PX-007, and PX-008 — accessibility, motion, and content pass.
 
-After that foundation is stable, implement PX-009 through PX-012 as the signature
-experience batch.
+After that foundation is stable, follow the ordered, independently closable program in
+[`07-approved-feature-program.md`](07-approved-feature-program.md).

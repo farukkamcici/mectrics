@@ -75,9 +75,9 @@ Sources: iStat Menus 7 feature list, Stats (exelban) most-upvoted issues, MacRum
 **High value, medium effort**
 - [ ] **Combined mode** — one menu bar item opening an all-modules overview popover
       (top-voted Stats issue #1084; iStat 7 headline feature).
-- [ ] **Long-history experience** — 30-day hourly persistence and CSV export are complete;
-      add the History window with time ranges (1h/24h/7d/30d), chart scrubbing, summaries,
-      and threshold annotations (tracked as PX-010).
+- [ ] **Attention Log** — keep 30-day hourly persistence and CSV export for portability,
+      but present meaningful activation/recovery events instead of adding continuous
+      Battery or Disk history charts (tracked as PX-021).
 - [ ] **Per-app breakdowns** — top apps by network and disk I/O (iStat has both;
       `nettop`/`fs_usage`-style sampling on popover open, like our Top processes).
 - [ ] **Data Today** — daily network totals with per-day rollover (Usage), persisted.
@@ -123,4 +123,5 @@ Sources: iStat Menus 7 feature list, Stats (exelban) most-upvoted issues, MacRum
 **Phase 3 product work is underway:** GPU/Sensors/Fans, WidgetKit, and sustained-threshold
 notifications, rolling history/CSV export, and notarized DMG packaging are complete.
 Next: the [premium experience pass](05-premium-experience-backlog.md), Sparkle, and the
-public open-source release.
+public open-source release. The approved follow-on work and closure criteria are in the
+[approved feature program](07-approved-feature-program.md).
