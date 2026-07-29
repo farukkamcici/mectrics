@@ -44,6 +44,15 @@ public final class BatteryProvider: MetricProvider, @unchecked Sendable {
             "currentCapacity": Double(current),
             "maxCapacity": Double(maxCap)
         ]
+        if let serviceRecommended = Self.serviceRecommendation(
+            health: desc["BatteryHealth"] as? String,
+            condition: desc["BatteryHealthCondition"] as? String
+        ) {
+            // This is derived only from Apple's published system condition values.
+            // Absence remains absence; cycle count and estimated capacity never imply
+            // a service condition.
+            detail["serviceRecommended"] = serviceRecommended ? 1 : 0
+        }
 
         // Health / cycle / temperature from the AppleSmartBattery IORegistry entry.
         if let smart = readSmartBattery() {
@@ -51,6 +60,24 @@ public final class BatteryProvider: MetricProvider, @unchecked Sendable {
         }
 
         return MetricSample(value: fraction, unit: .fraction, detail: detail)
+    }
+
+    static func serviceRecommendation(
+        health: String?,
+        condition: String?
+    ) -> Bool? {
+        if condition == "Check Battery"
+            || condition == "Permanent Battery Failure" {
+            return true
+        }
+        switch health {
+        case "Poor":
+            return true
+        case "Good", "Fair":
+            return false
+        default:
+            return nil
+        }
     }
 
     private func readSmartBattery() -> [String: Double]? {

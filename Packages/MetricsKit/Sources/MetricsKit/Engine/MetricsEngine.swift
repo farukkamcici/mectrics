@@ -14,6 +14,8 @@ public final class MetricsEngine: @unchecked Sendable {
     private let queue = DispatchQueue(label: "com.mectrics.sampling", qos: .utility)
     private var timer: DispatchSourceTimer?
     private var policy: SamplingPolicy
+    private var runtimePolicy: SamplingRuntimePolicy
+    private var onBattery = false
     private var cycleCount = 0
     /// `nil` samples every registered provider. The app sets an explicit subset so
     /// disabled modules do not consume power; the CLI keeps the default.
@@ -32,6 +34,9 @@ public final class MetricsEngine: @unchecked Sendable {
                 policy: SamplingPolicy = .default) {
         self.store = store
         self.policy = policy
+        self.runtimePolicy = SamplingRuntimePolicy(
+            heavyEveryNCycles: policy.heavyEveryNCycles
+        )
     }
 
     /// Registers the available providers (unavailable ones are dropped).
@@ -52,6 +57,7 @@ public final class MetricsEngine: @unchecked Sendable {
     public func start(onBattery: Bool = false) {
         queue.async { [weak self] in
             guard let self else { return }
+            self.onBattery = onBattery
             self.scheduleTimer(onBattery: onBattery)
         }
     }
@@ -74,13 +80,27 @@ public final class MetricsEngine: @unchecked Sendable {
     public func updatePowerState(onBattery: Bool) {
         queue.async { [weak self] in
             guard let self, self.timer != nil else { return }
+            self.onBattery = onBattery
             self.scheduleTimer(onBattery: onBattery)
+        }
+    }
+
+    /// Applies an Energy Guard overlay and re-tunes the timer immediately.
+    public func updateRuntimePolicy(_ runtimePolicy: SamplingRuntimePolicy) {
+        queue.async { [weak self] in
+            guard let self else { return }
+            self.runtimePolicy = runtimePolicy
+            if self.timer != nil {
+                self.scheduleTimer(onBattery: self.onBattery)
+            }
         }
     }
 
     private func scheduleTimer(onBattery: Bool) {
         timer?.cancel()
-        let interval = onBattery ? policy.onBatteryInterval : policy.onACInterval
+        let baseInterval =
+            onBattery ? policy.onBatteryInterval : policy.onACInterval
+        let interval = baseInterval * runtimePolicy.intervalMultiplier
         let t = DispatchSource.makeTimerSource(queue: queue)
         t.schedule(deadline: .now(), repeating: interval, leeway: .milliseconds(100))
         t.setEventHandler { [weak self] in
@@ -92,13 +112,15 @@ public final class MetricsEngine: @unchecked Sendable {
 
     private func tick() {
         cycleCount &+= 1
-        let runHeavy = cycleCount % max(1, policy.heavyEveryNCycles) == 0
+        let runHeavy =
+            cycleCount % max(1, runtimePolicy.heavyEveryNCycles) == 0
         var updated: [MetricID: MetricSample] = [:]
         var failed: Set<MetricID> = []
         var attemptedAnyProvider = false
 
         for provider in providers {
             if let activeMetricIDs, !activeMetricIDs.contains(provider.id) { continue }
+            if runtimePolicy.pausedMetricIDs.contains(provider.id) { continue }
             if provider.cost == .heavy && !runHeavy { continue }
             attemptedAnyProvider = true
             if let sample = provider.sample() {

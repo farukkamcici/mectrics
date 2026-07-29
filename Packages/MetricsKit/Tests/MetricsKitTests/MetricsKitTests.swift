@@ -192,6 +192,17 @@ final class MetricsKitTests: XCTestCase {
         engine.stop()
     }
 
+    func testRuntimeSamplingPolicyClampsUnsafeValues() {
+        let policy = SamplingRuntimePolicy(
+            intervalMultiplier: 0,
+            heavyEveryNCycles: 0,
+            pausedMetricIDs: [.sensors, .bluetooth]
+        )
+        XCTAssertEqual(policy.intervalMultiplier, 1)
+        XCTAssertEqual(policy.heavyEveryNCycles, 1)
+        XCTAssertEqual(policy.pausedMetricIDs, [.sensors, .bluetooth])
+    }
+
     func testHistoryArchiveReplacesBucketsAndExportsCSV() throws {
         let now = Date(timeIntervalSince1970: 3_600 * 100)
         let older = HistoricalMetricPoint(
@@ -291,6 +302,43 @@ final class MetricsKitTests: XCTestCase {
         let next = disk.sample()
         XCTAssertNotNil(next?.detail["readRate"])
         XCTAssertNotNil(next?.detail["writeRate"])
+    }
+
+    func testBatteryServiceRecommendationUsesOnlySystemHealthValues() {
+        XCTAssertEqual(
+            BatteryProvider.serviceRecommendation(
+                health: "Good",
+                condition: nil
+            ),
+            false
+        )
+        XCTAssertEqual(
+            BatteryProvider.serviceRecommendation(
+                health: "Fair",
+                condition: nil
+            ),
+            false
+        )
+        XCTAssertEqual(
+            BatteryProvider.serviceRecommendation(
+                health: "Poor",
+                condition: nil
+            ),
+            true
+        )
+        XCTAssertEqual(
+            BatteryProvider.serviceRecommendation(
+                health: "Good",
+                condition: "Check Battery"
+            ),
+            true
+        )
+        XCTAssertNil(
+            BatteryProvider.serviceRecommendation(
+                health: nil,
+                condition: nil
+            )
+        )
     }
 
     func testCompactRateFormat() {

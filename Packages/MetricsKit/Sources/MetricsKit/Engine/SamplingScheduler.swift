@@ -23,3 +23,24 @@ public struct SamplingPolicy: Sendable {
 
     public static let `default` = SamplingPolicy()
 }
+
+/// Runtime overlay used by the app to reduce its own work without changing which
+/// metrics the user selected. Low-cost providers remain eligible on every base cycle;
+/// expensive providers can be slowed or temporarily paused.
+public struct SamplingRuntimePolicy: Sendable, Equatable {
+    public var intervalMultiplier: Double
+    public var heavyEveryNCycles: Int
+    public var pausedMetricIDs: Set<MetricID>
+
+    public init(
+        intervalMultiplier: Double = 1,
+        heavyEveryNCycles: Int = 3,
+        pausedMetricIDs: Set<MetricID> = []
+    ) {
+        self.intervalMultiplier = max(intervalMultiplier, 1)
+        self.heavyEveryNCycles = max(heavyEveryNCycles, 1)
+        self.pausedMetricIDs = pausedMetricIDs
+    }
+
+    public static let normal = SamplingRuntimePolicy()
+}
