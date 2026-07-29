@@ -95,6 +95,14 @@ final class MetricStatusItem: NSObject {
     /// Leading space taken by the embedded module icon (glyph + gap).
     private static let iconSlot: CGFloat = 16
 
+    private static let batteryWidth: CGFloat = 25
+    /// Wide enough for a three-digit charge inside the body at `batteryLabelFont`.
+    private static let batteryLabeledWidth: CGFloat = 32
+    private static let batteryLabelFont = NSFont.monospacedDigitSystemFont(
+        ofSize: 7.5,
+        weight: .bold
+    )
+
     private static func render(visual: MenuBarVisual?, state: MetricDataState,
                                component: MenuBarComponent, font: NSFont, samples: [Double],
                                accent: NSColor, reservedTextWidth: CGFloat,
@@ -141,8 +149,9 @@ final class MetricStatusItem: NSObject {
                     drawCoreBars(values, in: NSRect(x: offset, y: 3,
                                                     width: contentWidth, height: height - 6),
                                  accent: accent)
-                case .battery(let level, let charging):
+                case .battery(let level, let charging, let showsPercent):
                     drawBattery(level: level, charging: charging,
+                                showsPercent: showsPercent,
                                 in: NSRect(x: offset, y: 0, width: contentWidth, height: height))
                 case .ring(let fraction):
                     drawRing(fraction, in: NSRect(x: offset + 1, y: (height - 14) / 2,
@@ -181,8 +190,8 @@ final class MetricStatusItem: NSObject {
             return textSlot(text, reservedTextWidth, attributes) + gap + sparkWidth
         case .coreBars(let values):
             return CGFloat(max(values.count, 2)) * 4
-        case .battery:
-            return 25
+        case .battery(_, _, let showsPercent):
+            return showsPercent ? batteryLabeledWidth : batteryWidth
         case .ring:
             return 16
         }
@@ -198,7 +207,9 @@ final class MetricStatusItem: NSObject {
         case .coreBars:
             return CGFloat(max(ProcessInfo.processInfo.processorCount, 2)) * 4
         case .batteryIcon:
-            return 25
+            return batteryWidth
+        case .batteryIconValue:
+            return batteryLabeledWidth
         case .ring:
             return 16
         default:
@@ -347,7 +358,12 @@ final class MetricStatusItem: NSObject {
     }
 
     /// Classic battery glyph with a proportional fill and a bolt while charging.
-    private static func drawBattery(level: Double, charging: Bool, in rect: NSRect) {
+    private static func drawBattery(
+        level: Double,
+        charging: Bool,
+        showsPercent: Bool,
+        in rect: NSRect
+    ) {
         let body = NSRect(x: rect.minX + 0.5, y: rect.midY - 5, width: rect.width - 4, height: 10)
         let outline = NSBezierPath(roundedRect: body, xRadius: 2.5, yRadius: 2.5)
         outline.lineWidth = 1
@@ -367,6 +383,26 @@ final class MetricStatusItem: NSObject {
         (clamped <= 0.2 && !charging ? NSColor.systemRed : NSColor.labelColor.withAlphaComponent(0.85)).setFill()
         NSBezierPath(roundedRect: fillRect, xRadius: 1.5, yRadius: 1.5).fill()
 
+        if showsPercent {
+            // Drawn with a contrasting blend so the digits stay readable over both the
+            // filled and the empty part of the body.
+            let text = "\(Int((clamped * 100).rounded()))" as NSString
+            let attrs: [NSAttributedString.Key: Any] = [
+                .font: batteryLabelFont,
+                .foregroundColor: NSColor.labelColor
+            ]
+            let size = text.size(withAttributes: attrs)
+            NSGraphicsContext.current?.compositingOperation = .difference
+            text.draw(
+                at: NSPoint(
+                    x: body.midX - size.width / 2,
+                    y: body.midY - size.height / 2
+                ),
+                withAttributes: attrs
+            )
+            NSGraphicsContext.current?.compositingOperation = .sourceOver
+        }
+
         if charging {
             let bolt = "⚡" as NSString
             let attrs: [NSAttributedString.Key: Any] = [
@@ -374,7 +410,9 @@ final class MetricStatusItem: NSObject {
                 .foregroundColor: NSColor.labelColor
             ]
             let size = bolt.size(withAttributes: attrs)
-            bolt.draw(at: NSPoint(x: body.midX - size.width / 2, y: body.midY - size.height / 2),
+            // Charging moves the bolt off the label rather than over it.
+            let x = showsPercent ? body.maxX - size.width - 1 : body.midX - size.width / 2
+            bolt.draw(at: NSPoint(x: x, y: body.midY - size.height / 2),
                       withAttributes: attrs)
         }
     }

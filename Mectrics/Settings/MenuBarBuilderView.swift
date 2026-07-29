@@ -300,6 +300,8 @@ struct MenuBarBuilderView: View {
         case .batteryIcon:
             Image(systemName: batterySymbol(id))
                 .font(.system(size: 13))
+        case .batteryIconValue:
+            labelledBatteryPreview(id)
         default:
             previewLabel(id, component)
         }
@@ -339,6 +341,36 @@ struct MenuBarBuilderView: View {
                 .rotationEffect(.degrees(-90))
         }
         .frame(width: 14, height: 14)
+    }
+
+    /// SwiftUI mirror of the menu bar's labelled battery: body, fill, charge inside.
+    private func labelledBatteryPreview(_ id: MetricID) -> some View {
+        let sample = model.latest[id]
+        let level = min(max(sample?.value ?? 0, 0), 1)
+        let charging = (sample?.detail["charging"] ?? 0) > 0
+        return HStack(spacing: 1) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 2.5, style: .continuous)
+                    .strokeBorder(.primary.opacity(0.55), lineWidth: 1)
+                GeometryReader { proxy in
+                    RoundedRectangle(cornerRadius: 1.5, style: .continuous)
+                        .fill(
+                            level <= 0.2 && !charging
+                                ? Color.red
+                                : Color.primary.opacity(0.85)
+                        )
+                        .frame(width: proxy.size.width * level)
+                }
+                .padding(1.5)
+                Text("\(Int((level * 100).rounded()))")
+                    .font(.system(size: 7.5, weight: .bold).monospacedDigit())
+                    .blendMode(.difference)
+            }
+            .frame(width: 24, height: 11)
+            RoundedRectangle(cornerRadius: 1, style: .continuous)
+                .fill(.primary.opacity(0.55))
+                .frame(width: 2, height: 4)
+        }
     }
 
     private func batterySymbol(_ id: MetricID) -> String {

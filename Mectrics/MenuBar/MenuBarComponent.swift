@@ -14,7 +14,7 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
     // Disk pictorial
     case ring
     // Battery
-    case batteryIcon, health, cycles
+    case batteryIcon, batteryIconValue, health, cycles
     // Network
     case netActivity, netDown, netUp
 
@@ -25,7 +25,9 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
         case .cpu:       return [.value, .valueGraph, .coreBars]
         case .memory:    return [.value, .valueGraph, .usedBytes]
         case .gpu:       return [.value, .valueGraph]
-        case .battery:   return [.value, .batteryIcon, .health, .cycles]
+        case .battery:   return [
+            .value, .batteryIcon, .batteryIconValue, .health, .cycles
+        ]
         case .disk:      return [.value, .ring, .usedBytes, .freeBytes]
         case .network:   return [.netActivity, .netDown, .netUp]
         default:         return [.value]
@@ -49,6 +51,11 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
         case .freeBytes:   return String(localized: "component.free", defaultValue: "Free")
         case .ring:        return String(localized: "component.ring", defaultValue: "Ring")
         case .batteryIcon: return String(localized: "component.icon", defaultValue: "Icon")
+        case .batteryIconValue:
+            return String(
+                localized: "component.iconValue",
+                defaultValue: "Icon + %"
+            )
         case .health:      return String(localized: "component.health", defaultValue: "Health")
         case .cycles:      return String(localized: "component.cycles", defaultValue: "Cycles")
         case .netActivity: return String(localized: "component.activity", defaultValue: "Activity")
@@ -61,8 +68,8 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
     /// leading module icon would simply repeat it (a battery beside a battery).
     var drawsModuleGlyph: Bool {
         switch self {
-        case .batteryIcon: return true
-        default:           return false
+        case .batteryIcon, .batteryIconValue: return true
+        default:                              return false
         }
     }
 
@@ -70,7 +77,7 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
     /// Real values must never exceed this width.
     func template(for module: MetricID) -> String {
         switch self {
-        case .coreBars, .ring, .batteryIcon:
+        case .coreBars, .ring, .batteryIcon, .batteryIconValue:
             return ""
         case .usedBytes, .freeBytes:
             return "999GB"
@@ -98,7 +105,7 @@ enum MenuBarVisual {
     case text(String)                          // right-aligned text (may be two-line)
     case textGraph(String)                     // text + sparkline
     case coreBars([Double])                    // one mini bar per CPU core
-    case battery(level: Double, charging: Bool)
+    case battery(level: Double, charging: Bool, showsPercent: Bool)
     case ring(Double)                          // fraction donut
 }
 
@@ -121,7 +128,12 @@ extension MenuBarText {
             return .ring(sample.value)
         case .batteryIcon:
             return .battery(level: sample.value,
-                            charging: (sample.detail["charging"] ?? 0) > 0)
+                            charging: (sample.detail["charging"] ?? 0) > 0,
+                            showsPercent: false)
+        case .batteryIconValue:
+            return .battery(level: sample.value,
+                            charging: (sample.detail["charging"] ?? 0) > 0,
+                            showsPercent: true)
         // A missing reading is absence, not zero: never render 0% health or 0 cycles
         // for a battery that simply did not report them.
         case .health:
