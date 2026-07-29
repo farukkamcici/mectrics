@@ -29,11 +29,7 @@ private struct MetricsTimelineProvider: TimelineProvider {
     }
 
     private func loadSnapshot() -> SharedMetricSnapshot {
-#if DEBUG
-        let store = SharedMetricSnapshotStore(appGroupIdentifier: nil)
-#else
         let store = SharedMetricSnapshotStore()
-#endif
         return (try? store.read()) ?? .empty
     }
 
@@ -65,6 +61,11 @@ struct MectricsOverviewWidget: Widget {
         StaticConfiguration(kind: kind, provider: MetricsTimelineProvider()) { entry in
             MetricsWidgetView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
+                .widgetURL(
+                    entry.snapshot.orderedMetricIDs.first.map {
+                        ApplicationRoute.metric($0).url
+                    } ?? ApplicationRoute.overview.url
+                )
         }
         .configurationDisplayName("Mectrics Overview")
         .description("See your Mac's latest system metrics at a glance.")
@@ -103,7 +104,14 @@ private struct MetricsWidgetView: View {
             VStack(alignment: .leading, spacing: family == .systemSmall ? 8 : 10) {
                 header
                 ForEach(visibleMetricIDs, id: \.self) { id in
-                    metricRow(id)
+                    if family == .systemSmall {
+                        metricRow(id)
+                    } else {
+                        Link(destination: ApplicationRoute.metric(id).url) {
+                            metricRow(id)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
                 Spacer(minLength: 0)
             }

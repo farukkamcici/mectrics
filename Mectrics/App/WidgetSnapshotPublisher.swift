@@ -6,11 +6,7 @@ import WidgetKit
 /// menu bar remains real-time; widgets are an at-a-glance surface managed by macOS.
 @MainActor
 final class WidgetSnapshotPublisher {
-#if DEBUG
-    private let store = SharedMetricSnapshotStore(appGroupIdentifier: nil)
-#else
     private let store = SharedMetricSnapshotStore()
-#endif
     private let writerQueue = DispatchQueue(
         label: "com.mectrics.widget-snapshot",
         qos: .utility
