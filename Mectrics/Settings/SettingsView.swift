@@ -95,27 +95,34 @@ struct AlertsSettingsTab: View {
                         .monospacedDigit()
                 }
             } footer: {
-                Text("A rule becomes pending when its reading crosses the limit, activates once the reading holds for the chosen duration, and recovers on its own. Each rule waits 15 minutes before it can activate again.")
+                VStack(alignment: .leading, spacing: ExperienceSpacing.xSmall) {
+                    Text("A rule waits for the reading to hold past its limit for the time you choose, then starts alerting until the reading comes back.")
+                    Text("Alerting rules always show on the Compact Health item and are recorded in the Attention Log. Turn on Notify me to also get a macOS notification. After alerting, a rule rests for 15 minutes.")
+                }
             }
 
             Section("Notifications") {
-                LabeledContent(
-                    "Permission",
-                    value: notificationAccess.localizedName
-                )
-                HStack {
-                    Button("Test Notification") {
-                        NotificationPermissionManager.sendTest { state in
-                            Task { @MainActor in
-                                notificationAccess = state
-                                testResult = state
+                if notificationAccess == .authorized {
+                    Button("Send a Test Notification") {
+                        sendTestNotification()
+                    }
+                } else {
+                    LabeledContent(
+                        "Permission",
+                        value: notificationAccess.localizedName
+                    )
+                    HStack {
+                        if notificationAccess == .notDetermined {
+                            Button("Allow Notifications…") {
+                                requestNotificationAccess()
+                            }
+                        } else {
+                            Button("Open Notification Settings") {
+                                NotificationPermissionManager.openSystemSettings()
                             }
                         }
-                    }
-                    if notificationAccess == .denied
-                        || notificationAccess == .deliveryDisabled {
-                        Button("Open Notification Settings") {
-                            NotificationPermissionManager.openSystemSettings()
+                        Button("Send a Test Notification") {
+                            sendTestNotification()
                         }
                     }
                 }
@@ -166,31 +173,31 @@ struct AlertsSettingsTab: View {
                 defaultValue: "No rules on"
             )
         }
-        let active = ruleKeys.filter { state(for: $0) == .active }.count
+        let alerting = ruleKeys.filter { state(for: $0) == .active }.count
         return String(
             localized: "alerts.summary",
-            defaultValue: "\(enabled) on · \(active) active now"
+            defaultValue: "\(enabled) on · \(alerting) alerting"
         )
     }
 
+    /// Every row keeps the same anatomy at the same position — limit, duration, then
+    /// the on/off switch on the trailing edge — so a closed rule and an open one read
+    /// as the same kind of thing. Closed rows dim their controls rather than moving
+    /// or dropping them.
     @ViewBuilder
     private func ruleRow(_ key: RuleKey) -> some View {
         let enabled = isEnabled(key)
         VStack(alignment: .leading, spacing: ExperienceSpacing.small) {
-            HStack {
-                Toggle(label(for: key), isOn: enabledBinding(key))
-                Spacer()
-                if enabled {
-                    thresholdControl(key)
-                    durationPicker(key)
-                } else {
-                    // Closed rules keep their limit legible without offering dead
-                    // controls.
-                    Text(thresholdSummary(key))
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
-                }
+            HStack(spacing: ExperienceSpacing.medium) {
+                Text(label(for: key))
+                Spacer(minLength: ExperienceSpacing.small)
+                thresholdControl(key)
+                    .disabled(!enabled)
+                durationPicker(key)
+                    .disabled(!enabled)
+                Toggle("", isOn: enabledBinding(key))
+                    .labelsHidden()
+                    .accessibilityLabel(label(for: key))
             }
             if enabled {
                 let ruleState = state(for: key)
@@ -204,7 +211,12 @@ struct AlertsSettingsTab: View {
                     Text(currentReading(key))
                         .monospacedDigit()
                     Spacer()
-                    destinationsMenu(key)
+                    Toggle("Notify me", isOn: notifyBinding(key))
+                        .toggleStyle(.checkbox)
+                        .help(String(
+                            localized: "alerts.notify.help",
+                            defaultValue: "Also send a macOS notification while this rule is alerting"
+                        ))
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -287,48 +299,7 @@ struct AlertsSettingsTab: View {
         .frame(width: 124)
     }
 
-    private func destinationsMenu(_ key: RuleKey) -> some View {
-        Menu {
-            Toggle(
-                "Notification",
-                isOn: destinationBinding(.notification, for: key)
-            )
-            Toggle(
-                "Compact Health item",
-                isOn: destinationBinding(.compactHealth, for: key)
-            )
-            Toggle(
-                "Attention Log",
-                isOn: destinationBinding(.attentionLog, for: key)
-            )
-        } label: {
-            Text(destinationSummary(key))
-        }
-        .menuStyle(.borderlessButton)
-        .fixedSize()
-        .accessibilityLabel("Where this alert appears")
-    }
-
-    private func destinationSummary(_ key: RuleKey) -> String {
-        let destinations = destinations(for: key)
-        guard !destinations.isEmpty else {
-            return String(
-                localized: "alerts.destination.none",
-                defaultValue: "Goes nowhere"
-            )
-        }
-        let names = AlertDestination.allCases
-            .filter { destinations.contains($0) }
-            .map(\.localizedName)
-        guard let first = names.first else { return "" }
-        if names.count == 1 { return first }
-        return String(
-            localized: "alerts.destination.summary",
-            defaultValue: "\(first) +\(names.count - 1)"
-        )
-    }
-
-    /// A rule that only delivers notifications is silent until macOS allows them.
+    /// A rule that asks for notifications is silent until macOS allows them.
     @ViewBuilder
     private func notificationWarning(_ key: RuleKey) -> some View {
         if destinations(for: key).contains(.notification),
@@ -368,11 +339,11 @@ struct AlertsSettingsTab: View {
             return ThresholdMonitor.isBelowRule(id)
                 ? String(
                     localized: "alerts.below",
-                    defaultValue: "\(id.localizedName) below"
+                    defaultValue: "\(id.localizedName) charge below"
                 )
                 : String(
                     localized: "alerts.above",
-                    defaultValue: "\(id.localizedName) above"
+                    defaultValue: "\(id.localizedName) usage above"
                 )
         case .system(let signal):
             return signal.triggerLabel
@@ -535,13 +506,30 @@ struct AlertsSettingsTab: View {
         )
     }
 
+    /// Turning a rule on also normalizes where it appears, so a layout saved by an
+    /// older build cannot leave an enabled rule with nowhere to show up.
     private func enabledBinding(_ key: RuleKey) -> Binding<Bool> {
-        switch key {
-        case .metric(let id):
-            return metricRuleBinding(id).enabled
-        case .system(let signal):
-            return systemRuleBinding(signal).enabled
-        }
+        Binding(
+            get: { isEnabled(key) },
+            set: { enabled in
+                let notify = destinations(for: key).contains(.notification)
+                switch key {
+                case .metric(let id):
+                    guard var rule = model.alertRules[id] else { return }
+                    rule.enabled = enabled
+                    rule.destinations = Self.destinations(notify: notify)
+                    model.alertRules[id] = rule
+                case .system(let signal):
+                    guard var rule = model.systemAlertRules[signal] else {
+                        return
+                    }
+                    rule.enabled = enabled
+                    rule.destinations = Self.destinations(notify: notify)
+                    model.systemAlertRules[signal] = rule
+                }
+                if enabled, notify { requestNotificationAccess() }
+            }
+        )
     }
 
     private func durationBinding(_ key: RuleKey) -> Binding<Int> {
@@ -553,38 +541,42 @@ struct AlertsSettingsTab: View {
         }
     }
 
-    private func destinationBinding(
-        _ destination: AlertDestination,
-        for key: RuleKey
-    ) -> Binding<Bool> {
+    /// An alerting rule is always on the Compact Health item and in the Attention Log;
+    /// the only choice a rule offers is whether it also interrupts with a notification.
+    private static func destinations(notify: Bool) -> Set<AlertDestination> {
+        notify
+            ? [.notification, .compactHealth, .attentionLog]
+            : [.compactHealth, .attentionLog]
+    }
+
+    private func notifyBinding(_ key: RuleKey) -> Binding<Bool> {
         Binding(
-            get: { destinations(for: key).contains(destination) },
-            set: { enabled in
+            get: { destinations(for: key).contains(.notification) },
+            set: { notify in
                 switch key {
                 case .metric(let id):
                     guard var rule = model.alertRules[id] else { return }
-                    if enabled {
-                        rule.destinations.insert(destination)
-                    } else {
-                        rule.destinations.remove(destination)
-                    }
+                    rule.destinations = Self.destinations(notify: notify)
                     model.alertRules[id] = rule
                 case .system(let signal):
                     guard var rule = model.systemAlertRules[signal] else {
                         return
                     }
-                    if enabled {
-                        rule.destinations.insert(destination)
-                    } else {
-                        rule.destinations.remove(destination)
-                    }
+                    rule.destinations = Self.destinations(notify: notify)
                     model.systemAlertRules[signal] = rule
                 }
-                if enabled, destination == .notification {
-                    requestNotificationAccess()
-                }
+                if notify { requestNotificationAccess() }
             }
         )
+    }
+
+    private func sendTestNotification() {
+        NotificationPermissionManager.sendTest { state in
+            Task { @MainActor in
+                notificationAccess = state
+                testResult = state
+            }
+        }
     }
 
     // MARK: - Notification access
@@ -630,9 +622,9 @@ private extension AlertConditionState {
         case .normal:
             return String(localized: "alerts.state.normal", defaultValue: "Normal")
         case .pending:
-            return String(localized: "alerts.state.pending", defaultValue: "Pending")
+            return String(localized: "alerts.state.pending", defaultValue: "Limit crossed, waiting")
         case .active:
-            return String(localized: "alerts.state.active", defaultValue: "Active")
+            return String(localized: "alerts.state.active", defaultValue: "Alerting")
         }
     }
 
@@ -664,7 +656,7 @@ private extension SystemAlertSignal {
         case .diskAvailableCapacity:
             return String(
                 localized: "alerts.system.diskCapacity",
-                defaultValue: "Available disk space below"
+                defaultValue: "Free disk space below"
             )
         case .thermalState:
             return String(
@@ -674,7 +666,7 @@ private extension SystemAlertSignal {
         case .batteryService:
             return String(
                 localized: "alerts.system.batteryService",
-                defaultValue: "Battery service recommended by macOS"
+                defaultValue: "macOS recommends battery service"
             )
         }
     }
