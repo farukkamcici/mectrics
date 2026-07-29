@@ -103,7 +103,7 @@ struct OnboardingView: View {
     private func onboardingMetric(_ id: MetricID) -> some View {
         let state = model.metricState(for: id, isEnabled: true)
         return HStack(spacing: ExperienceSpacing.xSmall) {
-            Image(systemName: FloatingPanelView.symbol(for: id))
+            Image(systemName: MetricSymbol.name(for: id))
                 .foregroundStyle(.tint)
                 .accessibilityHidden(true)
             Text(previewValue(for: id))
@@ -150,7 +150,7 @@ struct OnboardingView: View {
                             set: { model.setEnabled($0, for: id) }
                         )) {
                             HStack {
-                                Label(id.localizedName, systemImage: FloatingPanelView.symbol(for: id))
+                                Label(id.localizedName, systemImage: MetricSymbol.name(for: id))
                                 Spacer()
                                 Text("Recommended")
                                     .font(.caption)

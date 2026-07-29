@@ -86,7 +86,7 @@ struct DetailPopoverView: View {
 
     private var header: some View {
         HStack(spacing: ExperienceSpacing.small) {
-            Image(systemName: FloatingPanelView.symbol(for: moduleID))
+            Image(systemName: MetricSymbol.name(for: moduleID))
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(model.accentColor)
             Text(moduleID.localizedName)

@@ -244,7 +244,7 @@ struct CompactHealthPopoverView: View {
                         HStack {
                             Label(
                                 id.localizedName,
-                                systemImage: FloatingPanelView.symbol(for: id)
+                                systemImage: MetricSymbol.name(for: id)
                             )
                             Spacer()
                             Text(moduleValue(id))

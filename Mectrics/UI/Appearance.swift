@@ -1,23 +1,7 @@
 import AppKit
 import SwiftUI
 
-/// Floating panel shape: a single-row horizontal strip, or a vertical card with one
-/// module per row. Fixed layouts — the panel sizes itself, no manual resizing.
-enum PanelLayout: String, CaseIterable, Identifiable {
-    case horizontal
-    case vertical
-
-    var id: String { rawValue }
-
-    var localizedName: String {
-        switch self {
-        case .horizontal: return String(localized: "panel.horizontal", defaultValue: "Horizontal strip")
-        case .vertical:   return String(localized: "panel.vertical", defaultValue: "Vertical card")
-        }
-    }
-}
-
-/// Accent color used by sparklines and charts everywhere (menu bar, popover, panel).
+/// Accent color used by sparklines and charts everywhere (menu bar, popovers, widgets).
 /// `system` follows the user's macOS accent color.
 enum AccentChoice: String, CaseIterable, Identifiable {
     case system, blue, purple, pink, red, orange, yellow, green, teal

@@ -33,7 +33,7 @@ final class MetricStatusItem: NSObject {
         self.reservedTextWidth = template.isEmpty ? 0
             : ceil((template as NSString).size(withAttributes: [.font: textFont]).width)
         self.iconSymbol = NSImage(
-            systemSymbolName: FloatingPanelView.symbol(for: id),
+            systemSymbolName: MetricSymbol.name(for: id),
             accessibilityDescription: nil
         )?.withSymbolConfiguration(.init(pointSize: 10.5, weight: .semibold))
         super.init()
