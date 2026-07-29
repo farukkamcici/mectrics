@@ -19,20 +19,12 @@ struct PopoverPrimaryButton: View {
     }
 }
 
-/// Shared bottom bar: app-level navigation sits quietly below the popover's own
-/// action, and rare or irreversible items stay behind the menu so they cannot be hit
-/// by accident.
-struct PopoverActionBar<MenuItems: View>: View {
+/// Shared bottom bar: app-level actions sit quietly below the popover's own action.
+///
+/// Quit keeps a destructive tint so it reads as the one irreversible item here,
+/// without being hidden behind a menu that would hold a single command.
+struct PopoverActionBar: View {
     let onOpenSettings: () -> Void
-    @ViewBuilder var menuItems: () -> MenuItems
-
-    init(
-        onOpenSettings: @escaping () -> Void,
-        @ViewBuilder menuItems: @escaping () -> MenuItems = { EmptyView() }
-    ) {
-        self.onOpenSettings = onOpenSettings
-        self.menuItems = menuItems
-    }
 
     var body: some View {
         HStack {
@@ -41,17 +33,13 @@ struct PopoverActionBar<MenuItems: View>: View {
             }
             .buttonStyle(.borderless)
             Spacer()
-            Menu {
-                menuItems()
-                Button("Quit Mectrics") {
-                    NSApp.terminate(nil)
-                }
+            Button {
+                NSApp.terminate(nil)
             } label: {
-                Image(systemName: "ellipsis")
+                Label("Quit", systemImage: "power")
             }
-            .menuStyle(.borderlessButton)
-            .fixedSize()
-            .accessibilityLabel("More actions")
+            .buttonStyle(.borderless)
+            .foregroundStyle(Color(nsColor: .systemRed))
         }
         .font(.callout)
     }

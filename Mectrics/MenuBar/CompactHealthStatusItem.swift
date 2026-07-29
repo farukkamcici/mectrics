@@ -278,18 +278,21 @@ struct CompactHealthPopoverView: View {
             ) {
                 model.onOpenAttentionLog?()
             }
+            PopoverPrimaryButton(
+                title: String(
+                    localized: "health.copySystemSummary",
+                    defaultValue: "Copy System Summary"
+                ),
+                symbolName: "doc.on.doc"
+            ) {
+                summaryCopied = SystemSummaryBuilder.copy(model: model)
+            }
             if summaryCopied {
                 Text("System summary copied.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            PopoverActionBar {
-                model.onOpenSettings?()
-            } menuItems: {
-                Button("Copy System Summary") {
-                    summaryCopied = SystemSummaryBuilder.copy(model: model)
-                }
-            }
+            PopoverActionBar { model.onOpenSettings?() }
         }
         .padding(ExperienceSpacing.large)
         .frame(width: 320)

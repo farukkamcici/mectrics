@@ -22,6 +22,20 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
         popover.behavior = .transient
         popover.delegate = self
         popover.animates = !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        // A popover made key can outlive a switch to another app — clicking a window
+        // that is already frontmost is not the "interaction elsewhere" that transient
+        // behaviour watches for. Close it explicitly when Mectrics stops being active.
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applicationDidResignActive),
+            name: NSApplication.didResignActiveNotification,
+            object: nil
+        )
+    }
+
+    @objc private func applicationDidResignActive() {
+        guard popover.isShown else { return }
+        popover.performClose(nil)
     }
 
     /// Rebuilds the menu bar items from scratch based on the enabled modules.
