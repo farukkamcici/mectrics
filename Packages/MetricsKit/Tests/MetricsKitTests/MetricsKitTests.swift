@@ -203,34 +203,6 @@ final class MetricsKitTests: XCTestCase {
         XCTAssertEqual(policy.pausedMetricIDs, [.sensors, .bluetooth])
     }
 
-    func testHistoryArchiveReplacesBucketsAndExportsCSV() throws {
-        let now = Date(timeIntervalSince1970: 3_600 * 100)
-        let older = HistoricalMetricPoint(
-            timestamp: now.addingTimeInterval(-3_600),
-            average: 0.25,
-            minimum: 0.1,
-            maximum: 0.5,
-            unit: .fraction,
-            sampleCount: 120
-        )
-        let replacement = HistoricalMetricPoint(
-            timestamp: older.timestamp,
-            average: 0.5,
-            minimum: 0.2,
-            maximum: 0.9,
-            unit: .fraction,
-            sampleCount: 240
-        )
-        var archive = MetricHistoryArchive()
-        archive.upsert(older, for: .cpu, now: now)
-        archive.upsert(replacement, for: .cpu, now: now)
-
-        XCTAssertEqual(archive.points[.cpu], [replacement])
-        let csv = try XCTUnwrap(String(data: archive.csvData(), encoding: .utf8))
-        XCTAssertTrue(csv.hasPrefix("hour,module,average,minimum,maximum,unit,samples\n"))
-        XCTAssertTrue(csv.contains(",CPU,50.00,20.00,90.00,percent,240\n"))
-    }
-
     // MARK: - Formatting
 
     func testPercentFormat() {

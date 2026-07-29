@@ -11,7 +11,6 @@ import MetricsKit
 @MainActor
 final class AppModel {
     let engine: MetricsEngine
-    let historyRecorder = HistoryRecorder()
     let attentionLog = AttentionLogStore()
 
     /// Core modules available on this machine (e.g. no battery on a desktop).
@@ -25,6 +24,7 @@ final class AppModel {
     /// the last valid value; repeated failures become an explicit error state.
     private(set) var consecutiveSamplingFailures: [MetricID: Int] = [:]
     private var onboardingPreviewActive = false
+    private var builderPreviewActive = false
 
     /// Enabled menu bar items: per module, which components are shown. A module may
     /// contribute several items at once (e.g. Battery icon + Battery health).
@@ -59,17 +59,6 @@ final class AppModel {
     /// (wired by AppDelegate).
     @ObservationIgnored var onModulesChanged: (() -> Void)?
 
-    /// Whether the floating panel (always-on-top live widget) is visible.
-    var showFloatingPanel: Bool {
-        didSet {
-            defaults.set(showFloatingPanel, forKey: Self.floatingPanelKey)
-            if showFloatingPanel != oldValue { onFloatingPanelChanged?(showFloatingPanel) }
-        }
-    }
-
-    /// Called when the floating panel visibility changes (wired by AppDelegate).
-    @ObservationIgnored var onFloatingPanelChanged: ((Bool) -> Void)?
-
     /// Called when a view asks for the settings window (wired by AppDelegate).
     @ObservationIgnored var onOpenSettings: (() -> Void)?
 
@@ -100,14 +89,6 @@ final class AppModel {
             } else {
                 defaults.removeObject(forKey: Self.onboardingVersionKey)
             }
-        }
-    }
-
-    /// Floating panel shape (horizontal strip / vertical card).
-    var panelLayout: PanelLayout {
-        didSet {
-            defaults.set(panelLayout.rawValue, forKey: Self.panelLayoutKey)
-            if panelLayout != oldValue { onAppearanceChanged?() }
         }
     }
 
@@ -146,6 +127,7 @@ final class AppModel {
     }
 
     var energyGuardMode: EnergyGuardMode = .normal
+    var energyGuardReason: EnergyGuardReason = .none
 
     /// Accent color for sparklines/charts (`.system` follows macOS accent).
     var accentChoice: AccentChoice {
@@ -215,16 +197,58 @@ final class AppModel {
         enabledComponents[id] = set
     }
 
+    /// The single component a module contributes to the menu bar, or `nil` when the
+    /// module is not shown. Layouts saved by older builds could hold several
+    /// components per module; the first one in display order wins.
+    func selectedComponent(for id: MetricID) -> MenuBarComponent? {
+        MenuBarComponent.available(for: id).first {
+            enabledComponents[id]?.contains($0) ?? false
+        }
+    }
+
+    /// Component choices worth offering for a module. Battery health and cycle count
+    /// are hidden when this Mac does not report them, so the builder never offers a
+    /// look that can only ever render a dash.
+    func availableComponents(for id: MetricID) -> [MenuBarComponent] {
+        guard let detail = latest[id]?.detail else {
+            return MenuBarComponent.available(for: id)
+        }
+        return MenuBarComponent.available(for: id).filter { component in
+            switch component {
+            case .health: return detail["healthPercent"] != nil
+            case .cycles: return detail["cycleCount"] != nil
+            default:      return true
+            }
+        }
+    }
+
+    /// One module owns at most one menu bar item, so choosing a look replaces the
+    /// previous one instead of adding a second item.
+    func setComponent(_ component: MenuBarComponent?, for id: MetricID) {
+        enabledComponents[id] = component.map { [$0] } ?? []
+    }
+
+    /// Keeps every available module sampled while the menu bar builder is on screen,
+    /// so its component previews show real values rather than placeholders.
+    func beginBuilderPreview() {
+        builderPreviewActive = true
+        refreshActiveMetrics()
+        engine.requestRefresh()
+    }
+
+    func endBuilderPreview() {
+        builderPreviewActive = false
+        refreshActiveMetrics()
+    }
+
     private let defaults = UserDefaults.standard
     private static let enabledKey = "enabledModules"
-    private static let floatingPanelKey = "showFloatingPanel"
     private static let onboardingVersionKey = "completedOnboardingVersion"
     private static let currentOnboardingVersion = 2
     private static let accentKey = "accentChoice"
     private static let menuBarIconsKey = "showMenuBarIcons"
     private static let compactHealthEnabledKey = "compactHealthEnabled"
     private static let adaptMonitoringKey = "adaptMonitoringToEnergyState"
-    private static let panelLayoutKey = "panelLayout"
     private static let alertsKey = "alertRules"
     private static let systemAlertsKey = "systemAlertRules"
     private static let moduleComponentsKey = "moduleComponents"
@@ -243,7 +267,6 @@ final class AppModel {
         engine.register(providers)
         self.engine = engine
 
-        self.showFloatingPanel = defaults.bool(forKey: Self.floatingPanelKey)
         self.hasCompletedOnboarding =
             defaults.integer(forKey: Self.onboardingVersionKey) >= Self.currentOnboardingVersion
         self.accentChoice = AccentChoice(rawValue: defaults.string(forKey: Self.accentKey) ?? "") ?? .pink
@@ -254,7 +277,6 @@ final class AppModel {
         )
         self.adaptMonitoringToEnergyState =
             defaults.object(forKey: Self.adaptMonitoringKey) as? Bool ?? true
-        self.panelLayout = PanelLayout(rawValue: defaults.string(forKey: Self.panelLayoutKey) ?? "") ?? .vertical
         self.alertRules = Self.loadAlertRules(from: defaults, available: available)
         self.systemAlertRules = Self.loadSystemAlertRules(from: defaults)
         self.enabledComponents = Self.loadEnabledComponents(
@@ -329,29 +351,6 @@ final class AppModel {
         refreshActiveMetrics()
     }
 
-    /// Presents a native save panel and exports the rolling 30-day hourly archive.
-    func exportHistoryCSV() {
-        let panel = NSSavePanel()
-        panel.title = String(
-            localized: "history.export.title",
-            defaultValue: "Export Metric History"
-        )
-        panel.nameFieldStringValue = "mectrics-history.csv"
-        panel.allowedContentTypes = [.commaSeparatedText]
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-
-        do {
-            try historyRecorder.csvData().write(to: url, options: .atomic)
-        } catch {
-            let alert = NSAlert(error: error)
-            alert.messageText = String(
-                localized: "history.export.failed",
-                defaultValue: "Metric history could not be exported."
-            )
-            alert.runModal()
-        }
-    }
-
     /// Samples visible modules plus metrics required by enabled alerts. Temperature
     /// readings stay active when CPU/GPU is visible because their popovers show them.
     private func refreshActiveMetrics() {
@@ -376,6 +375,9 @@ final class AppModel {
         }
         if onboardingPreviewActive {
             active.formUnion([.cpu, .memory, .battery, .network])
+        }
+        if builderPreviewActive {
+            active.formUnion(availableModules)
         }
         engine.setActiveMetrics(active)
     }

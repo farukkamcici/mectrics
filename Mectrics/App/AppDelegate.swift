@@ -30,7 +30,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     let model = AppModel()
     private var menuBar: MenuBarController!
-    private var floatingPanel: FloatingPanelController!
     private var settings: SettingsWindowController!
     private var metricDetail: MetricDetailWindowController!
     private var attentionLog: AttentionLogWindowController!
@@ -42,7 +41,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let thresholds = ThresholdMonitor()
     private let systemConditions = SystemConditionMonitor()
     private var energyGuard: EnergyGuardController!
-    private let hotKey = GlobalHotKey()
     private let widgetSnapshots = WidgetSnapshotPublisher()
     private var powerSourceRunLoopSource: CFRunLoopSource?
     private var pendingRoutes: [ApplicationRoute] = []
@@ -75,27 +73,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Rebuild the menu bar when the module selection changes.
         model.onModulesChanged = { [weak self] in
             self?.menuBar.rebuild()
-            self?.floatingPanel.refreshSize()
             guard let self else { return }
             self.widgetSnapshots.publish(from: self.model, force: true)
             self.refreshEnergyGuardVisibility()
         }
 
-        // Floating panel (always-on-top live widget), restored from last session.
-        floatingPanel = FloatingPanelController(model: model)
-        model.onFloatingPanelChanged = { [weak self] visible in
-            self?.floatingPanel.setVisible(visible)
-            self?.refreshEnergyGuardVisibility()
-        }
-        if model.showFloatingPanel {
-            floatingPanel.setVisible(true)
-        }
-
-        // Redraw immediately when a look-related setting (accent, panel layout,
-        // icons) changes.
+        // Redraw immediately when a look-related setting (accent, icons) changes.
         model.onAppearanceChanged = { [weak self] in
             self?.menuBar.refresh()
-            self?.floatingPanel.refreshSize()
         }
 
         // Settings window (manual controller — no SwiftUI Settings scene).
@@ -146,12 +131,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.energyGuard.preferenceChanged()
         }
 
-        // Global hotkey (⌃⌥M) toggles the floating panel from anywhere.
-        hotKey.onPressed = { [weak self] in
-            self?.model.showFloatingPanel.toggle()
-        }
-        hotKey.register()
-
         thresholds.onConditionUpdate = { [weak self] update in
             self?.model.attentionLog.apply(update)
             self?.model.applyAlertUpdate(update)
@@ -177,7 +156,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.engine.onCycleReport = { [weak self] report in
             guard let self else { return }
             self.model.apply(report)
-            self.model.historyRecorder.record(report.samples)
             self.menuBar.refresh()
             self.thresholds.evaluate(latest: self.model.latest, rules: self.model.alertRules)
             self.systemConditions.evaluate(
@@ -213,7 +191,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         model.engine.stop()
         energyGuard.stop()
-        model.historyRecorder.checkpoint()
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication,
@@ -491,13 +468,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             default:
                 break
             }
-        }
-        if model.showFloatingPanel {
-            visible.formUnion(
-                model.enabledModules.intersection([
-                    .gpu, .bluetooth, .fans
-                ])
-            )
         }
         energyGuard?.updateVisibleHeavyMetrics(visible)
     }
