@@ -158,20 +158,11 @@ struct MenuBarBuilderView: View {
     private func moduleRow(_ id: MetricID) -> some View {
         let state = previewState(id)
         return LabeledContent {
-            HStack(spacing: ExperienceSpacing.medium) {
-                if let component = model.selectedComponent(for: id) {
-                    preview(id, component)
+            HStack(spacing: ExperienceSpacing.small) {
+                Spacer(minLength: 0)
+                ForEach(model.availableComponents(for: id)) { component in
+                    componentChip(id, component)
                 }
-                Picker("", selection: componentBinding(id)) {
-                    Text("Off").tag(MenuBarComponent?.none)
-                    Divider()
-                    ForEach(model.availableComponents(for: id)) { component in
-                        Text(component.localizedName)
-                            .tag(MenuBarComponent?.some(component))
-                    }
-                }
-                .labelsHidden()
-                .frame(width: 148)
             }
         } label: {
             HStack(spacing: ExperienceSpacing.small) {
@@ -180,7 +171,7 @@ struct MenuBarBuilderView: View {
                     systemImage: MetricSymbol.name(for: id)
                 )
                 // Only genuine problems earn a badge. "Not in the menu bar" is
-                // already obvious from the picker.
+                // already visible in the chips themselves.
                 if Self.isProblem(state) {
                     MetricStatusBadge(state: state)
                         .help(state.reason)
@@ -190,13 +181,76 @@ struct MenuBarBuilderView: View {
         .accessibilityElement(children: .contain)
     }
 
-    private func componentBinding(
-        _ id: MetricID
-    ) -> Binding<MenuBarComponent?> {
-        Binding(
-            get: { model.selectedComponent(for: id) },
-            set: { model.setComponent($0, for: id) }
+    /// One look for one module. Chips are independent: a module can put several items
+    /// in the menu bar at once, and each chip shows the real thing it will draw.
+    private func componentChip(
+        _ id: MetricID,
+        _ component: MenuBarComponent
+    ) -> some View {
+        let isActive = model.isComponentEnabled(component, for: id)
+        return Button {
+            model.toggleComponent(component, for: id)
+        } label: {
+            VStack(spacing: 3) {
+                preview(id, component)
+                    .frame(height: 16)
+                Text(component.localizedName)
+                    .font(.caption2)
+                    .foregroundStyle(isActive ? .primary : .secondary)
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, ExperienceSpacing.small)
+            .padding(.vertical, ExperienceSpacing.xSmall)
+            .frame(minWidth: 62)
+            .background(
+                RoundedRectangle(
+                    cornerRadius: ExperienceRadius.compact,
+                    style: .continuous
+                )
+                .fill(
+                    isActive
+                        ? Color.accentColor.opacity(
+                            ExperienceSurface.selectedFillOpacity
+                        )
+                        : Color.secondary.opacity(
+                            ExperienceSurface.subtleFillOpacity
+                        )
+                )
+            )
+            .overlay(
+                RoundedRectangle(
+                    cornerRadius: ExperienceRadius.compact,
+                    style: .continuous
+                )
+                .strokeBorder(
+                    isActive
+                        ? Color.accentColor
+                        : Color.primary.opacity(
+                            contrast == .increased
+                                ? ExperienceSurface.increasedBorderOpacity
+                                : 0
+                        ),
+                    lineWidth: ExperienceChart.compactStrokeWidth
+                )
+            )
+            .contentShape(
+                RoundedRectangle(cornerRadius: ExperienceRadius.compact)
+            )
+        }
+        .buttonStyle(.plain)
+        .help(isActive
+              ? String(localized: "builder.chip.remove", defaultValue: "Click to remove from the menu bar")
+              : String(localized: "builder.chip.add", defaultValue: "Click to add to the menu bar"))
+        .accessibilityLabel(
+            String(
+                localized: "builder.component.accessibilityLabel",
+                defaultValue: "\(id.localizedName), \(component.localizedName)"
+            )
         )
+        .accessibilityValue(isActive
+                            ? String(localized: "builder.active", defaultValue: "In menu bar")
+                            : String(localized: "builder.inactive", defaultValue: "Not in menu bar"))
+        .accessibilityAddTraits(isActive ? .isSelected : [])
     }
 
     private static func isProblem(_ state: MetricDataState) -> Bool {
@@ -226,9 +280,6 @@ struct MenuBarBuilderView: View {
     @ViewBuilder
     private func componentPreview(_ id: MetricID, _ component: MenuBarComponent) -> some View {
         switch component {
-        case .graph:
-            SparklineView(values: previewSamples(id), accent: model.accentColor)
-                .frame(width: 28, height: 14)
         case .valueGraph:
             HStack(spacing: ExperienceSpacing.xSmall) {
                 previewLabel(id, component)

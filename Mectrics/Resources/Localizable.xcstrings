@@ -1097,17 +1097,6 @@
         }
       }
     },
-    "component.graph": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Graph"
-          }
-        }
-      }
-    },
     "component.health": {
       "extractionState": "extracted_with_value",
       "localizations": {

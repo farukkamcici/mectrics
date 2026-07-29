@@ -197,15 +197,6 @@ final class AppModel {
         enabledComponents[id] = set
     }
 
-    /// The single component a module contributes to the menu bar, or `nil` when the
-    /// module is not shown. Layouts saved by older builds could hold several
-    /// components per module; the first one in display order wins.
-    func selectedComponent(for id: MetricID) -> MenuBarComponent? {
-        MenuBarComponent.available(for: id).first {
-            enabledComponents[id]?.contains($0) ?? false
-        }
-    }
-
     /// Component choices worth offering for a module. Battery health and cycle count
     /// are hidden when this Mac does not report them, so the builder never offers a
     /// look that can only ever render a dash.
@@ -220,12 +211,6 @@ final class AppModel {
             default:      return true
             }
         }
-    }
-
-    /// One module owns at most one menu bar item, so choosing a look replaces the
-    /// previous one instead of adding a second item.
-    func setComponent(_ component: MenuBarComponent?, for id: MetricID) {
-        enabledComponents[id] = component.map { [$0] } ?? []
     }
 
     /// Keeps every available module sampled while the menu bar builder is on screen,
@@ -392,7 +377,12 @@ final class AppModel {
             for (key, values) in raw {
                 guard let id = MetricID(rawValue: key), available.contains(id) else { continue }
                 let valid = MenuBarComponent.available(for: id)
-                result[id] = Set(values.compactMap(MenuBarComponent.init).filter(valid.contains))
+                // The chart-only component was removed; a layout that used it keeps
+                // its module by falling back to value + graph.
+                let migrated = values.map { $0 == "graph" ? "valueGraph" : $0 }
+                result[id] = Set(
+                    migrated.compactMap(MenuBarComponent.init).filter(valid.contains)
+                )
             }
             return result
         }
@@ -622,7 +612,7 @@ final class AppModel {
                 guard let id = MetricID(rawValue: key) else { continue }
                 switch value {
                 case "value": components[id] = .value
-                case "graph": components[id] = .graph
+                case "graph": components[id] = .valueGraph
                 case "both":  components[id] = .valueGraph
                 default: break
                 }

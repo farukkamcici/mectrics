@@ -4,8 +4,9 @@ import MetricsKit
 /// One selectable menu bar component. Each module offers a subset (see
 /// `available(for:)`), and the user can enable several components for a module.
 enum MenuBarComponent: String, CaseIterable, Identifiable {
-    // Generic
-    case value, graph, valueGraph
+    // Generic. A chart-only item was removed: a sparkline with no number cannot be
+    // read at a glance, and every module that had one also offers value + graph.
+    case value, valueGraph
     // CPU
     case coreBars
     // Capacity texts (memory used, disk used/free)
@@ -21,9 +22,9 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
 
     static func available(for module: MetricID) -> [MenuBarComponent] {
         switch module {
-        case .cpu:       return [.value, .graph, .valueGraph, .coreBars]
-        case .memory:    return [.value, .graph, .valueGraph, .usedBytes]
-        case .gpu:       return [.value, .graph, .valueGraph]
+        case .cpu:       return [.value, .valueGraph, .coreBars]
+        case .memory:    return [.value, .valueGraph, .usedBytes]
+        case .gpu:       return [.value, .valueGraph]
         case .battery:   return [.value, .batteryIcon, .health, .cycles]
         case .disk:      return [.value, .ring, .usedBytes, .freeBytes]
         case .network:   return [.netActivity, .netDown, .netUp]
@@ -42,7 +43,6 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
     var localizedName: String {
         switch self {
         case .value:       return String(localized: "component.value", defaultValue: "Value")
-        case .graph:       return String(localized: "component.graph", defaultValue: "Graph")
         case .valueGraph:  return String(localized: "component.valueGraph", defaultValue: "Value + Graph")
         case .coreBars:    return String(localized: "component.coreBars", defaultValue: "Cores")
         case .usedBytes:   return String(localized: "component.used", defaultValue: "Used")
@@ -61,7 +61,7 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
     /// Real values must never exceed this width.
     func template(for module: MetricID) -> String {
         switch self {
-        case .graph, .coreBars, .ring, .batteryIcon:
+        case .coreBars, .ring, .batteryIcon:
             return ""
         case .usedBytes, .freeBytes:
             return "999GB"
@@ -88,7 +88,6 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
 enum MenuBarVisual {
     case text(String)                          // right-aligned text (may be two-line)
     case textGraph(String)                     // text + sparkline
-    case graph                                 // sparkline only
     case coreBars([Double])                    // one mini bar per CPU core
     case battery(level: Double, charging: Bool)
     case ring(Double)                          // fraction donut
@@ -100,8 +99,6 @@ extension MenuBarText {
         switch component {
         case .value:
             return .text(string(for: id, sample: sample))
-        case .graph:
-            return .graph
         case .valueGraph:
             return .textGraph(string(for: id, sample: sample))
         case .coreBars:

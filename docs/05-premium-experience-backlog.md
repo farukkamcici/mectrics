@@ -202,8 +202,8 @@ existing functionality is sufficient to build a premium v1 experience.
     rows that help interpret that module.
 
 - [ ] **PX-012 — Make the menu bar builder a flagship interaction** `L`
-  - One module owns at most one menu bar item, chosen from a single list row, so the
-    pane is a set of decisions rather than a grid of toggles.
+  - Give each module its own row, and pick components by clicking live preview chips
+    inside it — several components per module stay available.
   - Keep a live, accurate preview using real values, including for modules that are not
     in the menu bar yet.
   - Add keyboard alternatives, undo, Reset to Recommended, and exactly three initial

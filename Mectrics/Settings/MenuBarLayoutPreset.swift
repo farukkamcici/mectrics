@@ -78,7 +78,7 @@ struct MenuBarLayoutPreset: Identifiable, Equatable {
                     component: .netActivity
                 ),
                 MenuBarLayoutEntry(metricID: .disk, component: .freeBytes),
-                MenuBarLayoutEntry(metricID: .gpu, component: .graph)
+                MenuBarLayoutEntry(metricID: .gpu, component: .valueGraph)
             ]
         )
     ]

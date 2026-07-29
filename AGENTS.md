@@ -48,10 +48,14 @@ Do **not** commit: `Mectrics.xcodeproj/`, `DerivedData/`, `.build/` (see `.gitig
 - Use `NSFont.monospacedDigitSystemFont` so digits are equal width.
 - If you add a module or change a format, update its template so real values never exceed
   the reserved width.
-- **One module owns at most one menu bar item.** Choosing a look replaces the previous
-  one (`AppModel.setComponent(_:for:)`); it never adds a second item for that module.
+- **A module may contribute several items.** Components are independent toggles
+  (`AppModel.toggleComponent(_:for:)`), so Battery can show icon + health at once.
+- **Every component includes a readable value.** A chart-only item is not offered:
+  a sparkline with no number cannot be read at a glance.
 - **Absence is not zero.** When a reading is missing, render a dash and never fabricate
   `0%` / `0`. Do not offer a component whose data this Mac cannot report.
+- Components are picked by clicking a live preview chip, not from a select box — the
+  user chooses what they can see.
 
 ## 4. Surfaces and Settings
 

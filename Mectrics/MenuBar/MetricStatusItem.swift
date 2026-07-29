@@ -137,10 +137,6 @@ final class MetricStatusItem: NSObject {
                     drawSparkline(samples, in: NSRect(x: slot + gap, y: 3,
                                                       width: sparkWidth, height: height - 6),
                                   accent: accent)
-                case .graph:
-                    drawSparkline(samples, in: NSRect(x: offset, y: 3,
-                                                      width: sparkWidth + 8, height: height - 6),
-                                  accent: accent)
                 case .coreBars(let values):
                     drawCoreBars(values, in: NSRect(x: offset, y: 3,
                                                     width: contentWidth, height: height - 6),
@@ -183,8 +179,6 @@ final class MetricStatusItem: NSObject {
             return textSlot(text, reservedTextWidth, attributes)
         case .textGraph(let text):
             return textSlot(text, reservedTextWidth, attributes) + gap + sparkWidth
-        case .graph:
-            return sparkWidth + 8
         case .coreBars(let values):
             return CGFloat(max(values.count, 2)) * 4
         case .battery:
@@ -199,8 +193,6 @@ final class MetricStatusItem: NSObject {
         reservedTextWidth: CGFloat
     ) -> CGFloat {
         switch component {
-        case .graph:
-            return sparkWidth + 8
         case .valueGraph:
             return reservedTextWidth + gap + sparkWidth
         case .coreBars:
