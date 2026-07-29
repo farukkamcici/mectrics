@@ -127,6 +127,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.onOpenMetricDetail = { [weak self] metricID in
             self?.metricDetail.show(metricID: metricID)
         }
+        model.onCheckForUpdates = { [weak self] in
+            self?.updates.checkForUpdates(nil)
+        }
         model.onEnergyGuardPreferenceChanged = { [weak self] in
             self?.energyGuard.preferenceChanged()
         }

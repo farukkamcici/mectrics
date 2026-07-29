@@ -9,20 +9,24 @@ struct GeneralSettingsTab: View {
 
     var body: some View {
         Form {
-            Section("Application") {
+            Section {
                 Toggle("Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, newValue in
                         LoginItem.setEnabled(newValue)
                     }
+            } header: {
+                Text("Startup")
+            } footer: {
+                Text("Mectrics has no Dock icon or window of its own; it lives in the menu bar.")
             }
 
-            Section("Monitoring") {
+            Section {
                 Toggle(
-                    "Adapt monitoring to power and thermal state",
+                    "Ease off when on battery or hot",
                     isOn: $model.adaptMonitoringToEnergyState
                 )
                 if model.adaptMonitoringToEnergyState {
-                    LabeledContent("Currently") {
+                    LabeledContent("Right now") {
                         Text(
                             String(
                                 localized: "energyGuard.currently",
@@ -32,27 +36,57 @@ struct GeneralSettingsTab: View {
                         .foregroundStyle(.secondary)
                     }
                 }
-                Text("Alerts stay responsive; expensive sensor readings slow down first.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+            } header: {
+                Text("Energy")
+            } footer: {
+                Text("Sensor and GPU readings — the expensive ones — are taken less often on battery, in Low Power Mode, or when your Mac runs hot. Your alerts keep their timing either way.")
             }
 
-            Section("Activity") {
-                Button("Open Attention Log") {
-                    model.onOpenAttentionLog?()
+            Section {
+                LabeledContent("Version", value: Self.versionString)
+                Button("Check for Updates…") {
+                    model.onCheckForUpdates?()
                 }
-                Button("Open Diagnostics…") {
-                    model.onOpenDiagnostics?()
+            } header: {
+                Text("Updates")
+            } footer: {
+                Text("Mectrics contacts the update server only when you ask, and installs nothing that fails its signature check.")
+            }
+
+            Section {
+                LabeledContent {
+                    Button("Open") { model.onOpenAttentionLog?() }
+                } label: {
+                    Text("Attention Log")
+                    Text("What needed attention and when, kept on this Mac")
                 }
-                Label("Your readings stay on this Mac. Mectrics has no telemetry.",
+                LabeledContent {
+                    Button("Open…") { model.onOpenDiagnostics?() }
+                } label: {
+                    Text("Diagnostics")
+                    Text("Preview and save a support file, with identifiers removed")
+                }
+            } header: {
+                Text("Privacy")
+            } footer: {
+                Label("Your readings never leave this Mac. Mectrics has no telemetry.",
                       systemImage: "lock.shield")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)
         // The toggle can be flipped elsewhere (onboarding); re-read on every appearance.
         .onAppear { launchAtLogin = LoginItem.isEnabled }
+    }
+
+    private static var versionString: String {
+        let bundle = Bundle.main
+        let short = bundle.object(
+            forInfoDictionaryKey: "CFBundleShortVersionString"
+        ) as? String ?? "—"
+        let build = bundle.object(
+            forInfoDictionaryKey: "CFBundleVersion"
+        ) as? String ?? "—"
+        return "\(short) (\(build))"
     }
 }
 

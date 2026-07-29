@@ -71,6 +71,9 @@ final class AppModel {
     /// Opens the previewable, local-only diagnostics export.
     @ObservationIgnored var onOpenDiagnostics: (() -> Void)?
 
+    /// Runs Sparkle's signature-verifying update check.
+    @ObservationIgnored var onCheckForUpdates: (() -> Void)?
+
     /// Opens a persistent metric detail window from shared attention surfaces.
     @ObservationIgnored var onOpenMetricDetail: ((MetricID) -> Void)?
 
