@@ -1,3255 +1,2830 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "%arg%arg" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$arg%2$arg"
+  "sourceLanguage": "en",
+  "strings": {
+    "%arg%arg": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$arg%2$arg"
+          }
+        }
+      }
+    },
+    "%arg, %arg": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$arg, %2$arg"
+          }
+        }
+      }
+    },
+    "%arg, %arg, %arg, %arg": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$arg, %2$arg, %3$arg, %4$arg"
+          }
+        }
+      }
+    },
+    "%lld%@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld%2$@"
+          }
+        }
+      }
+    },
+    "1 minute": {},
+    "2 minutes": {},
+    "30 seconds": {},
+    "5 minutes": {},
+    "A calmer view of Mac health": {},
+    "A lightweight, private system monitor for Mac.": {},
+    "Adapt monitoring to power and thermal state": {},
+    "Alert rules and metric history will not change.": {},
+    "All readings stay on this Mac. Mectrics has no telemetry.": {},
+    "Application": {},
+    "Apply": {},
+    "Attention Log": {},
+    "Available capacity": {},
+    "Back": {},
+    "Cancel": {},
+    "Clear Attention Log?": {},
+    "Clear Log": {},
+    "Color": {},
+    "Compact Health": {},
+    "Compact Health item": {},
+    "Continue": {},
+    "Copy System Summary": {},
+    "Critical": {},
+    "Destinations": {},
+    "Diagnostics preview": {},
+    "Energy Guard": {},
+    "Export Preview": {},
+    "Export…": {},
+    "For": {},
+    "Icons": {},
+    "Immediately": {},
+    "Launch at login": {},
+    "Live essentials stay visible in the menu bar without opening a dashboard.": {},
+    "Live menu bar preview": {},
+    "MIT License": {},
+    "Meaningful local alert events from the last 30 days.": {},
+    "Mectrics": {},
+    "Mectrics records only meaningful local alert and recovery events.": {},
+    "Mectrics will show selected alert conditions here.": {},
+    "Menu bar modules": {},
+    "Needs attention": {},
+    "No attention events": {},
+    "Nothing is uploaded automatically.": {},
+    "Notification": {},
+    "Notification delivery": {},
+    "Open Attention Log": {},
+    "Open Diagnostics…": {},
+    "Open Notification Settings": {},
+    "Optional": {},
+    "Permission": {},
+    "Presets": {},
+    "Pressure level": {},
+    "Quit": {},
+    "Quit Mectrics": {},
+    "Recommended": {},
+    "Rules": {},
+    "Save Diagnostics…": {},
+    "Save…": {},
+    "Select the sections to include, then review the exact local export.": {},
+    "Serious": {},
+    "Settings": {},
+    "Skip Setup": {},
+    "Start Mectrics automatically after you sign in.": {},
+    "Start Monitoring": {},
+    "Sustained duration": {},
+    "System summary copied.": {},
+    "Test Notification": {},
+    "The diagnostics file could not be saved.": {},
+    "Thermal state": {},
+    "This is exactly what will be written to the file.": {},
+    "Top processes": {},
+    "Updates": {},
+    "Version": {},
+    "Warning": {},
+    "Website and Source": {},
+    "Your Mac, clear at a glance": {},
+    "Your readings stay on this Mac. Mectrics has no telemetry.": {},
+    "about.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "About Mectrics"
           }
         }
       }
     },
-    "%arg, %arg" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$arg, %2$arg"
+    "about.updates.manualSigned": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Manual, signature-verified checks"
           }
         }
       }
     },
-    "%arg, %arg, %arg, %arg" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$arg, %2$arg, %3$arg, %4$arg"
+    "about.updates.unavailable": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Not configured in this build"
           }
         }
       }
     },
-    "%lld%@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld%2$@"
+    "about.versionBuild": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Version %1$arg (%2$arg)"
           }
         }
       }
     },
-    "1 minute" : {
-
-    },
-    "15 min cooldown" : {
-
-    },
-    "2 minutes" : {
-
-    },
-    "30 seconds" : {
-
-    },
-    "5 minutes" : {
-
-    },
-    "A calmer view of Mac health" : {
-
-    },
-    "A lightweight, private system monitor for Mac." : {
-
-    },
-    "A rule becomes pending when its reading crosses the limit, activates after the selected duration, and recovers when the reading returns to normal. Each rule has a 15-minute cooldown." : {
-
-    },
-    "Adapt monitoring to power and thermal state" : {
-
-    },
-    "Add components" : {
-
-    },
-    "Alert rules and metric history will not change." : {
-
-    },
-    "All readings stay on this Mac. Mectrics has no telemetry." : {
-
-    },
-    "An alert appears after the reading stays beyond its limit for the selected time. Each module alerts at most once every 15 minutes." : {
-
-    },
-    "Application" : {
-
-    },
-    "Apply" : {
-
-    },
-    "Attention Log" : {
-
-    },
-    "Available capacity" : {
-
-    },
-    "Back" : {
-
-    },
-    "Cancel" : {
-
-    },
-    "Clear Attention Log?" : {
-
-    },
-    "Clear Log" : {
-
-    },
-    "Color" : {
-
-    },
-    "Compact Health" : {
-
-    },
-    "Compact Health item" : {
-
-    },
-    "Continue" : {
-
-    },
-    "Copy System Summary" : {
-
-    },
-    "Critical" : {
-
-    },
-    "Current layout" : {
-
-    },
-    "Data and privacy" : {
-
-    },
-    "Destinations" : {
-
-    },
-    "Diagnostics preview" : {
-
-    },
-    "Empty — add components below" : {
-
-    },
-    "Energy Guard" : {
-
-    },
-    "Export Preview" : {
-
-    },
-    "Export metric history…" : {
-
-    },
-    "Export…" : {
-
-    },
-    "Floating panel" : {
-
-    },
-    "For" : {
-
-    },
-    "Icons" : {
-
-    },
-    "Immediately" : {
-
-    },
-    "Launch at login" : {
-
-    },
-    "Live essentials stay visible in the menu bar without opening a dashboard." : {
-
-    },
-    "Live menu bar preview" : {
-
-    },
-    "MIT License" : {
-
-    },
-    "Meaningful local alert events from the last 30 days." : {
-
-    },
-    "Mectrics" : {
-
-    },
-    "Mectrics keeps low-cost alerts responsive and reduces expensive sensor work first." : {
-
-    },
-    "Mectrics records only meaningful local alert and recovery events." : {
-
-    },
-    "Mectrics will show selected alert conditions here." : {
-
-    },
-    "Menu bar modules" : {
-
-    },
-    "Monitoring policy" : {
-
-    },
-    "Needs attention" : {
-
-    },
-    "No attention events" : {
-
-    },
-    "Nothing is uploaded automatically." : {
-
-    },
-    "Notification" : {
-
-    },
-    "Notification delivery" : {
-
-    },
-    "Notify me when" : {
-
-    },
-    "Open Attention Log" : {
-
-    },
-    "Open Diagnostics…" : {
-
-    },
-    "Open Notification Settings" : {
-
-    },
-    "Optional" : {
-
-    },
-    "Panel layout" : {
-
-    },
-    "Permission" : {
-
-    },
-    "Presets" : {
-
-    },
-    "Press Control–Option–M to show or hide the panel." : {
-
-    },
-    "Pressure level" : {
-
-    },
-    "Quit" : {
-
-    },
-    "Quit Mectrics" : {
-
-    },
-    "Recommended" : {
-
-    },
-    "Reset to Recommended" : {
-
-    },
-    "Rules" : {
-
-    },
-    "Save Diagnostics…" : {
-
-    },
-    "Save…" : {
-
-    },
-    "Select the sections to include, then review the exact local export." : {
-
-    },
-    "Serious" : {
-
-    },
-    "Settings" : {
-
-    },
-    "Show floating panel" : {
-
-    },
-    "Skip Setup" : {
-
-    },
-    "Start Mectrics automatically after you sign in." : {
-
-    },
-    "Start Monitoring" : {
-
-    },
-    "Sustained duration" : {
-
-    },
-    "System conditions" : {
-
-    },
-    "System summary copied." : {
-
-    },
-    "Test Notification" : {
-
-    },
-    "The diagnostics file could not be saved." : {
-
-    },
-    "Thermal state" : {
-
-    },
-    "This is exactly what will be written to the file." : {
-
-    },
-    "Top processes" : {
-
-    },
-    "Unavailable on this Mac" : {
-
-    },
-    "Updates" : {
-
-    },
-    "Version" : {
-
-    },
-    "Warning" : {
-
-    },
-    "Website and Source" : {
-
-    },
-    "Your Mac, clear at a glance" : {
-
-    },
-    "Your readings stay on this Mac. Mectrics has no telemetry." : {
-
-    },
-    "about.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "About Mectrics"
-          }
-        }
-      }
-    },
-    "about.updates.manualSigned" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Manual, signature-verified checks"
-          }
-        }
-      }
-    },
-    "about.updates.unavailable" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Not configured in this build"
-          }
-        }
-      }
-    },
-    "about.versionBuild" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Version %1$arg (%2$arg)"
-          }
-        }
-      }
-    },
-    "accent.blue" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Blue"
-          }
-        }
-      }
-    },
-    "accent.green" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Green"
-          }
-        }
-      }
-    },
-    "accent.orange" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Orange"
-          }
-        }
-      }
-    },
-    "accent.pink" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Pink"
-          }
-        }
-      }
-    },
-    "accent.purple" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Purple"
-          }
-        }
-      }
-    },
-    "accent.red" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Red"
-          }
-        }
-      }
-    },
-    "accent.system" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "System"
-          }
-        }
-      }
-    },
-    "accent.teal" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Teal"
-          }
-        }
-      }
-    },
-    "accent.yellow" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Yellow"
-          }
-        }
-      }
-    },
-    "action.copyLocalAddress" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Copy Local Address"
-          }
-        }
-      }
-    },
-    "action.openActivityMonitor" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Activity Monitor"
-          }
-        }
-      }
-    },
-    "action.openBatterySettings" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Battery Settings"
-          }
-        }
-      }
-    },
-    "action.openBluetoothSettings" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Bluetooth Settings"
-          }
-        }
-      }
-    },
-    "action.openNetworkSettings" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Network Settings"
-          }
-        }
-      }
-    },
-    "action.openStorageSettings" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Storage Settings"
-          }
-        }
-      }
-    },
-    "alert.body.above" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$arg is at %2$arg%% — above your %3$arg%% threshold."
-          }
-        }
-      }
-    },
-    "alert.body.below" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$arg is at %2$arg%% — below your %3$arg%% threshold."
-          }
-        }
-      }
-    },
-    "alert.body.temp" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "CPU temperature is %1$arg°C — above your %2$arg°C threshold."
-          }
-        }
-      }
-    },
-    "alert.system.batteryService.body" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "macOS reports that the battery needs service."
+    "accent.blue": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Blue"
           }
         }
       }
     },
-    "alert.system.batteryService.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Battery service is recommended"
+    "accent.green": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Green"
           }
         }
       }
     },
-    "alert.system.diskCapacity.body" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$arg remains, below your %2$arg limit."
+    "accent.orange": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Orange"
           }
         }
       }
     },
-    "alert.system.diskCapacity.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Disk space is running low"
+    "accent.pink": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Pink"
           }
         }
       }
     },
-    "alert.system.memoryPressure.body" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Kernel memory pressure reached %arg."
+    "accent.purple": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Purple"
           }
         }
       }
     },
-    "alert.system.memoryPressure.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Memory pressure needs attention"
+    "accent.red": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Red"
           }
         }
       }
     },
-    "alert.system.thermal.body" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "The system thermal state reached %arg."
+    "accent.system": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "System"
           }
         }
       }
     },
-    "alert.system.thermal.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Mac thermal state needs attention"
+    "accent.teal": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Teal"
           }
         }
       }
     },
-    "alert.test.body" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Notifications are ready. This test did not create an attention event."
+    "accent.yellow": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Yellow"
           }
         }
       }
     },
-    "alert.test.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Mectrics Test Notification"
+    "action.copyLocalAddress": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Copy Local Address"
           }
         }
       }
     },
-    "alert.title.battery" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Low battery"
+    "action.openActivityMonitor": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Open Activity Monitor"
           }
         }
       }
     },
-    "alert.title.disk" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Disk almost full"
+    "action.openBatterySettings": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Open Battery Settings"
           }
         }
       }
     },
-    "alert.title.high" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "High %arg usage"
+    "action.openBluetoothSettings": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Open Bluetooth Settings"
           }
         }
       }
     },
-    "alert.title.temp" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "High CPU temperature"
+    "action.openNetworkSettings": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Open Network Settings"
           }
         }
       }
     },
-    "alerts.above" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%arg above"
+    "action.openStorageSettings": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Open Storage Settings"
           }
         }
       }
     },
-    "alerts.below" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%arg below"
+    "alert.body.above": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$arg is at %2$arg%% — above your %3$arg%% threshold."
           }
         }
       }
     },
-    "alerts.duration.1minute" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "1 min"
+    "alert.body.below": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$arg is at %2$arg%% — below your %3$arg%% threshold."
           }
         }
       }
     },
-    "alerts.duration.2minutes" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "2 min"
+    "alert.body.temp": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "CPU temperature is %1$arg°C — above your %2$arg°C threshold."
           }
         }
       }
     },
-    "alerts.duration.30seconds" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "30 sec"
+    "alert.system.batteryService.body": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "macOS reports that the battery needs service."
           }
         }
       }
     },
-    "alerts.duration.5minutes" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "5 min"
+    "alert.system.batteryService.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Battery service is recommended"
           }
         }
       }
     },
-    "alerts.duration.immediately" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Immediately"
+    "alert.system.diskCapacity.body": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$arg remains, below your %2$arg limit."
           }
         }
       }
     },
-    "alerts.state.active" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Active"
+    "alert.system.diskCapacity.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Disk space is running low"
           }
         }
       }
     },
-    "alerts.state.normal" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Normal"
+    "alert.system.memoryPressure.body": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Kernel memory pressure reached %arg."
           }
         }
       }
     },
-    "alerts.state.pending" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Pending"
+    "alert.system.memoryPressure.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Memory pressure needs attention"
           }
         }
       }
     },
-    "alerts.system.batteryService" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Battery service recommended by macOS"
+    "alert.system.thermal.body": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "The system thermal state reached %arg."
           }
         }
       }
     },
-    "alerts.system.diskCapacity" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Available disk space below"
+    "alert.system.thermal.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Mac thermal state needs attention"
           }
         }
       }
     },
-    "alerts.system.memoryPressure" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Memory pressure reaches"
+    "alert.test.body": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Notifications are ready. This test did not create an attention event."
           }
         }
       }
     },
-    "alerts.system.thermalState" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Thermal state reaches"
+    "alert.test.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Mectrics Test Notification"
           }
         }
       }
     },
-    "alerts.temp" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "CPU temperature above"
+    "alert.title.battery": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Low battery"
           }
         }
       }
     },
-    "attention.duration.ongoing" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Ongoing since %arg"
+    "alert.title.disk": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Disk almost full"
           }
         }
       }
     },
-    "attention.duration.recovered" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Recovered after %arg"
+    "alert.title.high": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "High %arg usage"
           }
         }
       }
     },
-    "attention.event.energyGuard" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Energy Guard"
+    "alert.title.temp": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "High CPU temperature"
           }
         }
       }
     },
-    "attention.export.empty" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "No attention events."
+    "alerts.above": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%arg above"
           }
         }
       }
     },
-    "attention.export.saveTitle" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Save Attention Log"
+    "alerts.below": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%arg below"
           }
         }
       }
     },
-    "attention.export.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Mectrics Attention Log"
+    "alerts.state.active": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Active"
           }
         }
       }
     },
-    "attention.severity.critical" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Critical"
+    "alerts.state.normal": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Normal"
           }
         }
       }
     },
-    "attention.severity.info" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Information"
+    "alerts.state.pending": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Pending"
           }
         }
       }
     },
-    "attention.severity.warning" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Warning"
+    "alerts.system.batteryService": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Battery service recommended by macOS"
           }
         }
       }
     },
-    "attention.state.active" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Active"
+    "alerts.system.diskCapacity": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Available disk space below"
           }
         }
       }
     },
-    "attention.state.pending" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Pending"
+    "alerts.system.memoryPressure": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Memory pressure reaches"
           }
         }
       }
     },
-    "attention.state.recovered" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Recovered"
+    "alerts.system.thermalState": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Thermal state reaches"
           }
         }
       }
     },
-    "attention.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Attention Log"
+    "alerts.temp": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "CPU temperature above"
           }
         }
       }
     },
-    "attention.trigger.above" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "above"
+    "attention.duration.ongoing": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Ongoing since %arg"
           }
         }
       }
     },
-    "attention.trigger.batteryService" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "macOS reported that battery service is recommended"
+    "attention.duration.recovered": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Recovered after %arg"
           }
         }
       }
     },
-    "attention.trigger.below" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "below"
+    "attention.event.energyGuard": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Energy Guard"
           }
         }
       }
     },
-    "attention.trigger.diskCapacity" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Available disk space fell below %1$arg for %2$arg seconds"
+    "attention.export.empty": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "No attention events."
           }
         }
       }
     },
-    "attention.trigger.energyGuard" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Monitoring changed to %arg to reduce Mectrics energy use"
+    "attention.export.saveTitle": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Save Attention Log"
           }
         }
       }
     },
-    "attention.trigger.memoryPressure" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Memory pressure reached %1$arg for %2$arg seconds"
+    "attention.export.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Mectrics Attention Log"
           }
         }
       }
     },
-    "attention.trigger.summary" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$arg %2$arg %3$arg%4$arg for %5$arg seconds"
+    "attention.severity.critical": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Critical"
           }
         }
       }
     },
-    "attention.trigger.thermalState" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Thermal state reached %1$arg for %2$arg seconds"
+    "attention.severity.info": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Information"
           }
         }
       }
     },
-    "battery.calculating" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Calculating…"
+    "attention.severity.warning": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Warning"
           }
         }
       }
     },
-    "battery.charging" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Charging"
+    "attention.state.active": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Active"
           }
         }
       }
     },
-    "battery.cycles" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Charge cycles"
+    "attention.state.pending": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Pending"
           }
         }
       }
     },
-    "battery.health" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Health"
+    "attention.state.recovered": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Recovered"
           }
         }
       }
     },
-    "battery.onBattery" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "On battery"
+    "attention.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Attention Log"
           }
         }
       }
     },
-    "battery.service.normal" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Normal"
+    "attention.trigger.above": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "above"
           }
         }
       }
     },
-    "battery.service.recommended" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Service recommended"
+    "attention.trigger.batteryService": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "macOS reported that battery service is recommended"
           }
         }
       }
     },
-    "battery.status" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Status"
+    "attention.trigger.below": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "below"
           }
         }
       }
     },
-    "battery.temp" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Temperature"
+    "attention.trigger.diskCapacity": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Available disk space fell below %1$arg for %2$arg seconds"
           }
         }
       }
     },
-    "battery.timeRemaining" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Time remaining"
+    "attention.trigger.energyGuard": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Monitoring changed to %arg to reduce Mectrics energy use"
           }
         }
       }
     },
-    "battery.timeToFull" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Time to full"
+    "attention.trigger.memoryPressure": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Memory pressure reached %1$arg for %2$arg seconds"
           }
         }
       }
     },
-    "bt.device" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Device %arg"
+    "attention.trigger.summary": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$arg %2$arg %3$arg%4$arg for %5$arg seconds"
           }
         }
       }
     },
-    "bt.deviceCount" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Device count"
+    "attention.trigger.thermalState": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Thermal state reached %1$arg for %2$arg seconds"
           }
         }
       }
     },
-    "builder.active" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "In menu bar"
+    "battery.calculating": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Calculating…"
           }
         }
       }
     },
-    "builder.activeCount" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%arg active"
+    "battery.charging": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Charging"
           }
         }
       }
     },
-    "builder.compactHealth.help" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Show one stable health summary item in the menu bar"
+    "battery.cycles": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Charge cycles"
           }
         }
       }
     },
-    "builder.component.accessibilityLabel" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$arg, %2$arg"
+    "battery.health": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Health"
           }
         }
       }
     },
-    "builder.icons.help" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Show a module symbol before each menu bar reading"
+    "battery.onBattery": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "On battery"
           }
         }
       }
     },
-    "builder.inactive" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Not in menu bar"
+    "battery.service.normal": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Normal"
           }
         }
       }
     },
-    "builder.remove" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove from menu bar"
+    "battery.service.recommended": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Service recommended"
           }
         }
       }
     },
-    "builder.remove.accessibilityLabel" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove %1$arg for %2$arg"
+    "battery.status": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Status"
           }
         }
       }
     },
-    "builder.reorder.help" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Hold Command and drag a menu bar item to reorder it"
+    "battery.temp": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Temperature"
           }
         }
       }
     },
-    "builder.tile.add" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Click to add"
+    "battery.timeRemaining": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Time remaining"
           }
         }
       }
     },
-    "builder.tile.remove" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Click to remove"
+    "battery.timeToFull": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Time to full"
           }
         }
       }
     },
-    "chart.noReadings" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "No readings"
+    "bt.device": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Device %arg"
           }
         }
       }
     },
-    "chart.recentTrend" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Recent trend"
+    "bt.deviceCount": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Device count"
           }
         }
       }
     },
-    "chart.summary" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld readings, minimum %2$.0f%%, maximum %3$.0f%%, latest %4$.0f%%"
+    "builder.component.accessibilityLabel": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$arg, %2$arg"
           }
         }
       }
     },
-    "component.activity" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Activity"
+    "chart.noReadings": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "No readings"
           }
         }
       }
     },
-    "component.coreBars" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Cores"
+    "chart.recentTrend": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Recent trend"
           }
         }
       }
     },
-    "component.cycles" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Cycles"
+    "chart.summary": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld readings, minimum %2$.0f%%, maximum %3$.0f%%, latest %4$.0f%%"
           }
         }
       }
     },
-    "component.download" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Download"
+    "component.activity": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Activity"
           }
         }
       }
     },
-    "component.free" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Free"
+    "component.coreBars": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Cores"
           }
         }
       }
     },
-    "component.graph" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Graph"
+    "component.cycles": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Cycles"
           }
         }
       }
     },
-    "component.health" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Health"
+    "component.download": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Download"
           }
         }
       }
     },
-    "component.icon" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Icon"
+    "component.free": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Free"
           }
         }
       }
     },
-    "component.ring" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Ring"
+    "component.graph": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Graph"
           }
         }
       }
     },
-    "component.upload" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Upload"
+    "component.health": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Health"
           }
         }
       }
     },
-    "component.used" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Used"
+    "component.icon": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Icon"
           }
         }
       }
     },
-    "component.value" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Value"
+    "component.ring": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Ring"
           }
         }
       }
     },
-    "component.valueGraph" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Value + Graph"
+    "component.upload": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Upload"
           }
         }
       }
     },
-    "cores.chart.label" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Processor core usage"
+    "component.used": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Used"
           }
         }
       }
     },
-    "cores.chart.summary" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld cores, minimum %2$.0f%%, maximum %3$.0f%%"
+    "component.value": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Value"
           }
         }
       }
     },
-    "cpu.busiestCore" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Busiest core"
+    "component.valueGraph": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Value + Graph"
           }
         }
       }
     },
-    "cpu.cores" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Cores"
+    "cores.chart.label": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Processor core usage"
           }
         }
       }
     },
-    "cpu.temperature" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Temperature"
+    "cores.chart.summary": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld cores, minimum %2$.0f%%, maximum %3$.0f%%"
           }
         }
       }
     },
-    "cpu.uptime" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Uptime"
+    "cpu.busiestCore": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Busiest core"
           }
         }
       }
     },
-    "diagnostics.export.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Mectrics Diagnostics"
+    "cpu.cores": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Cores"
           }
         }
       }
     },
-    "diagnostics.save.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Save Mectrics Diagnostics"
+    "cpu.temperature": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Temperature"
           }
         }
       }
     },
-    "diagnostics.section.alerts" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Alert Configuration"
+    "cpu.uptime": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Uptime"
           }
         }
       }
     },
-    "diagnostics.section.attention" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Recent Attention Log"
+    "diagnostics.export.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Mectrics Diagnostics"
           }
         }
       }
     },
-    "diagnostics.section.log" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Application Log"
+    "diagnostics.save.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Save Mectrics Diagnostics"
           }
         }
       }
     },
-    "diagnostics.section.providers" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Provider Status"
+    "diagnostics.section.alerts": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Alert Configuration"
           }
         }
       }
     },
-    "diagnostics.section.summary" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "System Summary"
+    "diagnostics.section.attention": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Recent Attention Log"
           }
         }
       }
     },
-    "diagnostics.section.widget" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Widget Status"
+    "diagnostics.section.log": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Application Log"
           }
         }
       }
     },
-    "diagnostics.window.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Mectrics Diagnostics"
+    "diagnostics.section.providers": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Provider Status"
           }
         }
       }
     },
-    "disk.capacityChart" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Disk capacity"
+    "diagnostics.section.summary": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "System Summary"
           }
         }
       }
     },
-    "disk.capacityChart.summary" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Used %1$.0f%%, purgeable %2$.0f%%, free %3$.0f%%"
+    "diagnostics.section.widget": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Widget Status"
           }
         }
       }
     },
-    "disk.free" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Free"
+    "diagnostics.window.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Mectrics Diagnostics"
           }
         }
       }
     },
-    "disk.legend.free" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Free"
+    "disk.capacityChart": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Disk capacity"
           }
         }
       }
     },
-    "disk.legend.purgeable" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Purgeable"
+    "disk.capacityChart.summary": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Used %1$.0f%%, purgeable %2$.0f%%, free %3$.0f%%"
           }
         }
       }
     },
-    "disk.legend.used" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Used"
+    "disk.free": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Free"
           }
         }
       }
     },
-    "disk.purgeable" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Purgeable"
+    "disk.legend.free": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Free"
           }
         }
       }
     },
-    "disk.read" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Read"
+    "disk.legend.purgeable": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Purgeable"
           }
         }
       }
     },
-    "disk.total" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Total"
+    "disk.legend.used": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Used"
           }
         }
       }
     },
-    "disk.used" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Used"
+    "disk.purgeable": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Purgeable"
           }
         }
       }
     },
-    "disk.write" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Write"
+    "disk.read": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Read"
           }
         }
       }
     },
-    "energyGuard.mode.normal" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Normal"
+    "disk.total": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Total"
           }
         }
       }
     },
-    "energyGuard.mode.protected" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Protected"
+    "disk.used": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Used"
           }
         }
       }
     },
-    "energyGuard.mode.reduced" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Reduced"
+    "disk.write": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Write"
           }
         }
       }
     },
-    "fans.count" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Fans"
+    "energyGuard.mode.normal": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Normal"
           }
         }
       }
     },
-    "fans.fan" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Fan %arg"
+    "energyGuard.mode.protected": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Protected"
           }
         }
       }
     },
-    "gpu.count" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "GPUs"
+    "energyGuard.mode.reduced": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Reduced"
           }
         }
       }
     },
-    "gpu.memory" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "In-use memory"
+    "fans.count": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Fans"
           }
         }
       }
     },
-    "gpu.temperature" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Temperature"
+    "fans.fan": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Fan %arg"
           }
         }
       }
     },
-    "health.accessibility.label" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Mectrics health"
+    "gpu.count": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "GPUs"
           }
         }
       }
     },
-    "health.condition.active" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%arg, threshold crossed"
+    "gpu.memory": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "In-use memory"
           }
         }
       }
     },
-    "health.condition.batteryService" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "macOS recommends battery service"
+    "gpu.temperature": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Temperature"
           }
         }
       }
     },
-    "health.condition.diskCapacity" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%arg disk space remains"
+    "health.accessibility.label": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Mectrics health"
           }
         }
       }
     },
-    "health.condition.memoryPressure" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Memory pressure is %arg"
+    "health.condition.active": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%arg, threshold crossed"
           }
         }
       }
     },
-    "health.condition.pending" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%arg, waiting for sustained duration"
+    "health.condition.batteryService": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "macOS recommends battery service"
           }
         }
       }
     },
-    "health.condition.thermal" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Thermal state is %arg"
+    "health.condition.diskCapacity": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%arg disk space remains"
           }
         }
       }
     },
-    "health.state.critical" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Critical attention needed"
+    "health.condition.memoryPressure": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Memory pressure is %arg"
           }
         }
       }
     },
-    "health.state.normal" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "All systems normal"
+    "health.condition.pending": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%arg, waiting for sustained duration"
           }
         }
       }
     },
-    "health.state.pending" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "A condition is pending"
+    "health.condition.thermal": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Thermal state is %arg"
           }
         }
       }
     },
-    "health.state.stale" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Some readings are stale"
+    "health.state.critical": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Critical attention needed"
           }
         }
       }
     },
-    "health.state.unavailable" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Selected readings are unavailable"
+    "health.state.normal": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "All systems normal"
           }
         }
       }
     },
-    "health.state.warning" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Attention recommended"
+    "health.state.pending": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "A condition is pending"
           }
         }
       }
     },
-    "history.export.failed" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Metric history could not be exported."
+    "health.state.stale": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Some readings are stale"
           }
         }
       }
-    },
-    "history.export.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Export Metric History"
-          }
-        }
-      }
-    },
-    "macOS controls the final presentation and delivery of notifications." : {
-
-    },
-    "macOS status" : {
-
     },
-    "mem.compressed" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Compressed"
+    "health.state.unavailable": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Selected readings are unavailable"
           }
         }
       }
     },
-    "mem.free" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Free"
+    "health.state.warning": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Attention recommended"
           }
         }
       }
     },
-    "mem.pressure" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Pressure"
+    "mem.compressed": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Compressed"
           }
         }
       }
     },
-    "mem.swap" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Swap"
+    "mem.free": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Free"
           }
         }
       }
     },
-    "mem.total" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Total"
+    "mem.pressure": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Pressure"
           }
         }
       }
     },
-    "mem.used" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Used"
+    "mem.swap": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Swap"
           }
         }
       }
     },
-    "mem.wired" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Wired"
+    "mem.total": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Total"
           }
         }
       }
     },
-    "menu.about" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "About Mectrics"
+    "mem.used": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Used"
           }
         }
       }
     },
-    "menu.checkForUpdates" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Check for Updates…"
+    "mem.wired": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Wired"
           }
         }
       }
     },
-    "menu.close" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Close"
+    "menu.about": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "About Mectrics"
           }
         }
       }
     },
-    "menu.diagnostics" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Mectrics Diagnostics…"
+    "menu.checkForUpdates": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Check for Updates…"
           }
         }
       }
     },
-    "menu.help" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Help"
+    "menu.close": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Close"
           }
         }
       }
     },
-    "menu.hide" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Hide Mectrics"
+    "menu.diagnostics": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Mectrics Diagnostics…"
           }
         }
       }
     },
-    "menu.quit" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Quit Mectrics"
+    "menu.help": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Help"
           }
         }
       }
     },
-    "menu.settings" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Settings…"
+    "menu.hide": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Hide Mectrics"
           }
         }
       }
     },
-    "menu.showWelcome" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Show Welcome"
+    "menu.quit": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Quit Mectrics"
           }
         }
       }
     },
-    "menu.whatsNew" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "What’s New in Mectrics"
+    "menu.settings": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Settings…"
           }
         }
       }
     },
-    "menu.window" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Window"
+    "menu.showWelcome": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Show Welcome"
           }
         }
       }
     },
-    "menuBar.component.accessibilityLabel" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$arg, %2$arg"
+    "menu.whatsNew": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "What’s New in Mectrics"
           }
         }
       }
     },
-    "metric.accessibility.valueAndState" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$arg, %2$arg"
+    "menu.window": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Window"
           }
         }
       }
     },
-    "module.battery" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Battery"
+    "menuBar.component.accessibilityLabel": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$arg, %2$arg"
           }
         }
       }
     },
-    "module.bluetooth" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Bluetooth"
+    "metric.accessibility.valueAndState": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$arg, %2$arg"
           }
         }
       }
     },
-    "module.clock" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Clock"
+    "module.battery": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Battery"
           }
         }
       }
     },
-    "module.cpu" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "CPU"
+    "module.bluetooth": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Bluetooth"
           }
         }
       }
     },
-    "module.disk" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Disk"
+    "module.clock": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Clock"
           }
         }
       }
     },
-    "module.fans" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Fans"
+    "module.cpu": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "CPU"
           }
         }
       }
     },
-    "module.gpu" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "GPU"
+    "module.disk": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Disk"
           }
         }
       }
     },
-    "module.memory" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Memory"
+    "module.fans": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Fans"
           }
         }
       }
     },
-    "module.network" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Network"
+    "module.gpu": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "GPU"
           }
         }
       }
     },
-    "module.sensors" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Sensors"
+    "module.memory": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Memory"
           }
         }
       }
     },
-    "net.down" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Download"
+    "module.network": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Network"
           }
         }
       }
     },
-    "net.localAddressCopied" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Local address copied."
+    "module.sensors": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Sensors"
           }
         }
       }
     },
-    "net.localIP" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Local IP"
+    "net.down": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Download"
           }
         }
       }
     },
-    "net.totalDown" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Total downloaded"
+    "net.localAddressCopied": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Local address copied."
           }
         }
       }
     },
-    "net.totalUp" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Total uploaded"
+    "net.localIP": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Local IP"
           }
         }
       }
     },
-    "net.up" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Upload"
+    "net.totalDown": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Total downloaded"
           }
         }
       }
     },
-    "notifications.status.authorized" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Allowed"
+    "net.totalUp": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Total uploaded"
           }
         }
       }
     },
-    "notifications.status.denied" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Denied"
+    "net.up": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Upload"
           }
         }
       }
     },
-    "notifications.status.disabled" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Delivery disabled"
+    "notifications.status.authorized": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Allowed"
           }
         }
       }
     },
-    "notifications.status.notDetermined" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Not requested"
+    "notifications.status.denied": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Denied"
           }
         }
       }
     },
-    "notifications.status.unknown" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Checking…"
+    "notifications.status.disabled": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Delivery disabled"
           }
         }
       }
     },
-    "notifications.test.denied" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Notifications are denied. Open Notification Settings to allow them."
+    "notifications.status.notDetermined": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Not requested"
           }
         }
       }
     },
-    "notifications.test.disabled" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Notification delivery is disabled in System Settings."
+    "notifications.status.unknown": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Checking…"
           }
         }
       }
     },
-    "notifications.test.failed" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "The test notification could not be delivered."
+    "notifications.test.denied": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Notifications are denied. Open Notification Settings to allow them."
           }
         }
       }
     },
-    "notifications.test.notDetermined" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Notification permission has not been granted."
+    "notifications.test.disabled": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Notification delivery is disabled in System Settings."
           }
         }
       }
     },
-    "notifications.test.sent" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Test notification sent. It did not create an Attention Log event."
+    "notifications.test.failed": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "The test notification could not be delivered."
           }
         }
       }
     },
-    "onboarding.liveCount" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%arg live"
+    "notifications.test.notDetermined": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Notification permission has not been granted."
           }
         }
       }
     },
-    "onboarding.modules.subtitle" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Recommended modules are marked. Fine-tune components later in Settings."
+    "notifications.test.sent": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Test notification sent. It did not create an Attention Log event."
           }
         }
       }
     },
-    "onboarding.modules.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Start with the essentials"
+    "onboarding.liveCount": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%arg live"
           }
         }
       }
     },
-    "onboarding.progress" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Step %1$arg of %2$arg"
+    "onboarding.modules.subtitle": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Recommended modules are marked. Fine-tune components later in Settings."
           }
         }
       }
     },
-    "onboarding.progress.accessibility" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Step %1$arg of %2$arg"
+    "onboarding.modules.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Start with the essentials"
           }
         }
       }
     },
-    "onboarding.recommended.hint" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Recommended menu bar module"
+    "onboarding.progress": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Step %1$arg of %2$arg"
           }
         }
       }
     },
-    "onboarding.window.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Welcome to Mectrics"
+    "onboarding.progress.accessibility": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Step %1$arg of %2$arg"
           }
         }
       }
     },
-    "panel.horizontal" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Horizontal strip"
+    "onboarding.recommended.hint": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Recommended menu bar module"
           }
         }
       }
     },
-    "panel.vertical" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Vertical card"
+    "onboarding.window.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Welcome to Mectrics"
           }
         }
       }
     },
-    "preset.developer.name" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Developer"
+    "preset.developer.name": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Developer"
           }
         }
       }
     },
-    "preset.developer.summary" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Detailed compute, memory, disk, and network activity"
+    "preset.developer.summary": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Detailed compute, memory, disk, and network activity"
           }
         }
       }
     },
-    "preset.laptop.name" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Laptop"
+    "preset.laptop.name": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Laptop"
           }
         }
       }
     },
-    "preset.laptop.summary" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Battery, workload, memory, and network"
+    "preset.laptop.summary": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Battery, workload, memory, and network"
           }
         }
       }
     },
-    "preset.minimal.name" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Minimal"
+    "preset.minimal.name": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Minimal"
           }
         }
       }
     },
-    "preset.minimal.summary" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Essential usage and battery at a glance"
+    "preset.minimal.summary": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Essential usage and battery at a glance"
           }
         }
       }
     },
-    "preset.recommended.name" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Recommended"
+    "preset.recommended.name": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Recommended"
           }
         }
       }
     },
-    "preset.recommended.summary" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "The current product default for this Mac"
+    "preset.recommended.summary": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "The current product default for this Mac"
           }
         }
       }
     },
-    "preset.undo.action" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Apply Menu Bar Preset"
+    "preset.undo.action": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Apply Menu Bar Preset"
           }
         }
       }
     },
-    "pressure.critical" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Critical"
+    "pressure.critical": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Critical"
           }
         }
       }
     },
-    "pressure.normal" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Normal"
+    "pressure.normal": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Normal"
           }
         }
       }
     },
-    "pressure.warning" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Warning"
+    "pressure.warning": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Warning"
           }
         }
       }
     },
-    "sensors.count" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Sensors"
+    "sensors.count": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Sensors"
           }
         }
       }
     },
-    "sensors.cpu" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "CPU (hottest)"
+    "sensors.cpu": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "CPU (hottest)"
           }
         }
       }
     },
-    "sensors.gpu" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "GPU (hottest)"
+    "sensors.gpu": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "GPU (hottest)"
           }
         }
       }
     },
-    "settings.launchAtLogin" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login"
+    "settings.launchAtLogin": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Launch at login"
           }
         }
       }
     },
-    "settings.launchAtLogin.hint" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Start Mectrics automatically after you sign in"
+    "settings.launchAtLogin.hint": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Start Mectrics automatically after you sign in"
           }
         }
       }
     },
-    "settings.tab.alerts" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Alerts"
+    "settings.tab.alerts": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Alerts"
           }
         }
       }
     },
-    "settings.tab.general" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "General"
+    "settings.tab.general": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "General"
           }
         }
       }
     },
-    "settings.tab.menuBar" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Menu Bar"
+    "settings.tab.menuBar": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Menu Bar"
           }
         }
       }
     },
-    "state.action.enable" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Enable"
+    "state.action.enable": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Enable"
           }
         }
       }
     },
-    "state.action.openSystemSettings" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Open System Settings"
+    "state.action.openSystemSettings": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Open System Settings"
           }
         }
       }
     },
-    "state.action.refresh" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Refresh"
+    "state.action.refresh": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Refresh"
           }
         }
       }
     },
-    "state.collecting" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Collecting"
+    "state.collecting": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Collecting"
           }
         }
       }
     },
-    "state.collecting.reason" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Waiting for the first reading."
+    "state.collecting.reason": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Waiting for the first reading."
           }
         }
       }
     },
-    "state.disabled" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Disabled"
+    "state.disabled": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Disabled"
           }
         }
       }
     },
-    "state.disabled.reason" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "This metric is not currently being monitored."
+    "state.disabled.reason": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "This metric is not currently being monitored."
           }
         }
       }
     },
-    "state.error" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Needs attention"
+    "state.error": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Needs attention"
           }
         }
       }
     },
-    "state.error.reason" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Mectrics could not refresh this reading."
+    "state.error.reason": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Mectrics could not refresh this reading."
           }
         }
       }
     },
-    "state.live" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Live"
+    "state.live": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Live"
           }
         }
       }
     },
-    "state.live.reason" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "This reading is updating normally."
+    "state.live.reason": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "This reading is updating normally."
           }
         }
       }
     },
-    "state.permissionRequired" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Permission required"
+    "state.permissionRequired": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Permission required"
           }
         }
       }
     },
-    "state.permissionRequired.reason" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Allow access to resume this reading."
+    "state.permissionRequired.reason": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Allow access to resume this reading."
           }
         }
       }
     },
-    "state.stale" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Last known"
+    "state.stale": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Last known"
           }
         }
       }
     },
-    "state.stale.reason" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "The last valid reading is older than expected."
+    "state.stale.reason": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "The last valid reading is older than expected."
           }
         }
       }
     },
-    "state.unavailable" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Unavailable"
+    "state.unavailable": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Unavailable"
           }
         }
       }
     },
-    "state.unavailable.reason" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "This metric is not available on this Mac."
+    "state.unavailable.reason": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "This metric is not available on this Mac."
           }
         }
       }
     },
-    "summary.conditions" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Active conditions:"
+    "summary.conditions": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Active conditions:"
           }
         }
       }
     },
-    "summary.metrics" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Metrics:"
+    "summary.metrics": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Metrics:"
           }
         }
       }
     },
-    "summary.model.desktop" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Desktop Mac"
+    "summary.model.desktop": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Desktop Mac"
           }
         }
       }
     },
-    "summary.model.portable" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Portable Mac"
+    "summary.model.portable": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Portable Mac"
           }
         }
       }
     },
-    "summary.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Mectrics System Summary"
+    "summary.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Mectrics System Summary"
           }
         }
       }
     },
-    "thermal.critical" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Critical"
+    "thermal.critical": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Critical"
           }
         }
       }
     },
-    "thermal.fair" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Fair"
+    "thermal.fair": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Fair"
           }
         }
       }
     },
-    "thermal.nominal" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Nominal"
+    "thermal.nominal": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Nominal"
           }
         }
       }
     },
-    "thermal.serious" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Serious"
+    "thermal.serious": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Serious"
           }
         }
       }
     },
-    "topProcs.open" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Activity Monitor"
+    "topProcs.open": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Open Activity Monitor"
           }
         }
       }
     },
-    "topProcs.toggle.help" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Show or hide the process list"
+    "topProcs.toggle.help": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Show or hide the process list"
           }
         }
       }
     },
-    "whatsNew.title" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "What’s New in Mectrics"
+    "whatsNew.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "What’s New in Mectrics"
           }
         }
       }
     },
-    "·" : {
-
-    }
+    "·": {}
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

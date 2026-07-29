@@ -25,9 +25,10 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     private weak var tabController: SettingsTabViewController?
     private let defaults = UserDefaults.standard
 
-    private static let initialContentSize = NSSize(width: 620, height: 480)
-    private static let minimumContentSize = NSSize(width: 520, height: 480)
-    private static let tabContentHeights: [CGFloat] = [500, 680, 480]
+    // One size for every pane: switching tabs should move the selection, not the
+    // window. The user's own resize is still restored from the frame autosave.
+    private static let initialContentSize = NSSize(width: 620, height: 540)
+    private static let minimumContentSize = NSSize(width: 560, height: 460)
     private static let frameAutosaveName = "mectrics.settings"
     private static let selectedPaneKey = "settings.selectedPane"
     private static let toolbarIdentifier = NSToolbar.Identifier("mectrics.settings.toolbar")
@@ -111,10 +112,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         window.title = tabs.tabViewItems[selectedPane].label
         window.isReleasedWhenClosed = false
         window.contentMinSize = Self.minimumContentSize
-        window.setContentSize(NSSize(
-            width: Self.initialContentSize.width,
-            height: Self.tabContentHeights[selectedPane]
-        ))
+        window.setContentSize(Self.initialContentSize)
         window.delegate = self
         window.titleVisibility = .visible
         window.titlebarSeparatorStyle = .automatic
@@ -130,30 +128,19 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
 
         let restored = window.setFrameUsingName(Self.frameAutosaveName)
         window.setFrameAutosaveName(Self.frameAutosaveName)
-        if restored {
-            Self.resize(
-                window,
-                toContentHeight: Self.tabContentHeights[selectedPane],
-                animate: false
-            )
-        } else {
+        if !restored {
             window.center()
         }
 
         tabs.onSelectionChanged = { [weak window] index in
             guard let window,
-                  Self.tabContentHeights.indices.contains(index) else { return }
+                  tabs.tabViewItems.indices.contains(index) else { return }
             UserDefaults.standard.set(index, forKey: Self.selectedPaneKey)
             let title = tabs.tabViewItems[index].label
             window.title = title
             DispatchQueue.main.async { [weak window] in
                 window?.title = title
             }
-            Self.resize(
-                window,
-                toContentHeight: Self.tabContentHeights[index],
-                animate: !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
-            )
         }
         return window
     }
@@ -163,28 +150,6 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
               let tabs = tabController else { return }
         tabs.selectedTabViewItemIndex = index
         window?.toolbar?.selectedItemIdentifier = sender.itemIdentifier
-    }
-
-    private static func resize(
-        _ window: NSWindow,
-        toContentHeight height: CGFloat,
-        animate: Bool
-    ) {
-        let currentFrame = window.frame
-        let currentContent = window.contentRect(forFrameRect: currentFrame)
-        guard abs(currentContent.height - height) > 1 else { return }
-
-        let targetContent = NSRect(
-            origin: .zero,
-            size: NSSize(width: currentContent.width, height: height)
-        )
-        var targetFrame = window.frameRect(forContentRect: targetContent)
-        targetFrame.origin.x = currentFrame.origin.x
-        targetFrame.origin.y = currentFrame.maxY - targetFrame.height
-        if let screen = window.screen {
-            targetFrame = window.constrainFrameRect(targetFrame, to: screen)
-        }
-        window.setFrame(targetFrame, display: true, animate: animate)
     }
 
     private func makeTab(_ view: some View, label: String,
