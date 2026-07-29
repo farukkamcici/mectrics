@@ -12,7 +12,6 @@ public enum MetricID: String, CaseIterable, Codable, Sendable {
     case sensors
     case fans
     case bluetooth
-    case clock
 
     /// Short, developer-facing (English) name. User-facing localized names are
     /// provided at the app layer (see `MetricID.localizedName`); this value is the
@@ -28,7 +27,6 @@ public enum MetricID: String, CaseIterable, Codable, Sendable {
         case .sensors: return "Sensors"
         case .fans: return "Fans"
         case .bluetooth: return "Bluetooth"
-        case .clock: return "Clock"
         }
     }
 }

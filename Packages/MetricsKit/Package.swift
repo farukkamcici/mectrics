@@ -13,27 +13,17 @@ let package = Package(
         .executable(name: "mectrics-cli", targets: ["MectricsCLI"])
     ],
     targets: [
-        .target(
-            name: "MetricsKit",
-            swiftSettings: [
-                // Keep Swift 5 language mode during the MVP to reduce strict-concurrency
-                // friction in C-based Mach/IOKit providers. Migrate to Swift 6 later.
-                .swiftLanguageMode(.v5)
-            ]
-        ),
+        // The whole package builds in the Swift 6 language mode: providers wrap C-based
+        // Mach/IOKit state in `@unchecked Sendable` types that own their own queue or
+        // lock, so strict concurrency checks the boundaries we actually cross.
+        .target(name: "MetricsKit"),
         .executableTarget(
             name: "MectricsCLI",
-            dependencies: ["MetricsKit"],
-            swiftSettings: [
-                .swiftLanguageMode(.v5)
-            ]
+            dependencies: ["MetricsKit"]
         ),
         .testTarget(
             name: "MetricsKitTests",
-            dependencies: ["MetricsKit"],
-            swiftSettings: [
-                .swiftLanguageMode(.v5)
-            ]
+            dependencies: ["MetricsKit"]
         )
     ]
 )

@@ -4,8 +4,10 @@ import Foundation
 ///
 /// Providers may hold state (e.g. CPU/network need the delta between two consecutive
 /// samples), hence `class` (reference type). Sampling always happens on the same serial
-/// queue, so providers need not be thread-safe; therefore `@unchecked Sendable`.
-public protocol MetricProvider: AnyObject {
+/// queue, so providers need not be thread-safe; they declare that contract to the
+/// compiler with `@unchecked Sendable`, which this protocol requires because the engine
+/// hands registered providers to its sampling queue.
+public protocol MetricProvider: AnyObject, Sendable {
     var id: MetricID { get }
 
     /// Is this hardware/permission available on this machine?

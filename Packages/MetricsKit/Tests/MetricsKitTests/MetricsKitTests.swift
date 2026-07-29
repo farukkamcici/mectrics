@@ -293,6 +293,63 @@ final class MetricsKitTests: XCTestCase {
         }
     }
 
+    func testNetworkRateSurvivesCounterResets() {
+        let net = NetworkProvider()
+        let start = Date(timeIntervalSince1970: 1_000)
+
+        XCTAssertNil(
+            net.makeSample(down: 5_000, up: 1_000, now: start),
+            "the reference pass must not fabricate a zero sample"
+        )
+
+        let rate = net.makeSample(down: 7_000, up: 1_500, now: start.addingTimeInterval(2))
+        XCTAssertEqual(rate?.detail["down"], 1_000)
+        XCTAssertEqual(rate?.detail["up"], 250)
+        XCTAssertEqual(rate?.value, 1_250)
+
+        // An interface disappearing (or a 32-bit fallback counter wrapping) lowers the
+        // total; that must read as no traffic, not as a multi-gigabyte spike.
+        let afterReset = net.makeSample(down: 10, up: 5, now: start.addingTimeInterval(4))
+        XCTAssertEqual(afterReset?.detail["down"], 0)
+        XCTAssertEqual(afterReset?.detail["up"], 0)
+        XCTAssertEqual(afterReset?.detail["downTotal"], 10)
+
+        // The next pass measures from the new baseline.
+        let resumed = net.makeSample(down: 110, up: 5, now: start.addingTimeInterval(6))
+        XCTAssertEqual(resumed?.detail["down"], 50)
+    }
+
+    func testNetworkTotalsUseSixtyFourBitCounters() {
+        // The routing-table read reports the machine's lifetime byte counts, which are
+        // routinely larger than the 32-bit range a long-running Mac would wrap.
+        let net = NetworkProvider()
+        _ = net.sample()
+        guard let sample = net.sample() else { return XCTFail("no network sample") }
+        let total = (sample.detail["downTotal"] ?? 0) + (sample.detail["upTotal"] ?? 0)
+        XCTAssertGreaterThan(total, 0)
+        XCTAssertLessThan(total, Double(UInt64.max))
+    }
+
+    func testBluetoothDeviceNamesStayAlignedWithDetailEntries() {
+        // Hardware-dependent: only assert when a device publishes a battery level.
+        let provider = BluetoothProvider()
+        guard let sample = provider.sample() else {
+            XCTAssertTrue(
+                BluetoothProvider.latestDeviceNames().isEmpty,
+                "a scan without devices must not leave earlier names behind"
+            )
+            return
+        }
+        let count = Int(sample.detail["deviceCount"] ?? 0)
+        XCTAssertGreaterThan(count, 0)
+        XCTAssertEqual(BluetoothProvider.latestDeviceNames().count, count)
+        for i in 0..<count {
+            let percent = sample.detail["device\(i)"] ?? 0
+            XCTAssertTrue((1...100).contains(percent), "implausible battery \(percent)")
+        }
+        XCTAssertTrue((0...1).contains(sample.value))
+    }
+
     func testDiskProviderReportsCapacity() {
         let disk = DiskProvider()
         let sample = disk.sample()
@@ -406,13 +463,25 @@ final class MetricsKitTests: XCTestCase {
 }
 
 /// A heavy provider, which the runtime policy is allowed to slow down or pause.
-private final class HeavyTestProvider: MetricProvider {
+/// The engine samples on its own queue while the test reads the counter, so the count is
+/// lock-guarded rather than relying on the provider's single-queue contract.
+private final class HeavyTestProvider: MetricProvider, @unchecked Sendable {
     let id = MetricID.sensors
     let cost = SamplingCost.heavy
-    private(set) var sampleCount = 0
+
+    private let lock = NSLock()
+    private var count = 0
+
+    var sampleCount: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return count
+    }
 
     func sample() -> MetricSample? {
-        sampleCount += 1
+        lock.lock()
+        count += 1
+        lock.unlock()
         return MetricSample(value: 42, unit: .celsius)
     }
 }
