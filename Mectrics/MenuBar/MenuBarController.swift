@@ -98,6 +98,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
         popover.animates = !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         popover.contentViewController?.view.window?.makeKey()
+        popover.contentViewController?.view.window?.clearInitialFocus()
         onDetailVisibilityChanged?(id, true)
     }
 
@@ -127,6 +128,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
             preferredEdge: .minY
         )
         popover.contentViewController?.view.window?.makeKey()
+        popover.contentViewController?.view.window?.clearInitialFocus()
     }
 
     func popoverDidClose(_ notification: Notification) {

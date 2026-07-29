@@ -28,6 +28,7 @@ final class AboutWindowController: NSObject, NSWindowDelegate {
         }
         NSApp.activate(ignoringOtherApps: true)
         window?.makeKeyAndOrderFront(nil)
+        window?.clearInitialFocus()
     }
 
     func windowWillClose(_ notification: Notification) {
@@ -68,6 +69,7 @@ final class WhatsNewWindowController: NSObject, NSWindowDelegate {
         }
         NSApp.activate(ignoringOtherApps: true)
         window?.makeKeyAndOrderFront(nil)
+        window?.clearInitialFocus()
     }
 
     func windowWillClose(_ notification: Notification) {

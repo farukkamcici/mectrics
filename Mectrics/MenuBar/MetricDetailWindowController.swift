@@ -55,6 +55,7 @@ final class MetricDetailWindowController: NSObject, NSWindowDelegate {
         clampToVisibleScreen()
         NSApp.activate(ignoringOtherApps: true)
         window?.makeKeyAndOrderFront(nil)
+        window?.clearInitialFocus()
         onVisibilityChanged(metricID, true)
     }
 

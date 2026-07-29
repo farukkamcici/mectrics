@@ -26,6 +26,8 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
             NSApp.activate(ignoringOtherApps: true)
             positionAtVisibleScreenCenter(window)
             window.makeKeyAndOrderFront(nil)
+        window.clearInitialFocus()
+            window.clearInitialFocus()
             return
         }
 
@@ -55,6 +57,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         NSApp.activate(ignoringOtherApps: true)
         positionAtVisibleScreenCenter(window)
         window.makeKeyAndOrderFront(nil)
+        window.clearInitialFocus()
     }
 
     private func positionAtVisibleScreenCenter(_ window: NSWindow) {

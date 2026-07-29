@@ -66,6 +66,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         clampToVisibleScreen()
         NSApp.activate(ignoringOtherApps: true)
         window?.makeKeyAndOrderFront(nil)
+        window?.clearInitialFocus()
         if let tabs = window?.contentViewController as? NSTabViewController,
            tabs.tabViewItems.indices.contains(tabs.selectedTabViewItemIndex) {
             window?.title = tabs.tabViewItems[tabs.selectedTabViewItemIndex].label

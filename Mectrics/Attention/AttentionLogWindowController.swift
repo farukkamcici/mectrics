@@ -21,6 +21,7 @@ final class AttentionLogWindowController: NSObject, NSWindowDelegate {
         }
         NSApp.activate(ignoringOtherApps: true)
         window?.makeKeyAndOrderFront(nil)
+        window?.clearInitialFocus()
     }
 
     func windowWillClose(_ notification: Notification) {
