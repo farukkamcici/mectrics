@@ -147,20 +147,7 @@ struct DetailPopoverView: View {
     }
 
     private var footer: some View {
-        HStack {
-            Button {
-                model.onOpenSettings?()
-            } label: {
-                Label("Settings", systemImage: "gearshape")
-            }
-            Spacer()
-            Button(role: .destructive) {
-                NSApp.terminate(nil)
-            } label: {
-                Label("Quit", systemImage: "power")
-            }
-        }
-        .font(.callout)
+        PopoverActionBar { model.onOpenSettings?() }
     }
 
     private var localAddress: (interface: String, address: String)? {
@@ -176,21 +163,17 @@ struct DetailPopoverView: View {
 
     private var contextualActionButtons: some View {
         VStack(alignment: .leading, spacing: ExperienceSpacing.xSmall) {
-            HStack {
-                ForEach(contextualActions, id: \.self) { action in
-                    Button {
-                        let succeeded = MetricContextualActionRunner.run(
-                            action,
-                            localAddress: localAddress
-                        )
-                        copyConfirmationVisible =
-                            action == .copyLocalAddress && succeeded
-                    } label: {
-                        Label(action.title, systemImage: action.symbolName)
-                    }
-                    if action != contextualActions.last {
-                        Spacer()
-                    }
+            ForEach(contextualActions, id: \.self) { action in
+                PopoverPrimaryButton(
+                    title: action.title,
+                    symbolName: action.symbolName
+                ) {
+                    let succeeded = MetricContextualActionRunner.run(
+                        action,
+                        localAddress: localAddress
+                    )
+                    copyConfirmationVisible =
+                        action == .copyLocalAddress && succeeded
                 }
             }
             if copyConfirmationVisible {

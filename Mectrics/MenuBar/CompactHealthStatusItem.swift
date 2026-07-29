@@ -268,16 +268,27 @@ struct CompactHealthPopoverView: View {
                     .buttonStyle(.plain)
                 }
             }
-            Button("Open Attention Log") {
+            Divider()
+            PopoverPrimaryButton(
+                title: String(
+                    localized: "health.openAttentionLog",
+                    defaultValue: "Open Attention Log"
+                ),
+                symbolName: "list.bullet.rectangle"
+            ) {
                 model.onOpenAttentionLog?()
-            }
-            Button("Copy System Summary") {
-                summaryCopied = SystemSummaryBuilder.copy(model: model)
             }
             if summaryCopied {
                 Text("System summary copied.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+            PopoverActionBar {
+                model.onOpenSettings?()
+            } menuItems: {
+                Button("Copy System Summary") {
+                    summaryCopied = SystemSummaryBuilder.copy(model: model)
+                }
             }
         }
         .padding(ExperienceSpacing.large)
