@@ -236,6 +236,9 @@ final class SystemConditionMonitor {
             threshold: rule.thresholdValue
         )
         content.sound = .default
+        if let attachment = NotificationSymbolAttachment.make(for: signal.metricID) {
+            content.attachments = [attachment]
+        }
         let request = UNNotificationRequest(
             identifier: "mectrics.alert.\(signal.conditionKey)",
             content: content,

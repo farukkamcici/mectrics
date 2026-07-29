@@ -287,6 +287,9 @@ final class ThresholdMonitor {
                 )
         }
         content.sound = .default
+        if let attachment = NotificationSymbolAttachment.make(for: id) {
+            content.attachments = [attachment]
+        }
 
         let request = UNNotificationRequest(
             identifier: "mectrics.alert.\(id.rawValue)",

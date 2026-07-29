@@ -61,6 +61,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // app to a regular Dock application only in response to an explicit action.
         NSApp.setActivationPolicy(.accessory)
         installMainMenu()
+        // Must be set before any notification is delivered, or macOS suppresses the
+        // banner whenever Mectrics is the active app.
+        NotificationPresenter.shared.install()
         DiagnosticLogStore.shared.record(.appLaunched)
 
         menuBar = MenuBarController(model: model)
