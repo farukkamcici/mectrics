@@ -183,8 +183,6 @@ private struct MetricsWidgetView: View {
             return "\(Int(sample.value.rounded()))°"
         case .fans:
             return "\(Int((sample.detail["maxRpm"] ?? 0).rounded())) RPM"
-        case .clock:
-            return "—"
         }
     }
 
@@ -199,7 +197,6 @@ private struct MetricsWidgetView: View {
         case .sensors: return "thermometer.medium"
         case .fans: return "fan"
         case .bluetooth: return "wave.3.right"
-        case .clock: return "clock"
         }
     }
 
@@ -214,7 +211,6 @@ private struct MetricsWidgetView: View {
         case .sensors: return String(localized: "module.sensors", defaultValue: "Sensors")
         case .fans: return String(localized: "module.fans", defaultValue: "Fans")
         case .bluetooth: return String(localized: "module.bluetooth", defaultValue: "Bluetooth")
-        case .clock: return String(localized: "module.clock", defaultValue: "Clock")
         }
     }
 

@@ -26,7 +26,7 @@ enum MetricContextualAction: Equatable {
                 : [.networkSettings]
         case .bluetooth:
             return [.bluetoothSettings]
-        case .sensors, .fans, .clock:
+        case .sensors, .fans:
             return []
         }
     }

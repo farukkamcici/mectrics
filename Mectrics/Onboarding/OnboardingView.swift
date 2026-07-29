@@ -269,8 +269,6 @@ struct OnboardingView: View {
             return "\(Int(sample.value.rounded()))°"
         case .fans:
             return "\(Int((sample.detail["maxRpm"] ?? 0).rounded())) RPM"
-        case .clock:
-            return "—"
         }
     }
 }

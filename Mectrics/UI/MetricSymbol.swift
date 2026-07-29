@@ -15,7 +15,6 @@ enum MetricSymbol {
         case .gpu:       return "rectangle.on.rectangle"
         case .sensors:   return "thermometer.medium"
         case .fans:      return "fan"
-        case .clock:     return "clock"
         }
     }
 }

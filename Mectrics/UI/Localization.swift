@@ -25,7 +25,6 @@ extension MetricID {
         case .sensors:   return String(localized: "module.sensors", defaultValue: "Sensors")
         case .fans:      return String(localized: "module.fans", defaultValue: "Fans")
         case .bluetooth: return String(localized: "module.bluetooth", defaultValue: "Bluetooth")
-        case .clock:     return String(localized: "module.clock", defaultValue: "Clock")
         }
     }
 }
