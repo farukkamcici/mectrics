@@ -5,10 +5,16 @@ import MetricsKit
 struct DetailPopoverView: View {
     @Bindable var model: AppModel
     let moduleID: MetricID
+    var showsGlobalActions = true
+    var honorsEnabledState = false
+    @State private var copyConfirmationVisible = false
 
     private var sample: MetricSample? { model.latest[moduleID] }
     private var state: MetricDataState {
-        model.metricState(for: moduleID, isEnabled: true)
+        model.metricState(
+            for: moduleID,
+            isEnabled: honorsEnabledState ? nil : true
+        )
     }
 
     var body: some View {
@@ -31,8 +37,14 @@ struct DetailPopoverView: View {
                 }
                 metricContent
             }
-            Divider()
-            footer
+            if !contextualActions.isEmpty {
+                Divider()
+                contextualActionButtons
+            }
+            if showsGlobalActions {
+                Divider()
+                footer
+            }
         }
         .padding(ExperienceSpacing.medium)
         .frame(width: 290)
@@ -146,6 +158,52 @@ struct DetailPopoverView: View {
                 NSApp.terminate(nil)
             } label: {
                 Label("Quit", systemImage: "power")
+            }
+        }
+        .font(.callout)
+    }
+
+    private var localAddress: (interface: String, address: String)? {
+        moduleID == .network ? NetworkInfo.primaryIPv4() : nil
+    }
+
+    private var contextualActions: [MetricContextualAction] {
+        MetricContextualAction.actions(
+            for: moduleID,
+            hasLocalAddress: localAddress != nil
+        )
+    }
+
+    private var contextualActionButtons: some View {
+        VStack(alignment: .leading, spacing: ExperienceSpacing.xSmall) {
+            HStack {
+                ForEach(contextualActions, id: \.self) { action in
+                    Button {
+                        let succeeded = MetricContextualActionRunner.run(
+                            action,
+                            localAddress: localAddress
+                        )
+                        copyConfirmationVisible =
+                            action == .copyLocalAddress && succeeded
+                    } label: {
+                        Label(action.title, systemImage: action.symbolName)
+                    }
+                    if action != contextualActions.last {
+                        Spacer()
+                    }
+                }
+            }
+            if copyConfirmationVisible {
+                Label(
+                    String(
+                        localized: "net.localAddressCopied",
+                        defaultValue: "Local address copied."
+                    ),
+                    systemImage: "checkmark"
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .accessibilityAddTraits(.isStaticText)
             }
         }
         .font(.callout)
@@ -403,6 +461,54 @@ struct DetailPopoverView: View {
         case 2:  return String(localized: "pressure.warning", defaultValue: "Warning")
         case 4:  return String(localized: "pressure.critical", defaultValue: "Critical")
         default: return "—"
+        }
+    }
+}
+
+private extension MetricContextualAction {
+    var title: String {
+        switch self {
+        case .activityMonitor:
+            return String(
+                localized: "action.openActivityMonitor",
+                defaultValue: "Open Activity Monitor"
+            )
+        case .storageSettings:
+            return String(
+                localized: "action.openStorageSettings",
+                defaultValue: "Open Storage Settings"
+            )
+        case .batterySettings:
+            return String(
+                localized: "action.openBatterySettings",
+                defaultValue: "Open Battery Settings"
+            )
+        case .networkSettings:
+            return String(
+                localized: "action.openNetworkSettings",
+                defaultValue: "Open Network Settings"
+            )
+        case .copyLocalAddress:
+            return String(
+                localized: "action.copyLocalAddress",
+                defaultValue: "Copy Local Address"
+            )
+        case .bluetoothSettings:
+            return String(
+                localized: "action.openBluetoothSettings",
+                defaultValue: "Open Bluetooth Settings"
+            )
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .activityMonitor: return "gauge.with.dots.needle.67percent"
+        case .storageSettings: return "internaldrive"
+        case .batterySettings: return "battery.100percent"
+        case .networkSettings: return "network"
+        case .copyLocalAddress: return "doc.on.doc"
+        case .bluetoothSettings: return "wave.3.right"
         }
     }
 }

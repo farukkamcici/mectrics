@@ -12,6 +12,7 @@ import MetricsKit
 final class AppModel {
     let engine: MetricsEngine
     let historyRecorder = HistoryRecorder()
+    let attentionLog = AttentionLogStore()
 
     /// Core modules available on this machine (e.g. no battery on a desktop).
     let availableModules: [MetricID]
@@ -75,6 +76,17 @@ final class AppModel {
     /// Called by the Help menu to present the optional onboarding again.
     @ObservationIgnored var onOpenOnboarding: (() -> Void)?
 
+    /// Opens the bounded local event history.
+    @ObservationIgnored var onOpenAttentionLog: (() -> Void)?
+
+    /// Opens the previewable, local-only diagnostics export.
+    @ObservationIgnored var onOpenDiagnostics: (() -> Void)?
+
+    /// Opens a persistent metric detail window from shared attention surfaces.
+    @ObservationIgnored var onOpenMetricDetail: ((MetricID) -> Void)?
+
+    @ObservationIgnored var onEnergyGuardPreferenceChanged: (() -> Void)?
+
     /// One-shot flag for the current onboarding experience. Versioning lets a
     /// substantially redesigned welcome appear once for existing users without
     /// repeatedly interrupting them on ordinary launches.
@@ -108,6 +120,33 @@ final class AppModel {
         }
     }
 
+    /// Optional one-item health summary. Existing metric items and their layout are
+    /// preserved when this is toggled.
+    var compactHealthEnabled: Bool {
+        didSet {
+            defaults.set(
+                compactHealthEnabled,
+                forKey: Self.compactHealthEnabledKey
+            )
+            if compactHealthEnabled != oldValue { onModulesChanged?() }
+        }
+    }
+
+    /// Default-on adaptive monitoring preference.
+    var adaptMonitoringToEnergyState: Bool {
+        didSet {
+            defaults.set(
+                adaptMonitoringToEnergyState,
+                forKey: Self.adaptMonitoringKey
+            )
+            if adaptMonitoringToEnergyState != oldValue {
+                onEnergyGuardPreferenceChanged?()
+            }
+        }
+    }
+
+    var energyGuardMode: EnergyGuardMode = .normal
+
     /// Accent color for sparklines/charts (`.system` follows macOS accent).
     var accentChoice: AccentChoice {
         didSet {
@@ -128,6 +167,44 @@ final class AppModel {
         }
     }
 
+    /// Native system signals are separate from percentage rules so an upgrade never
+    /// replaces or silently changes an existing threshold.
+    var systemAlertRules: [SystemAlertSignal: SystemAlertRule] {
+        didSet {
+            persistSystemAlertRules()
+            refreshActiveMetrics()
+        }
+    }
+
+    /// Current evaluator state for live rule previews and shared attention surfaces.
+    var alertConditionStates: [MetricID: AlertConditionState] = [:]
+    var alertConditionStartedAt: [MetricID: Date] = [:]
+    var alertMeasuredValues: [MetricID: Double] = [:]
+    var systemConditionStates: [SystemAlertSignal: AlertConditionState] = [:]
+    var activeAlertConditions: [String: ActiveAlertCondition] = [:]
+
+    func applyAlertUpdate(_ update: AlertConditionUpdate) {
+        if update.state == .normal {
+            activeAlertConditions[update.conditionKey] = nil
+        } else {
+            activeAlertConditions[update.conditionKey] =
+                ActiveAlertCondition(update: update)
+        }
+        if let signal = SystemAlertSignal.allCases.first(
+            where: { $0.conditionKey == update.conditionKey }
+        ) {
+            systemConditionStates[signal] = update.state
+            return
+        }
+        alertConditionStates[update.metricID] = update.state
+        alertMeasuredValues[update.metricID] = update.measuredValue
+        if let startedAt = update.startedAt, update.state != .normal {
+            alertConditionStartedAt[update.metricID] = startedAt
+        } else {
+            alertConditionStartedAt[update.metricID] = nil
+        }
+    }
+
     func isComponentEnabled(_ component: MenuBarComponent, for id: MetricID) -> Bool {
         enabledComponents[id]?.contains(component) ?? false
     }
@@ -145,8 +222,11 @@ final class AppModel {
     private static let currentOnboardingVersion = 2
     private static let accentKey = "accentChoice"
     private static let menuBarIconsKey = "showMenuBarIcons"
+    private static let compactHealthEnabledKey = "compactHealthEnabled"
+    private static let adaptMonitoringKey = "adaptMonitoringToEnergyState"
     private static let panelLayoutKey = "panelLayout"
     private static let alertsKey = "alertRules"
+    private static let systemAlertsKey = "systemAlertRules"
     private static let moduleComponentsKey = "moduleComponents"
     private static let legacyStylesKey = "moduleStyles"
 
@@ -166,11 +246,17 @@ final class AppModel {
         self.showFloatingPanel = defaults.bool(forKey: Self.floatingPanelKey)
         self.hasCompletedOnboarding =
             defaults.integer(forKey: Self.onboardingVersionKey) >= Self.currentOnboardingVersion
-        self.accentChoice = AccentChoice(rawValue: defaults.string(forKey: Self.accentKey) ?? "") ?? .system
+        self.accentChoice = AccentChoice(rawValue: defaults.string(forKey: Self.accentKey) ?? "") ?? .pink
         // Icons default to on; only an explicit user choice turns them off.
         self.showMenuBarIcons = defaults.object(forKey: Self.menuBarIconsKey) as? Bool ?? true
+        self.compactHealthEnabled = defaults.bool(
+            forKey: Self.compactHealthEnabledKey
+        )
+        self.adaptMonitoringToEnergyState =
+            defaults.object(forKey: Self.adaptMonitoringKey) as? Bool ?? true
         self.panelLayout = PanelLayout(rawValue: defaults.string(forKey: Self.panelLayoutKey) ?? "") ?? .vertical
         self.alertRules = Self.loadAlertRules(from: defaults, available: available)
+        self.systemAlertRules = Self.loadSystemAlertRules(from: defaults)
         self.enabledComponents = Self.loadEnabledComponents(
             from: defaults, available: available.filter { $0 != .sensors })
         refreshActiveMetrics()
@@ -272,6 +358,18 @@ final class AppModel {
         var active = enabledModules
         for (id, rule) in alertRules where rule.enabled {
             active.insert(id)
+        }
+        for (signal, rule) in systemAlertRules where rule.enabled {
+            switch signal {
+            case .memoryPressure:
+                active.insert(.memory)
+            case .diskAvailableCapacity:
+                active.insert(.disk)
+            case .batteryService:
+                active.insert(.battery)
+            case .thermalState:
+                break
+            }
         }
         if active.contains(.cpu) || active.contains(.gpu) {
             active.insert(.sensors)
@@ -376,6 +474,132 @@ final class AppModel {
         let raw = Dictionary(uniqueKeysWithValues: alertRules.map { ($0.key.rawValue, $0.value) })
         if let data = try? JSONEncoder().encode(raw) {
             defaults.set(data, forKey: Self.alertsKey)
+        }
+    }
+
+    var systemConditionReadings: [SystemAlertSignal: SystemConditionReading] {
+        var readings: [SystemAlertSignal: SystemConditionReading] = [
+            .thermalState: SystemConditionReading(
+                .thermalState,
+                value: Self.thermalStateValue(ProcessInfo.processInfo.thermalState)
+            )
+        ]
+        if let pressure = latest[.memory]?.detail["pressureLevel"] {
+            readings[.memoryPressure] = SystemConditionReading(
+                .memoryPressure,
+                value: pressure
+            )
+        }
+        if let free = latest[.disk]?.detail["free"] {
+            readings[.diskAvailableCapacity] = SystemConditionReading(
+                .diskAvailableCapacity,
+                value: free
+            )
+        }
+        if let service = latest[.battery]?.detail["serviceRecommended"] {
+            readings[.batteryService] = SystemConditionReading(
+                .batteryService,
+                value: service
+            )
+        }
+        return readings
+    }
+
+    var compactHealthConditions: [ActiveAlertCondition] {
+        activeAlertConditions.values
+            .filter { $0.destinations.contains(.compactHealth) }
+            .sorted {
+                if $0.severity.rank != $1.severity.rank {
+                    return $0.severity.rank > $1.severity.rank
+                }
+                return $0.startedAt > $1.startedAt
+            }
+    }
+
+    var compactHealthMetricIDs: Set<MetricID> {
+        var ids = Set(alertRules.compactMap { id, rule in
+            rule.enabled && rule.destinations.contains(.compactHealth)
+                ? id
+                : nil
+        })
+        for (signal, rule) in systemAlertRules
+            where rule.enabled && rule.destinations.contains(.compactHealth) {
+            ids.insert(signal.metricID)
+        }
+        return ids
+    }
+
+    var compactHealthState: CompactHealthState {
+        CompactHealthState.resolve(
+            conditions: compactHealthConditions,
+            configuredMetricStates: compactHealthMetricIDs.map {
+                metricState(for: $0, isEnabled: true)
+            }
+        )
+    }
+
+    private static func thermalStateValue(
+        _ state: ProcessInfo.ThermalState
+    ) -> Double {
+        switch state {
+        case .nominal: return 0
+        case .fair: return 1
+        case .serious: return 2
+        case .critical: return 3
+        @unknown default: return 0
+        }
+    }
+
+    private static func defaultSystemAlertRules()
+        -> [SystemAlertSignal: SystemAlertRule] {
+        [
+            .memoryPressure: SystemAlertRule(
+                enabled: false,
+                thresholdValue: 2
+            ),
+            .diskAvailableCapacity: SystemAlertRule(
+                enabled: false,
+                thresholdValue: 20 * 1_024 * 1_024 * 1_024
+            ),
+            .thermalState: SystemAlertRule(
+                enabled: false,
+                thresholdValue: 2
+            ),
+            .batteryService: SystemAlertRule(
+                enabled: false,
+                thresholdValue: 1
+            )
+        ]
+    }
+
+    private static func loadSystemAlertRules(
+        from defaults: UserDefaults
+    ) -> [SystemAlertSignal: SystemAlertRule] {
+        var rules = defaultSystemAlertRules()
+        guard let data = defaults.data(forKey: Self.systemAlertsKey),
+              let raw = try? JSONDecoder().decode(
+                  [String: SystemAlertRule].self,
+                  from: data
+              )
+        else {
+            return rules
+        }
+        for (key, rule) in raw {
+            if let signal = SystemAlertSignal(rawValue: key) {
+                rules[signal] = rule
+            }
+        }
+        return rules
+    }
+
+    private func persistSystemAlertRules() {
+        let raw = Dictionary(
+            uniqueKeysWithValues: systemAlertRules.map {
+                ($0.key.rawValue, $0.value)
+            }
+        )
+        if let data = try? JSONEncoder().encode(raw) {
+            defaults.set(data, forKey: Self.systemAlertsKey)
         }
     }
 

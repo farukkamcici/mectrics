@@ -13,6 +13,12 @@ private final class SettingsWindow: NSWindow {
 /// centered initial size, restores its pane and frame, and remains resizable.
 @MainActor
 final class SettingsWindowController: NSObject, NSWindowDelegate {
+    enum Pane: Int {
+        case general
+        case menuBar
+        case alerts
+    }
+
     private let model: AppModel
     private let onClose: () -> Void
     private var window: NSWindow?
@@ -47,10 +53,14 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         )
     }
 
-    func show() {
+    func show(pane: Pane? = nil) {
         NSApp.setActivationPolicy(.regular)
         if window == nil {
             window = makeWindow()
+        }
+        if let pane, let tabs = tabController {
+            tabs.selectedTabViewItemIndex = pane.rawValue
+            window?.toolbar?.selectedItemIdentifier = Self.toolbarIdentifiers[pane.rawValue]
         }
         clampToVisibleScreen()
         NSApp.activate(ignoringOtherApps: true)

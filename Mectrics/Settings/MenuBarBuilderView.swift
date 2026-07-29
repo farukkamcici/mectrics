@@ -9,6 +9,8 @@ import MetricsKit
 struct MenuBarBuilderView: View {
     @Bindable var model: AppModel
     @Environment(\.colorSchemeContrast) private var contrast
+    @Environment(\.undoManager) private var undoManager
+    @State private var presentedPreset: MenuBarLayoutPreset?
     private let componentColumns = Array(
         repeating: GridItem(
             .flexible(minimum: 88, maximum: 160),
@@ -23,6 +25,29 @@ struct MenuBarBuilderView: View {
                 Text("Current layout")
                     .font(.headline)
                 Spacer()
+                Menu("Presets") {
+                    ForEach(MenuBarLayoutPreset.all) { preset in
+                        Button(preset.name) {
+                            presentedPreset = preset
+                        }
+                    }
+                }
+                Button("Reset to Recommended") {
+                    apply(
+                        MenuBarLayoutPreset.recommended(
+                            available: Set(model.availableModules)
+                        )
+                    )
+                }
+                Toggle(
+                    "Compact Health",
+                    isOn: $model.compactHealthEnabled
+                )
+                .toggleStyle(.checkbox)
+                .help(String(
+                    localized: "builder.compactHealth.help",
+                    defaultValue: "Show one stable health summary item in the menu bar"
+                ))
                 Toggle("Icons", isOn: $model.showMenuBarIcons)
                     .toggleStyle(.checkbox)
                     .help(String(
@@ -47,7 +72,7 @@ struct MenuBarBuilderView: View {
                 Text(
                     String(
                         localized: "builder.activeCount",
-                        defaultValue: "\(model.orderedEnabledItems.count) active"
+                        defaultValue: "\(model.orderedEnabledItems.count + (model.compactHealthEnabled ? 1 : 0)) active"
                     )
                 )
                 .font(.caption)
@@ -65,6 +90,35 @@ struct MenuBarBuilderView: View {
             }
         }
         .padding(ExperienceSpacing.large)
+        .sheet(item: $presentedPreset) { preset in
+            MenuBarPresetPreview(
+                preset: preset,
+                available: Set(model.availableModules),
+                onCancel: { presentedPreset = nil },
+                onApply: {
+                    apply(preset)
+                    presentedPreset = nil
+                }
+            )
+        }
+    }
+
+    private func apply(_ preset: MenuBarLayoutPreset) {
+        let prior = model.enabledComponents
+        let replacement = preset.resolved(
+            available: Set(model.availableModules)
+        )
+        guard replacement != prior else { return }
+        undoManager?.registerUndo(withTarget: model) { target in
+            target.enabledComponents = prior
+        }
+        undoManager?.setActionName(
+            String(
+                localized: "preset.undo.action",
+                defaultValue: "Apply Menu Bar Preset"
+            )
+        )
+        model.enabledComponents = replacement
     }
 
     // MARK: - Current menu bar strip
@@ -72,10 +126,21 @@ struct MenuBarBuilderView: View {
     private var currentStrip: some View {
         ScrollView(.horizontal) {
             HStack(spacing: ExperienceSpacing.small) {
-                if model.orderedEnabledModules.isEmpty {
+                if model.orderedEnabledModules.isEmpty
+                    && !model.compactHealthEnabled {
                     Text("Empty — add components below")
                         .font(.callout)
                         .foregroundStyle(.secondary)
+                }
+                if model.compactHealthEnabled {
+                    Image(
+                        systemName: model.compactHealthState.symbolName
+                    )
+                    .frame(width: 26)
+                    .accessibilityLabel("Compact Health")
+                    .accessibilityValue(
+                        model.compactHealthState.localizedName
+                    )
                 }
                 let entries = model.orderedEnabledItems
                 ForEach(entries.indices, id: \.self) { i in
@@ -350,5 +415,58 @@ struct MenuBarBuilderView: View {
             model.toggleComponent(component, for: id)
         }
         return true
+    }
+}
+
+private struct MenuBarPresetPreview: View {
+    let preset: MenuBarLayoutPreset
+    let available: Set<MetricID>
+    let onCancel: () -> Void
+    let onApply: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: ExperienceSpacing.medium) {
+            Text(preset.name)
+                .font(.title2.weight(.semibold))
+            Text(preset.summary)
+                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: ExperienceSpacing.small) {
+                ForEach(Array(preset.entries.enumerated()), id: \.offset) {
+                    _, entry in
+                    HStack {
+                        Label(
+                            entry.metricID.localizedName,
+                            systemImage: FloatingPanelView.symbol(
+                                for: entry.metricID
+                            )
+                        )
+                        Text(entry.component.localizedName)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        if !available.contains(entry.metricID) {
+                            Text("Unavailable on this Mac")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+            .padding()
+            .background(
+                RoundedRectangle(
+                    cornerRadius: ExperienceRadius.standard
+                )
+                .fill(.secondary.opacity(0.08))
+            )
+            HStack {
+                Spacer()
+                Button("Cancel", action: onCancel)
+                    .keyboardShortcut(.cancelAction)
+                Button("Apply", action: onApply)
+                    .keyboardShortcut(.defaultAction)
+            }
+        }
+        .padding(ExperienceSpacing.large)
+        .frame(width: 480)
     }
 }
