@@ -136,7 +136,7 @@ struct MenuBarBuilderView: View {
         _ component: MenuBarComponent
     ) -> some View {
         HStack(spacing: ExperienceSpacing.xSmall) {
-            if model.showMenuBarIcons {
+            if model.showMenuBarIcons && !component.drawsModuleGlyph {
                 Image(systemName: MetricSymbol.name(for: id))
                     .font(.system(size: 10.5, weight: .semibold))
                     .foregroundStyle(model.accentColor)

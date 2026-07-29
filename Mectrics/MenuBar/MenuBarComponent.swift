@@ -57,6 +57,15 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
         }
     }
 
+    /// True when the component already draws the module's own hardware glyph, so the
+    /// leading module icon would simply repeat it (a battery beside a battery).
+    var drawsModuleGlyph: Bool {
+        switch self {
+        case .batteryIcon: return true
+        default:           return false
+        }
+    }
+
     /// Worst-case template reserving a stable text slot ("" = pictorial, no text).
     /// Real values must never exceed this width.
     func template(for module: MetricID) -> String {

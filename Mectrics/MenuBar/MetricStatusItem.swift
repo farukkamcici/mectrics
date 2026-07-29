@@ -74,7 +74,7 @@ final class MetricStatusItem: NSObject {
             samples: samples,
             accent: accent,
             reservedTextWidth: reservedTextWidth,
-            icon: showIcon ? iconSymbol : nil,
+            icon: (showIcon && !component.drawsModuleGlyph) ? iconSymbol : nil,
             appearance: button.effectiveAppearance
         )
         button.setAccessibilityLabel(
