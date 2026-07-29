@@ -73,7 +73,8 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
             return "↓999M"
         case .value, .valueGraph:
             switch module {
-            case .battery:   return "100%"
+            // The charging bolt is part of the value, so it belongs in the template.
+            case .battery:   return "⚡100%"
             case .bluetooth: return "BT 100%"
             case .fans:      return "9.9K"
             default:         return "100%"
