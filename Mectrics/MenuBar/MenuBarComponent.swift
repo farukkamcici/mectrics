@@ -116,10 +116,18 @@ extension MenuBarText {
         case .batteryIcon:
             return .battery(level: sample.value,
                             charging: (sample.detail["charging"] ?? 0) > 0)
+        // A missing reading is absence, not zero: never render 0% health or 0 cycles
+        // for a battery that simply did not report them.
         case .health:
-            return .text("\(Int(sample.detail["healthPercent"] ?? 0))%")
+            guard let health = sample.detail["healthPercent"] else {
+                return .text("—")
+            }
+            return .text("\(Int(health))%")
         case .cycles:
-            return .text("\(Int(sample.detail["cycleCount"] ?? 0))")
+            guard let cycles = sample.detail["cycleCount"] else {
+                return .text("—")
+            }
+            return .text("\(Int(cycles))")
         case .netActivity:
             return .text(string(for: .network, sample: sample))
         case .netDown:
