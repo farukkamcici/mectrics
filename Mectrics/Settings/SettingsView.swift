@@ -59,8 +59,9 @@ struct GeneralSettingsTab: View {
 /// Alerts tab of the settings window.
 ///
 /// Percentage thresholds and native system conditions are two implementations of the
-/// same idea, so they share one list and one row anatomy: what it watches, whether it
-/// is on, its limit, how long it must hold, and where it shows up.
+/// same idea, so they share one list and one row anatomy. The primary line carries the
+/// decision — what it watches, its limit, on or off — and the secondary line carries
+/// live state plus the fine tuning.
 struct AlertsSettingsTab: View {
     @Bindable var model: AppModel
     @State private var notificationAccess = NotificationAccessState.unknown
@@ -95,10 +96,7 @@ struct AlertsSettingsTab: View {
                         .monospacedDigit()
                 }
             } footer: {
-                VStack(alignment: .leading, spacing: ExperienceSpacing.xSmall) {
-                    Text("A rule waits for the reading to hold past its limit for the time you choose, then starts alerting until the reading comes back.")
-                    Text("Alerting rules always show on the Compact Health item and are recorded in the Attention Log. Turn on Notify me to also get a macOS notification. After alerting, a rule rests for 15 minutes.")
-                }
+                Text("An alerting rule shows on the Compact Health item and is recorded in the Attention Log; Notify me adds a macOS notification. A rule rests for 15 minutes after it alerts.")
             }
 
             Section("Notifications") {
@@ -180,28 +178,26 @@ struct AlertsSettingsTab: View {
         )
     }
 
-    /// Every row keeps the same anatomy at the same position — limit, duration, then
-    /// the on/off switch on the trailing edge — so a closed rule and an open one read
-    /// as the same kind of thing. Closed rows dim their controls rather than moving
-    /// or dropping them.
+    /// A closed rule dims its limit control rather than moving or dropping it, so the
+    /// switch and the limit stay in the same column on every row.
     @ViewBuilder
     private func ruleRow(_ key: RuleKey) -> some View {
         let enabled = isEnabled(key)
         VStack(alignment: .leading, spacing: ExperienceSpacing.small) {
+            // Primary line: what it watches, its limit, and whether it is on.
             HStack(spacing: ExperienceSpacing.medium) {
                 Text(label(for: key))
                 Spacer(minLength: ExperienceSpacing.small)
                 thresholdControl(key)
                     .disabled(!enabled)
-                durationPicker(key)
-                    .disabled(!enabled)
                 Toggle("", isOn: enabledBinding(key))
                     .labelsHidden()
                     .accessibilityLabel(label(for: key))
             }
+            // Secondary line: how it is behaving right now and the fine tuning.
             if enabled {
                 let ruleState = state(for: key)
-                HStack(spacing: ExperienceSpacing.xSmall) {
+                HStack(spacing: ExperienceSpacing.small) {
                     Label(
                         ruleState.localizedName,
                         systemImage: ruleState.symbolName
@@ -211,6 +207,7 @@ struct AlertsSettingsTab: View {
                     Text(currentReading(key))
                         .monospacedDigit()
                     Spacer()
+                    durationPicker(key)
                     Toggle("Notify me", isOn: notifyBinding(key))
                         .toggleStyle(.checkbox)
                         .help(String(
@@ -220,6 +217,7 @@ struct AlertsSettingsTab: View {
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .controlSize(.small)
                 notificationWarning(key)
             }
         }
@@ -227,25 +225,33 @@ struct AlertsSettingsTab: View {
 
     // MARK: - Row pieces
 
-    @ViewBuilder
+    /// Steppers and pickers draw at different intrinsic widths, so every limit control
+    /// is trailing-aligned inside one shared column and the values line up down the
+    /// list regardless of which control a rule uses.
     private func thresholdControl(_ key: RuleKey) -> some View {
-        switch key {
-        case .metric(let id):
-            let isTemp = id == .sensors
-            let below = ThresholdMonitor.isBelowRule(id)
-            let range = isTemp ? 60...105 : (below ? 5...50 : 50...100)
-            Stepper(
-                value: metricRuleBinding(id).thresholdPercent,
-                in: range,
-                step: 5
-            ) {
-                Text(thresholdSummary(key))
-                    .monospacedDigit()
-                    .frame(minWidth: 44, alignment: .trailing)
+        Group {
+            switch key {
+            case .metric(let id):
+                let isTemp = id == .sensors
+                let below = ThresholdMonitor.isBelowRule(id)
+                let range = isTemp ? 60...105 : (below ? 5...50 : 50...100)
+                HStack(spacing: ExperienceSpacing.xSmall) {
+                    Text(thresholdSummary(key))
+                        .monospacedDigit()
+                    Stepper(
+                        "",
+                        value: metricRuleBinding(id).thresholdPercent,
+                        in: range,
+                        step: 5
+                    )
+                    .labelsHidden()
+                }
+            case .system(let signal):
+                systemThresholdControl(signal)
             }
-        case .system(let signal):
-            systemThresholdControl(signal)
         }
+        .frame(width: 136, alignment: .trailing)
+        .accessibilityLabel("Limit")
     }
 
     @ViewBuilder
@@ -258,7 +264,7 @@ struct AlertsSettingsTab: View {
                 Text("Critical").tag(4.0)
             }
             .labelsHidden()
-            .frame(width: 96)
+            .fixedSize()
         case .diskAvailableCapacity:
             Picker("Available capacity", selection: rule.thresholdValue) {
                 ForEach([5, 10, 20, 50], id: \.self) { gigabytes in
@@ -271,14 +277,14 @@ struct AlertsSettingsTab: View {
                 }
             }
             .labelsHidden()
-            .frame(width: 96)
+            .fixedSize()
         case .thermalState:
             Picker("Thermal state", selection: rule.thresholdValue) {
                 Text("Serious").tag(2.0)
                 Text("Critical").tag(3.0)
             }
             .labelsHidden()
-            .frame(width: 96)
+            .fixedSize()
         case .batteryService:
             // macOS decides this one; there is nothing to configure.
             EmptyView()
@@ -287,16 +293,16 @@ struct AlertsSettingsTab: View {
 
     @ViewBuilder
     private func durationPicker(_ key: RuleKey) -> some View {
-        Picker("Sustained duration", selection: durationBinding(key)) {
-            Text("Immediately").tag(0)
-            Text("30 seconds").tag(30)
-            Text("1 minute").tag(60)
-            Text("2 minutes").tag(120)
-            Text("5 minutes").tag(300)
+        Picker("Alert after", selection: durationBinding(key)) {
+            Text("Alert right away").tag(0)
+            Text("Alert after 30 seconds").tag(30)
+            Text("Alert after 1 minute").tag(60)
+            Text("Alert after 2 minutes").tag(120)
+            Text("Alert after 5 minutes").tag(300)
         }
         .labelsHidden()
-        .accessibilityLabel("Sustained duration")
-        .frame(width: 124)
+        .accessibilityLabel("Alert after")
+        .fixedSize()
     }
 
     /// A rule that asks for notifications is silent until macOS allows them.
