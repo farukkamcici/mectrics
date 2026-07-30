@@ -5,10 +5,12 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] — 2026-07-30
 
-Everything below ships in the first tagged release. Until then, the entries describe the
-state of `main`.
+The first release. Distributed as a signed and notarized DMG.
+
+Measured on the reference Mac, a Release build holds steady at **25 MB** of memory with
+roughly one idle wake per second.
 
 ### Added
 
@@ -40,4 +42,4 @@ state of `main`.
 - Automatic update checks are disabled; the Sparkle appcast is fetched only on an explicit
   **Check for Updates…** and verified against a pinned EdDSA public key.
 
-[Unreleased]: https://github.com/farukkamcici/mectrics/commits/main
+[1.0.0]: https://github.com/farukkamcici/mectrics/releases/tag/v1.0.0

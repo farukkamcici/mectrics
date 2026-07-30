@@ -37,10 +37,10 @@ It is built around three commitments:
 | 🪶 **Light on the machine** | Sampling slows down on battery and backs off under Low Power Mode and thermal pressure. The 1.0 release build holds steady at **25 MB** against a 60 MB budget, with about one idle wake per second. |
 | 📐 **Stable in the menu bar** | Items reserve a fixed width, so values change without anything shifting sideways. |
 
-> [!NOTE]
-> **Status: pre-release.** The app is feature complete and in daily use. What is left before
-> v1.0 is release plumbing — publishing the signed update feed and the first GitHub Release.
-> Until then, [build it from source](#install).
+<div align="center">
+  <a href="https://github.com/farukkamcici/mectrics/releases/latest/download/Mectrics.dmg"><b>⬇︎ Download Mectrics 1.0.0</b></a><br>
+  <sub>macOS 15+ · signed and notarized · 3.7 MB</sub>
+</div>
 
 ## Modules
 
@@ -122,7 +122,16 @@ read/write throughput for Disk, and so on.
 
 Requires **macOS 15 (Sequoia)** or newer.
 
-The first signed and notarized DMG ships with v1.0. Until then, build it yourself:
+[**Download Mectrics.dmg**](https://github.com/farukkamcici/mectrics/releases/latest/download/Mectrics.dmg)
+from the [latest release](https://github.com/farukkamcici/mectrics/releases/latest), open it,
+and drag Mectrics to Applications. The app is signed with a Developer ID and notarized by
+Apple, so it opens without a Gatekeeper detour.
+
+Mectrics has no Dock icon and no window — after launching, look for it in the menu bar.
+
+Updates are checked only when you ask, under **Settings → General → Check for Updates…**.
+
+### Build from source
 
 ```bash
 git clone https://github.com/farukkamcici/mectrics.git
