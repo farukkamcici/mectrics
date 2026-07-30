@@ -72,19 +72,25 @@ jobs:
             exit 1
           fi
 
-      - name: Relative Markdown links must resolve
+      - name: Relative Markdown links and image paths must resolve
         run: |
           fail=0
           for file in $(git ls-files '*.md'); do
             dir=$(dirname "$file")
-            for target in $(grep -oE '\]\([^) ]+\)' "$file" | sed -E 's/^\]\(//; s/\)$//'); do
+            # Markdown links, plus the src/srcset of inline HTML (banner and screenshots).
+            targets=$(
+              { grep -oE '\]\([^) ]+\)' "$file" | sed -E 's/^\]\(//; s/\)$//'
+                grep -oE '(src|srcset)="[^"]+"' "$file" | sed -E 's/^(src|srcset)="//; s/"$//'
+              } || true
+            )
+            for target in $targets; do
               case "$target" in
-                http*|mailto:*|\#*) continue ;;
+                http*|mailto:*|data:*|\#*) continue ;;
               esac
               target="${target%%#*}"
               [ -z "$target" ] && continue
               if [ ! -e "$dir/$target" ]; then
-                echo "::error file=$file::broken relative link -> $target"
+                echo "::error file=$file::broken relative path -> $target"
                 fail=1
               fi
             done

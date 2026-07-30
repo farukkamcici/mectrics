@@ -44,6 +44,10 @@ It is built around three commitments:
 
 ## Modules
 
+<div align="center">
+  <img src="docs/assets/menubar.png" alt="Mectrics in the macOS menu bar: free disk space, memory, CPU with a sparkline, and network activity" width="872">
+</div>
+
 Unavailable hardware hides itself — no Fans module on a fanless MacBook Air, no Battery on
 a Mac mini, no Bluetooth module until a device that reports a battery is connected. **A
 missing reading shows a dash, never a fabricated `0`.**
@@ -69,6 +73,10 @@ builder, so you choose from what you can actually see. Each popover adds the det
 the value: per-core load and top processes for CPU, swap and pressure for Memory,
 read/write throughput for Disk, and so on.
 
+<div align="center">
+  <img src="docs/assets/popover-disk.png" alt="The Disk popover: a usage ring, a used/purgeable/free bar, capacity figures, and live read and write throughput" width="620">
+</div>
+
 ## Beyond the numbers
 
 - **Compact Health** — one status item that summarizes the whole machine and surfaces only
@@ -83,14 +91,18 @@ read/write throughput for Disk, and so on.
 - **Diagnostics** — a local-only system summary you can copy or export as plain text.
 - **Three-step onboarding**, accent themes, and launch at login.
 
-<!--
-  Screenshots go here once captured. Recommended set, dropped into docs/assets/:
-    menubar.png   — the real menu bar with 3–4 modules enabled (2x, cropped tight)
-    popover.png   — a CPU or Memory detail popover
-    settings.png  — the Menu Bar builder pane
-    widget.png    — the medium widget in Notification Center
-  Then use the same <picture> pattern as the banner if you shoot light + dark variants.
--->
+<table>
+<tr>
+<td width="50%" valign="top">
+  <img src="docs/assets/settings-menubar.png" alt="The Menu Bar settings pane: a live preview of the menu bar, and every module's components as clickable chips" width="100%">
+  <p align="center"><sub><b>Menu bar builder</b> — click a live chip to add or remove it</sub></p>
+</td>
+<td width="50%" valign="top">
+  <img src="docs/assets/settings-alerts.png" alt="The Alerts settings pane: threshold rules for CPU, memory, battery, disk, GPU, and temperature, each with a sustained duration" width="100%">
+  <p align="center"><sub><b>Alert rules</b> — with the current reading next to each threshold</sub></p>
+</td>
+</tr>
+</table>
 
 ## Install
 
