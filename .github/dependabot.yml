@@ -1,0 +1,10 @@
+version: 2
+updates:
+  # Keep CI action versions current. Swift package versions are pinned deliberately in
+  # project.yml and Package.swift and are updated by hand.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "ci"

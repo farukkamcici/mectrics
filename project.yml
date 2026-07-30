@@ -1,5 +1,13 @@
 # XcodeGen project definition — `xcodegen generate` produces Mectrics.xcodeproj.
 # This file is git-friendly and readable; the .xcodeproj is generated output (not in git).
+#
+# Signing: no Apple Developer Team ID is committed here. `DEVELOPMENT_TEAM` is filled from
+# the MECTRICS_TEAM_ID environment variable when the project is generated:
+#
+#     export MECTRICS_TEAM_ID=YOURTEAMID   # put this in your shell profile
+#     xcodegen generate
+#
+# Leave it unset to build unsigned (what CI does) — the setting then resolves to empty.
 name: Mectrics
 
 options:
@@ -68,10 +76,10 @@ targets:
         ENABLE_HARDENED_RUNTIME: NO
       configs:
         Debug:
-          DEVELOPMENT_TEAM: G88QSG6V2M
+          DEVELOPMENT_TEAM: ${MECTRICS_TEAM_ID}
           CODE_SIGN_ENTITLEMENTS: Mectrics/Mectrics.entitlements
         Release:
-          DEVELOPMENT_TEAM: G88QSG6V2M
+          DEVELOPMENT_TEAM: ${MECTRICS_TEAM_ID}
           CODE_SIGN_ENTITLEMENTS: Mectrics/Mectrics.entitlements
           ENABLE_HARDENED_RUNTIME: YES
 
@@ -103,11 +111,11 @@ targets:
         SKIP_INSTALL: YES
       configs:
         Debug:
-          DEVELOPMENT_TEAM: G88QSG6V2M
+          DEVELOPMENT_TEAM: ${MECTRICS_TEAM_ID}
           CODE_SIGN_ENTITLEMENTS: MectricsWidget/MectricsWidget.entitlements
           ENABLE_APP_SANDBOX: YES
         Release:
-          DEVELOPMENT_TEAM: G88QSG6V2M
+          DEVELOPMENT_TEAM: ${MECTRICS_TEAM_ID}
           CODE_SIGN_ENTITLEMENTS: MectricsWidget/MectricsWidget.entitlements
           ENABLE_APP_SANDBOX: YES
           ENABLE_HARDENED_RUNTIME: YES

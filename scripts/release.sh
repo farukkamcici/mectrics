@@ -1,4 +1,13 @@
 #!/bin/zsh
+#
+# Builds a release: archive with Hardened Runtime, export with a Developer ID Application
+# signature, verify it, create a drag-to-Applications DMG, sign and notarize the DMG, and
+# staple the ticket. The result is build/release/Mectrics.dmg (local output, not committed).
+#
+#   MECTRICS_TEAM_ID=... MECTRICS_NOTARY_PROFILE=... ./scripts/release.sh
+#
+# Requires a Developer ID Application certificate and a notarytool keychain profile
+# (`xcrun notarytool store-credentials`). Never pass credentials on the command line.
 set -euo pipefail
 
 repo_root=${0:A:h:h}
@@ -10,6 +19,8 @@ staging_path="$release_root/dmg"
 dmg_path="$release_root/Mectrics.dmg"
 
 : "${MECTRICS_TEAM_ID:?Set MECTRICS_TEAM_ID to your Apple Developer Team ID.}"
+# xcodegen reads this to fill DEVELOPMENT_TEAM, which is not committed in project.yml.
+export MECTRICS_TEAM_ID
 : "${MECTRICS_NOTARY_PROFILE:?Set MECTRICS_NOTARY_PROFILE to a notarytool keychain profile.}"
 MECTRICS_SIGNING_IDENTITY=${MECTRICS_SIGNING_IDENTITY:-Developer ID Application}
 

@@ -1,93 +1,148 @@
-# mectrics
+<div align="center">
 
-A lightweight, private, modern macOS menu bar system monitor.
-Shows CPU, Memory, Battery and more as live **sparklines** in the menu bar, with an
-optional Compact Health item that speaks up only when something needs attention.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/banner-light.svg">
+  <img alt="mectrics — a lightweight, private system monitor that lives in your macOS menu bar" src="docs/assets/banner-light.svg" width="100%">
+</picture>
 
-> Status: **feature complete, preparing the first release.** Modules: CPU / Memory /
-> Battery / Network / Disk / GPU / Temperatures (SMC) / Fans (SMC) (+ Bluetooth when a
-> device with a battery is connected). Unavailable hardware hides itself (e.g. Fans on a
-> fanless MacBook Air). Plus: detail popovers, the Compact Health item, Attention Log,
-> Energy Guard, three-step onboarding, accent themes, alert rules with previews and test
-> delivery, a visual menu bar builder with layout presets, launch-at-login, local-only
-> diagnostics, and small/medium/large WidgetKit widgets. Remaining for v1.0: publishing
-> the update feed and the first GitHub Release.
+<p>
+  <img alt="Platform: macOS 15+" src="https://img.shields.io/badge/macOS-15%2B-000000?style=flat-square&logo=apple&logoColor=white">
+  <img alt="Swift 6" src="https://img.shields.io/badge/Swift-6-F05138?style=flat-square&logo=swift&logoColor=white">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-2ea44f?style=flat-square"></a>
+  <a href="https://github.com/farukkamcici/mectrics/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/farukkamcici/mectrics/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="Telemetry: none" src="https://img.shields.io/badge/telemetry-none-8957e5?style=flat-square">
+</p>
 
-**Lightweight & private by design:** adaptive sampling (slower on battery), Energy Guard
-that backs off under Low Power Mode and thermal pressure, zero telemetry, and fixed-width
-menu bar items that never jitter as values change.
+<p><b>CPU · Memory · Battery · Network · Disk · GPU · Temperature · Fans · Bluetooth</b><br>
+live in your menu bar — readable at a glance, and the bar never jumps around.</p>
 
-## Positioning
-*iStat's depth + Stats' open spirit + lighter and more modern than either.* See [`docs/`](docs/).
+</div>
 
-- [00 — Research](docs/00-research.md)
-- [01 — Product Plan](docs/01-product-plan.md)
-- [02 — Architecture](docs/02-architecture.md)
-- [03 — Roadmap](docs/03-roadmap.md)
-- [04 — Release and Notarization](docs/04-releasing.md)
-- [05 — Premium Experience Backlog](docs/05-premium-experience-backlog.md)
-- [06 — Experience Quality Gate](docs/06-experience-quality-gate.md)
-- [07 — Approved Feature Program](docs/07-approved-feature-program.md)
+---
 
-Conventions for contributors: [`AGENTS.md`](AGENTS.md) (source of truth) and
-[`CLAUDE.md`](CLAUDE.md).
+## What it is
 
-## Project layout
-```
-mectrics/
-├── docs/                    # product & architecture docs
-├── project.yml              # XcodeGen project definition (source; .xcodeproj is generated)
-├── Mectrics/                # menu bar app (SwiftUI + AppKit)
-│   ├── App/                 # AppDelegate, AppModel, LoginItem
-│   ├── MenuBar/             # NSStatusItem controller + live sparkline drawing
-│   ├── UI/                  # popover, sparkline, formatting, localization, themes
-│   ├── Onboarding/          # three-step first-launch flow
-│   ├── Alerts/              # alert rules and threshold monitor
-│   ├── Attention/           # local Attention Log
-│   ├── Energy/              # Energy Guard sampling policy
-│   ├── Diagnostics/         # local-only system summary and diagnostics export
-│   ├── Release/             # About, What's New, update status
-│   ├── Settings/            # settings window (General / Menu Bar / Alerts)
-│   └── Resources/           # Localizable.xcstrings (String Catalog)
-├── MectricsWidget/          # small/medium/large WidgetKit overview
-└── Packages/MetricsKit/     # UI-independent metric engine (SwiftPM)
-    ├── Sources/MetricsKit/  # providers, scheduler, store, engine
-    ├── Sources/MectricsCLI/ # `swift run mectrics-cli` — terminal demo
-    └── Tests/
-```
+**mectrics** is a native macOS menu bar system monitor. Each module you enable draws a
+readable value — with a live sparkline where a trend actually tells you something — and
+stays out of the way otherwise. A click opens a detail popover with the numbers behind it.
+An optional **Compact Health** item collapses the whole machine into a single indicator
+that speaks up only when something needs attention.
 
-## Requirements
-- macOS 15+ (development: Xcode 16+/26, Swift 6)
-- [XcodeGen](https://github.com/yonaskolb/XcodeGen): `brew install xcodegen`
+It is built around three commitments:
 
-## Development
+| | |
+|---|---|
+| 🔒 **Private by construction** | Zero telemetry. No analytics, no identifiers, no crash reports. The only network request the app can make is an update check you trigger yourself — automatic checks are off by default. |
+| 🪶 **Light on the machine** | Sampling slows down on battery and backs off under Low Power Mode and thermal pressure. Target: under 60 MB of memory and "Energy Impact: Low". |
+| 📐 **Stable in the menu bar** | Items reserve a fixed width, so values change without anything shifting sideways. |
 
-**Run the core engine in the terminal (no Xcode needed):**
+> [!NOTE]
+> **Status: pre-release.** The app is feature complete and in daily use. What is left before
+> v1.0 is release plumbing — publishing the signed update feed and the first GitHub Release.
+> Until then, [build it from source](#install).
+
+## Modules
+
+Unavailable hardware hides itself — no Fans module on a fanless MacBook Air, no Battery on
+a Mac mini, no Bluetooth module until a device that reports a battery is connected. **A
+missing reading shows a dash, never a fabricated `0`.**
+
+| Module | What you can put in the menu bar | Sparkline |
+|---|---|---|
+| **CPU** | Usage %, per-core bars | ✅ |
+| **Memory** | Usage %, used memory | ✅ |
+| **GPU** | Utilization % | ✅ |
+| **Battery** | Level with charge indicator, icon, health, cycles | — |
+| **Network** | Stacked ↓/↑ activity, download only, upload only | — |
+| **Disk** | Usage %, ring, used, free | — |
+| **Temperature** | Hottest CPU reading in °C | — |
+| **Fans** | Fastest fan RPM | — |
+| **Bluetooth** | Connected device battery % | — |
+
+Sparklines are drawn for the three metrics where a trend is genuinely informative. The rest
+show a value, because a chart of your disk's fill level is decoration.
+
+A module can contribute **several independent items** — Battery can show its icon *and* its
+health side by side. You pick components by clicking a live preview chip in the menu bar
+builder, so you choose from what you can actually see. Each popover adds the detail behind
+the value: per-core load and top processes for CPU, swap and pressure for Memory,
+read/write throughput for Disk, and so on.
+
+## Beyond the numbers
+
+- **Compact Health** — one status item that summarizes the whole machine and surfaces only
+  what is off.
+- **Alert rules** — sustained-threshold notifications with a live preview and test delivery,
+  so you know what a rule will look like before it fires at 3am.
+- **Attention Log** — a local, exportable record of what tripped and when.
+- **Energy Guard** — sampling that steps down under Low Power Mode and thermal pressure.
+- **Menu bar builder** — a visual layout editor with presets, where you toggle components
+  by clicking their live preview instead of guessing from a list.
+- **Widgets** — small / medium / large WidgetKit overviews for Notification Center.
+- **Diagnostics** — a local-only system summary you can copy or export as plain text.
+- **Three-step onboarding**, accent themes, and launch at login.
+
+<!--
+  Screenshots go here once captured. Recommended set, dropped into docs/assets/:
+    menubar.png   — the real menu bar with 3–4 modules enabled (2x, cropped tight)
+    popover.png   — a CPU or Memory detail popover
+    settings.png  — the Menu Bar builder pane
+    widget.png    — the medium widget in Notification Center
+  Then use the same <picture> pattern as the banner if you shoot light + dark variants.
+-->
+
+## Install
+
+Requires **macOS 15 (Sequoia)** or newer.
+
+The first signed and notarized DMG ships with v1.0. Until then, build it yourself:
+
 ```bash
-cd Packages/MetricsKit
-swift run mectrics-cli      # live readout of every provider (incl. GPU/Temp/Fans)
-swift test                 # unit tests
+git clone https://github.com/farukkamcici/mectrics.git
+cd mectrics
+brew install xcodegen
+xcodegen generate
+open Mectrics.xcodeproj      # then ⌘R
 ```
 
-**Build & run the menu bar app:**
-```bash
-xcodegen generate          # project.yml -> Mectrics.xcodeproj
-open Mectrics.xcodeproj     # then Cmd+R in Xcode
-# or from the command line:
-xcodebuild -project Mectrics.xcodeproj -scheme Mectrics -configuration Debug build
-```
-
-## Internationalization
-English-first, fully localizable. User-facing strings use `String(localized:)` / SwiftUI
-`Text` and are extracted into a String Catalog. To add a language, open
-`Mectrics/Resources/Localizable.xcstrings` in Xcode and translate.
+Full setup notes, including code signing, are in [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Privacy
-Zero telemetry. No usage or hardware data ever leaves the device. All metrics come from
-local system interfaces (public APIs plus the same read-only SMC/IORegistry paths every
-open-source monitor uses). The only network request the app can make is an update check,
-and only when you choose **Check for Updates…** — automatic checks are off.
-See the full [`PRIVACY.md`](PRIVACY.md) statement.
+
+Zero telemetry — not "anonymized", not "opt-out". No usage data, hardware information,
+metric history, or alert configuration ever leaves the device. Every number comes from a
+local, read-only system interface.
+
+The single network request the app can make is an update check, and only when you choose
+**Check for Updates…**. Read the full statement in [`PRIVACY.md`](PRIVACY.md).
+
+## Contributing
+
+Contributions are welcome — new hardware coverage and translations especially.
+
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — setup, the development loop, how to add a metric
+  provider or a translation
+- [`AGENTS.md`](AGENTS.md) — the conventions this repository enforces, and the source of
+  truth for them
+- [`docs/architecture.md`](docs/architecture.md) — how the app and the metric engine fit
+  together, and where each number comes from
+
+**Adding a language needs no code change:** open
+[`Localizable.xcstrings`](Mectrics/Resources/Localizable.xcstrings) in Xcode, add your
+language, translate, and open a pull request.
+
+## Security
+
+Found a vulnerability? Please report it privately — see [`SECURITY.md`](SECURITY.md).
+
+## Acknowledgements
+
+Prior art that set the bar: [Stats](https://github.com/exelban/stats) for proving an open
+source monitor can be excellent, and iStat Menus for the depth people expect. Built with
+[Sparkle](https://github.com/sparkle-project/Sparkle) for updates and
+[XcodeGen](https://github.com/yonaskolb/XcodeGen) for a reviewable project file.
 
 ## License
-[MIT](LICENSE)
+
+[MIT](LICENSE) © Faruk Kamçıcı

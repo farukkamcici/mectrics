@@ -1,5 +1,5 @@
-# Xcode / SwiftPM üretilmiş çıktılar
-# (.xcodeproj XcodeGen ile project.yml'den üretilir — git'te tutulmaz)
+# Xcode / SwiftPM build output
+# (.xcodeproj is generated from project.yml by XcodeGen — never committed)
 *.xcodeproj/
 DerivedData/
 .build/
@@ -10,10 +10,10 @@ xcuserdata/
 # macOS
 .DS_Store
 
-# Dağıtım çıktıları
+# Distribution output
 build/
 dist/
 *.dmg
 
-# Ortam
+# Environment
 .env

@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  # Add a Discussions link here once Discussions is enabled in repository settings.
+  - name: Contributing guide
+    url: https://github.com/farukkamcici/mectrics/blob/main/CONTRIBUTING.md
+    about: Setup, the development loop, and how to add a provider or a translation.
+  - name: Report a security vulnerability
+    url: https://github.com/farukkamcici/mectrics/security/advisories/new
+    about: Please report security problems privately, never as a public issue.

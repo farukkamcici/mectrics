@@ -1,0 +1,98 @@
+name: Bug report
+description: Something in mectrics behaves incorrectly
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Most behaviour here is hardware-specific, so the Mac model
+        and macOS version matter more than anything else.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you see, and what did you expect instead?
+      placeholder: The Fans item shows a dash, but Activity Monitor reports the fans spinning.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Enable the Temperature module
+        2. Put the Mac under load
+        3. Watch the menu bar item
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Which module is affected?
+      multiple: true
+      options:
+        - CPU
+        - Memory
+        - Battery
+        - Network
+        - Disk
+        - GPU
+        - Temperature
+        - Fans
+        - Bluetooth
+        - Compact Health
+        - Alerts / notifications
+        - Attention Log
+        - Widget
+        - Settings / menu bar builder
+        - Onboarding
+        - Updates
+        - Not module-specific
+    validations:
+      required: true
+
+  - type: input
+    id: mac
+    attributes:
+      label: Mac model
+      description: Apple menu → About This Mac. Include the chip.
+      placeholder: MacBook Air (M2, 2022)
+    validations:
+      required: true
+
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: "15.4"
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: mectrics version
+      description: From About, or the commit hash if you built from source.
+      placeholder: 0.1.0 (or commit 56f7807)
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics export
+      description: |
+        Optional but very helpful. The export is local-only plain text — please read it
+        before attaching and remove anything you would rather not publish.
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues for a duplicate.
+          required: true

@@ -1,0 +1,56 @@
+name: Feature request
+description: Suggest a capability or an improvement
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A few directions were tried and deliberately reversed: the always-on-top floating
+        panel and its global hotkey, the 30-day archive and CSV export, and kernel
+        memory-pressure / thermal-state alert rules. Proposals to revive them are welcome,
+        but please make the case for what changed.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the situation you are in, not the solution you have in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like mectrics to do?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Which surface does this touch?
+      options:
+        - Menu bar item
+        - Detail popover
+        - Compact Health
+        - Alerts / notifications
+        - Settings
+        - Widget
+        - Metric engine (MetricsKit)
+        - Something else
+    validations:
+      required: true
+
+  - type: textarea
+    id: constraints
+    attributes:
+      label: How does it fit the project's constraints?
+      description: |
+        mectrics guarantees zero telemetry, keeps menu bar item width independent of the
+        current value, and targets under 60 MB of RAM with low energy impact. If your idea
+        interacts with any of those, say how.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
