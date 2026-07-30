@@ -40,7 +40,7 @@ It is built around three commitments:
 | 📐 **Stable in the menu bar** | Items reserve a fixed width, so values change without anything shifting sideways. |
 
 <div align="center">
-  <a href="https://github.com/farukkamcici/mectrics/releases/latest/download/Mectrics.dmg"><b>⬇︎ Download Mectrics 1.0.0</b></a><br>
+  <a href="https://github.com/farukkamcici/mectrics/releases/latest/download/Mectrics.dmg"><b>⬇︎ Download Mectrics 1.2.0</b></a><br>
   <sub>macOS 15+ · signed and notarized · 3.7 MB</sub>
 </div>
 
@@ -56,13 +56,12 @@ missing reading shows a dash, never a fabricated `0`.**
 
 | Module | What you can put in the menu bar | Sparkline |
 |---|---|---|
-| **CPU** | Usage %, per-core bars | ✅ |
-| **Memory** | Usage %, used memory | ✅ |
-| **GPU** | Utilization % | ✅ |
+| **CPU** | Usage %, per-core bars, temperature | ✅ |
+| **Memory** | Usage %, used memory, temperature | ✅ |
+| **GPU** | Utilization %, temperature | ✅ |
 | **Battery** | Level with charge indicator, icon, health, cycles | — |
 | **Network** | Stacked ↓/↑ activity, download only, upload only | — |
 | **Disk** | Usage %, ring, used, free | — |
-| **Temperature** | Hottest CPU reading in °C | — |
 | **Fans** | Fastest fan RPM | — |
 | **Bluetooth** | Connected device battery % | — |
 
@@ -73,7 +72,8 @@ A module can contribute **several independent items** — Battery can show its i
 health side by side. You pick components by clicking a live preview chip in the menu bar
 builder, so you choose from what you can actually see. Each popover adds the detail behind
 the value: per-core load and top processes for CPU, swap and pressure for Memory,
-read/write throughput for Disk, and so on.
+hardware temperature for CPU, Memory, and GPU when the Mac reports it, read/write
+throughput for Disk, and so on.
 
 <table>
 <tr>

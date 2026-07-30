@@ -26,6 +26,29 @@ final class MenuBarLayoutPresetTests: XCTestCase {
         }
     }
 
+    func testHardwareUsageModulesOfferIndependentTemperatureItems() {
+        for id in [MetricID.cpu, .memory, .gpu] {
+            XCTAssertTrue(
+                MenuBarComponent.available(for: id).contains(.temperature)
+            )
+            XCTAssertEqual(
+                MenuBarComponent.temperature.template(for: id),
+                "125°"
+            )
+        }
+
+        let sample = MetricSample(value: 0.5)
+        guard case .text(let text) = MenuBarText.visual(
+            for: .cpu,
+            component: .temperature,
+            sample: sample,
+            temperature: 63.6
+        ) else {
+            return XCTFail("Temperature must render as text")
+        }
+        XCTAssertEqual(text, "64°")
+    }
+
     /// The presets vary along one axis, so each has to contain the one before it.
     func testPresetsAreOrderedByDensity() {
         let all: Set<MetricID> = [

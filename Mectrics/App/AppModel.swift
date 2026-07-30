@@ -49,7 +49,7 @@ final class AppModel {
     /// defined by `MenuBarComponent.available(for:)`.
     var orderedEnabledItems: [(module: MetricID, component: MenuBarComponent)] {
         availableModules.flatMap { id in
-            MenuBarComponent.available(for: id)
+            availableComponents(for: id)
                 .filter { enabledComponents[id]?.contains($0) ?? false }
                 .map { (id, $0) }
         }
@@ -201,18 +201,32 @@ final class AppModel {
     }
 
     /// Component choices worth offering for a module. Battery health and cycle count
-    /// are hidden when this Mac does not report them, so the builder never offers a
-    /// look that can only ever render a dash.
+    /// and temperatures are hidden when this Mac does not report them, so the
+    /// builder never offers a look that can only ever render a dash.
     func availableComponents(for id: MetricID) -> [MenuBarComponent] {
+        let components = MenuBarComponent.available(for: id)
         guard let detail = latest[id]?.detail else {
-            return MenuBarComponent.available(for: id)
+            return components.filter { $0 != .temperature }
         }
-        return MenuBarComponent.available(for: id).filter { component in
+        return components.filter { component in
             switch component {
             case .health: return detail["healthPercent"] != nil
             case .cycles: return detail["cycleCount"] != nil
+            case .temperature: return temperature(for: id) != nil
             default:      return true
             }
+        }
+    }
+
+    /// Temperature belonging to a hardware-domain module, if the SMC exposes a
+    /// recognized sensor for that domain on this Mac.
+    func temperature(for id: MetricID) -> Double? {
+        let detail = latest[.sensors]?.detail
+        switch id {
+        case .cpu:    return detail?["cpuMax"]
+        case .memory: return detail?["memoryMax"]
+        case .gpu:    return detail?["gpuMax"]
+        default:      return nil
         }
     }
 
@@ -297,6 +311,7 @@ final class AppModel {
     /// Applies one engine pass while preserving the last valid sample across short
     /// provider interruptions.
     func apply(_ report: SamplingCycleReport) {
+        let previousTemperatureModules = availableTemperatureModules
         for (id, sample) in report.samples {
             latest[id] = sample
             consecutiveSamplingFailures[id] = 0
@@ -304,6 +319,15 @@ final class AppModel {
         for id in report.failedMetricIDs {
             consecutiveSamplingFailures[id, default: 0] += 1
         }
+        if availableTemperatureModules != previousTemperatureModules {
+            onModulesChanged?()
+        }
+    }
+
+    private var availableTemperatureModules: Set<MetricID> {
+        Set([MetricID.cpu, .memory, .gpu].filter {
+            latest[$0] != nil && temperature(for: $0) != nil
+        })
     }
 
     /// Shared state resolver used by menu bar, popover, panel, and Settings preview.
@@ -342,7 +366,8 @@ final class AppModel {
     }
 
     /// Samples visible modules plus metrics required by enabled alerts. Temperature
-    /// readings stay active when CPU/GPU is visible because their popovers show them.
+    /// readings stay active when CPU, memory, or GPU is visible because their
+    /// popovers and optional menu bar components show them.
     private func refreshActiveMetrics() {
         var active = enabledModules
         for (id, rule) in alertRules where rule.enabled {
@@ -351,14 +376,14 @@ final class AppModel {
         for (signal, rule) in systemAlertRules where rule.enabled {
             active.insert(signal.metricID)
         }
-        if active.contains(.cpu) || active.contains(.gpu) {
-            active.insert(.sensors)
-        }
         if onboardingPreviewActive {
             active.formUnion([.cpu, .memory, .battery, .network])
         }
         if builderPreviewActive {
             active.formUnion(availableModules)
+        }
+        if !active.isDisjoint(with: [.cpu, .memory, .gpu]) {
+            active.insert(.sensors)
         }
         engine.setActiveMetrics(active)
     }

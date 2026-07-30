@@ -287,6 +287,10 @@ struct DetailPopoverView: View {
                 r.append((String(localized: "mem.pressure", defaultValue: "Pressure"),
                           Self.pressureLabel(level)))
             }
+            if let t = model.temperature(for: .memory) {
+                r.append((String(localized: "mem.temperature", defaultValue: "Temperature"),
+                          String(format: "%.1f°C", t)))
+            }
             return r
         case .battery:
             let charging = (d["charging"] ?? 0) > 0
@@ -382,6 +386,10 @@ struct DetailPopoverView: View {
             if let g = d["gpuMax"] {
                 r.append((String(localized: "sensors.gpu", defaultValue: "GPU (hottest)"),
                           String(format: "%.1f°C", g)))
+            }
+            if let m = d["memoryMax"] {
+                r.append((String(localized: "sensors.memory", defaultValue: "Memory (hottest)"),
+                          String(format: "%.1f°C", m)))
             }
             r.append((String(localized: "sensors.count", defaultValue: "Sensors"),
                       "\(Int(d["sensorCount"] ?? 0))"))

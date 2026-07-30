@@ -6,7 +6,8 @@ import Foundation
 /// cluster, `Tg??` GPU, and many more), so instead of a hardcoded list we enumerate
 /// every `T…` key once and keep those that decode to a plausible temperature
 /// (1...125 °C). `value` = hottest CPU-cluster temperature in °C (`.celsius` unit —
-/// not normalized). Detail: `cpuMax`, `gpuMax` (when present) and `sensorCount`.
+/// not normalized). Detail: `cpuMax`, `gpuMax`, `memoryMax` (when present) and
+/// `sensorCount`.
 public final class SensorsProvider: MetricProvider, @unchecked Sendable {
     public let id: MetricID = .sensors
     public let cost: SamplingCost = .heavy
@@ -15,16 +16,18 @@ public final class SensorsProvider: MetricProvider, @unchecked Sendable {
     /// Discovered once at init: plausible temperature keys, split by prefix class.
     private let cpuKeys: [String]
     private let gpuKeys: [String]
+    private let memoryKeys: [String]
     private let allKeys: [String]
 
     public init() {
         self.smc = SMCClient()
         guard let smc else {
-            cpuKeys = []; gpuKeys = []; allKeys = []
+            cpuKeys = []; gpuKeys = []; memoryKeys = []; allKeys = []
             return
         }
 
-        var cpu: [String] = [], gpu: [String] = [], all: [String] = []
+        var cpu: [String] = [], gpu: [String] = [], memory: [String] = []
+        var all: [String] = []
         for name in smc.allKeyNames() where name.hasPrefix("T") {
             guard let value = smc.readValue(name), (1...125).contains(value) else { continue }
             all.append(name)
@@ -33,10 +36,13 @@ public final class SensorsProvider: MetricProvider, @unchecked Sendable {
                 cpu.append(name)
             } else if name.hasPrefix("Tg") || name.hasPrefix("TG") {
                 gpu.append(name)
+            } else if Self.isMemoryTemperatureKey(name) {
+                memory.append(name)
             }
         }
         cpuKeys = cpu
         gpuKeys = gpu
+        memoryKeys = memory
         allKeys = all
     }
 
@@ -52,11 +58,24 @@ public final class SensorsProvider: MetricProvider, @unchecked Sendable {
 
         let cpuMax = maxTemp(cpuKeys)
         let gpuMax = maxTemp(gpuKeys)
+        let memoryMax = maxTemp(memoryKeys)
         guard let hottest = cpuMax ?? maxTemp(allKeys) else { return nil }
 
         var detail: [String: Double] = ["sensorCount": Double(allKeys.count)]
         if let cpuMax { detail["cpuMax"] = cpuMax }
         if let gpuMax { detail["gpuMax"] = gpuMax }
+        if let memoryMax { detail["memoryMax"] = memoryMax }
         return MetricSample(value: hottest, unit: .celsius, detail: detail)
+    }
+
+    /// Intel memory sensors use the uppercase `TM` family. Apple Silicon uses a
+    /// small set of lowercase `Tm` keys; keep those explicit because `Tm0P` is a
+    /// mainboard sensor on some Intel Macs and must not be presented as RAM.
+    static func isMemoryTemperatureKey(_ key: String) -> Bool {
+        if key.hasPrefix("TM") { return true }
+        return [
+            "Tm02", "Tm06", "Tm08", "Tm09",
+            "Tm0p", "Tm1p", "Tm2p"
+        ].contains(key)
     }
 }

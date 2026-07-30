@@ -74,6 +74,9 @@ func render(_ latest: [MetricID: MetricSample]) {
         var extra = ""
         if let cpu = temp.detail["cpuMax"] { extra += String(format: "  CPU %.1f°C", cpu) }
         if let gpu = temp.detail["gpuMax"] { extra += String(format: "  GPU %.1f°C", gpu) }
+        if let memory = temp.detail["memoryMax"] {
+            extra += String(format: "  Memory %.1f°C", memory)
+        }
         print("Temp    \(String(format: "%.1f°C", temp.value).padding(toLength: 7, withPad: " ", startingAt: 0))\(extra)  [\(Int(temp.detail["sensorCount"] ?? 0)) sensors]")
     }
 

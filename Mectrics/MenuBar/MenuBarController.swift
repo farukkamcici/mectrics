@@ -74,7 +74,8 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
                     MenuBarText.visual(
                         for: id,
                         component: statusItem.component,
-                        sample: $0
+                        sample: $0,
+                        temperature: model.temperature(for: id)
                     )
                 },
                 state: model.metricState(for: id, isEnabled: true),

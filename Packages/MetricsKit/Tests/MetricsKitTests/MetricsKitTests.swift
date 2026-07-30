@@ -436,6 +436,14 @@ final class MetricsKitTests: XCTestCase {
         }
     }
 
+    func testMemoryTemperatureKeysDoNotConfuseTheIntelMainboardSensor() {
+        XCTAssertTrue(SensorsProvider.isMemoryTemperatureKey("TM0P"))
+        XCTAssertTrue(SensorsProvider.isMemoryTemperatureKey("Tm02"))
+        XCTAssertTrue(SensorsProvider.isMemoryTemperatureKey("Tm2p"))
+        XCTAssertFalse(SensorsProvider.isMemoryTemperatureKey("Tm0P"))
+        XCTAssertFalse(SensorsProvider.isMemoryTemperatureKey("TC0P"))
+    }
+
     func testFansProviderIsCoherentWhenPresent() {
         // Fanless machines legitimately report unavailable; only assert coherence.
         let provider = FansProvider()

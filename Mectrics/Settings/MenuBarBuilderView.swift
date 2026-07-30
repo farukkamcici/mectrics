@@ -316,7 +316,12 @@ struct MenuBarBuilderView: View {
 
     private func previewText(_ id: MetricID, _ component: MenuBarComponent) -> String {
         guard let sample = model.latest[id] else { return "–" }
-        if case .text(let text) = MenuBarText.visual(for: id, component: component, sample: sample) {
+        if case .text(let text) = MenuBarText.visual(
+            for: id,
+            component: component,
+            sample: sample,
+            temperature: model.temperature(for: id)
+        ) {
             return text.replacingOccurrences(of: "\n", with: " ")
         }
         return MenuBarText.string(for: id, sample: sample)

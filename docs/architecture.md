@@ -101,7 +101,7 @@ disappears from the UI rather than showing an empty row.
 | Disk space | `statfs` / `URL.resourceValues` | Straightforward. |
 | Disk throughput | IOKit `IOBlockStorageDriver` statistics | Δ read/write bytes. |
 | GPU | IOKit accelerator "Device Utilization %"; VRAM via IORegistry | Keys differ across Apple Silicon generations. |
-| Temperature | SMC key reads; `IOHIDEventSystemClient` thermal sensors on Apple Silicon | The SMC key set differs per machine — treat every key as optional. |
+| Temperature | SMC key reads grouped into CPU, GPU, and Memory hardware domains | The SMC key set differs per machine — treat every key as optional. |
 | Fans | SMC `F*Ac` keys | Some Macs have no fans at all. |
 | Bluetooth | IORegistry device `BatteryPercent` | Only devices that report a battery appear. |
 
@@ -113,6 +113,8 @@ ID and notarization.
 
 - One `NSStatusItem` per enabled **component**, not per module — Battery can contribute its
   icon and its health as two independent items.
+- CPU, Memory, and GPU can each contribute an independent temperature item when the Mac
+  reports a recognized sensor for that hardware domain.
 - Each item renders text plus an optional sparkline into an `NSImage` assigned to the button.
   This avoids subview layout, is pixel-precise, and adapts correctly to light and dark.
 - **Width stability is a hard rule.** Each component reserves a fixed text width from a

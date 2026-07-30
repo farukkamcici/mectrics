@@ -5,6 +5,13 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] — 2026-07-30
+
+### Added
+
+- Independent temperature menu bar components for CPU, Memory, and GPU, plus Memory
+  temperature in its detail popover when the Mac exposes a recognized sensor.
+
 ## [1.1.0] — 2026-07-30
 
 ### Added
@@ -64,5 +71,6 @@ roughly one idle wake per second.
 - Automatic update checks are disabled; the Sparkle appcast is fetched only on an explicit
   **Check for Updates…** and verified against a pinned EdDSA public key.
 
+[1.2.0]: https://github.com/farukkamcici/mectrics/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/farukkamcici/mectrics/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/farukkamcici/mectrics/releases/tag/v1.0.0

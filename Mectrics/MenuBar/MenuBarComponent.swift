@@ -9,6 +9,8 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
     case value, valueGraph
     // CPU
     case coreBars
+    // CPU, memory, GPU
+    case temperature
     // Capacity texts (memory used, disk used/free)
     case usedBytes, freeBytes
     // Disk pictorial
@@ -22,9 +24,9 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
 
     static func available(for module: MetricID) -> [MenuBarComponent] {
         switch module {
-        case .cpu:       return [.value, .valueGraph, .coreBars]
-        case .memory:    return [.value, .valueGraph, .usedBytes]
-        case .gpu:       return [.value, .valueGraph]
+        case .cpu:       return [.value, .valueGraph, .coreBars, .temperature]
+        case .memory:    return [.value, .valueGraph, .usedBytes, .temperature]
+        case .gpu:       return [.value, .valueGraph, .temperature]
         case .battery:   return [
             .value, .batteryIcon, .batteryIconValue, .health, .cycles
         ]
@@ -47,6 +49,7 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
         case .value:       return String(localized: "component.value", defaultValue: "Value")
         case .valueGraph:  return String(localized: "component.valueGraph", defaultValue: "Value + Graph")
         case .coreBars:    return String(localized: "component.coreBars", defaultValue: "Cores")
+        case .temperature: return String(localized: "component.temperature", defaultValue: "Temperature")
         case .usedBytes:   return String(localized: "component.used", defaultValue: "Used")
         case .freeBytes:   return String(localized: "component.free", defaultValue: "Free")
         case .ring:        return String(localized: "component.ring", defaultValue: "Ring")
@@ -85,6 +88,8 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
             return "100%"
         case .cycles:
             return "9999"
+        case .temperature:
+            return "125°"
         case .netActivity, .netDown, .netUp:
             return "↓999M"
         case .value, .valueGraph:
@@ -111,7 +116,8 @@ enum MenuBarVisual {
 
 extension MenuBarText {
     static func visual(for id: MetricID, component: MenuBarComponent,
-                       sample: MetricSample) -> MenuBarVisual {
+                       sample: MetricSample,
+                       temperature: Double? = nil) -> MenuBarVisual {
         switch component {
         case .value:
             return .text(string(for: id, sample: sample))
@@ -120,6 +126,9 @@ extension MenuBarText {
         case .coreBars:
             let cores = Int(sample.detail["coreCount"] ?? 0)
             return .coreBars((0..<cores).compactMap { sample.detail["core\($0)"] })
+        case .temperature:
+            guard let temperature else { return .text("–") }
+            return .text("\(Int(temperature.rounded()))°")
         case .usedBytes:
             return .text(MetricFormat.menuRate(sample.detail["used"] ?? 0) + "B")
         case .freeBytes:
