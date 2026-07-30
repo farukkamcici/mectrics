@@ -41,7 +41,7 @@ It is built around three commitments:
 
 <div align="center">
   <a href="https://github.com/farukkamcici/mectrics/releases/latest/download/Mectrics.dmg"><b>⬇︎ Download Mectrics 1.2.0</b></a><br>
-  <sub>macOS 15+ · signed and notarized · 3.7 MB</sub>
+  <sub>macOS 15+ · signed and notarized · 3.8 MB</sub>
 </div>
 
 ## Modules

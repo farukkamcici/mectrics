@@ -3,6 +3,14 @@
     <channel>
         <title>Mectrics</title>
         <item>
+            <title>1.2.0</title>
+            <pubDate>Thu, 30 Jul 2026 19:01:34 +0300</pubDate>
+            <sparkle:version>3</sparkle:version>
+            <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/farukkamcici/mectrics/releases/download/v1.2.0/Mectrics.dmg" length="3968682" type="application/octet-stream" sparkle:edSignature="pgew1NVZ59DefoKKqNlauRRkNMN7r2Pq/KL1sFzsUBjooSCTEIjChsu1AJmSNAiJum4aihUSlIs2lYcAl6+rAw=="/>
+        </item>
+        <item>
             <title>1.1.0</title>
             <pubDate>Thu, 30 Jul 2026 13:30:13 +0300</pubDate>
             <sparkle:version>2</sparkle:version>
