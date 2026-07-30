@@ -305,6 +305,19 @@ struct CompactHealthPopoverView: View {
                 isEnabled: true
             ).localizedName
         }
+        return CompactHealthValue.text(for: sample)
+    }
+}
+
+/// The short reading shown next to a module name in the Compact Health popover.
+///
+/// The switch is exhaustive on purpose. It previously ended in a `default` that
+/// formatted the raw number, so a network row rendered as a bare, locale-grouped
+/// `1.022,5` beside percentages — no unit, and a decimal separator that varies by
+/// region. Adding a `MetricUnit` must now be a compile error here, not a silently
+/// unitless row. Values are not localized, matching the menu bar (AGENTS.md §2).
+enum CompactHealthValue {
+    static func text(for sample: MetricSample) -> String {
         switch sample.unit {
         case .fraction:
             return MetricFormat.percent(sample.value)
@@ -312,8 +325,16 @@ struct CompactHealthPopoverView: View {
             return "\(Int(sample.value.rounded()))%"
         case .celsius:
             return "\(Int(sample.value.rounded()))°C"
-        default:
-            return sample.value.formatted(.number.precision(.fractionLength(1)))
+        case .bytes:
+            return MetricFormat.bytes(sample.value)
+        case .bytesPerSecond:
+            return MetricFormat.bytesPerSecond(sample.value)
+        case .rpm:
+            return "\(Int(sample.value.rounded())) RPM"
+        case .watts:
+            return String(format: "%.1f W", sample.value)
+        case .count:
+            return "\(Int(sample.value.rounded()))"
         }
     }
 }
