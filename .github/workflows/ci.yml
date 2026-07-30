@@ -15,7 +15,7 @@ jobs:
     name: MetricsKit (SwiftPM)
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Show toolchain
         run: swift --version
@@ -32,7 +32,7 @@ jobs:
     name: Mectrics.app (xcodebuild)
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Show toolchain
         run: xcodebuild -version
@@ -63,7 +63,7 @@ jobs:
     name: Repository hygiene
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Generated output must not be committed
         run: |
