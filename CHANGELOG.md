@@ -5,6 +5,22 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] — 2026-07-30
+
+### Changed
+
+- Mectrics uses noticeably less CPU while it sits in the menu bar. A status item is only
+  redrawn when its reading actually changed, disk space is read through a cheap system
+  call instead of one that wakes a background service every second, and the graphics and
+  sensor readings copy only the values they need.
+- Launching is roughly three times cheaper in CPU terms, so the menu bar fills in sooner
+  after login.
+- Monitoring now steps down while nobody can see it — a sleeping display, a locked
+  screen, or another user's session — and returns to full speed with a fresh reading the
+  moment you come back.
+- Battery and disk readings follow their own pace, which slows down further on battery
+  and under thermal pressure while everything on screen stays current.
+
 ## [1.2.0] — 2026-07-30
 
 ### Added
