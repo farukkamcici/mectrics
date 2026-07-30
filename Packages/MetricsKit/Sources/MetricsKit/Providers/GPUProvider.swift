@@ -52,11 +52,15 @@ public final class GPUProvider: MetricProvider, @unchecked Sendable {
                 IOObjectRelease(entry)
                 entry = IOIteratorNext(iterator)
             }
-            var props: Unmanaged<CFMutableDictionary>?
-            guard IORegistryEntryCreateCFProperties(entry, &props, kCFAllocatorDefault, 0)
-                    == KERN_SUCCESS,
-                  let dict = props?.takeRetainedValue() as? [String: Any],
-                  let stats = dict["PerformanceStatistics"] as? [String: Any]
+            // Accelerators publish a large property dictionary; copying only the
+            // statistics sub-dictionary is roughly a hundred times cheaper than
+            // materializing all of it to read one key.
+            guard let stats = IORegistryEntryCreateCFProperty(
+                entry,
+                "PerformanceStatistics" as CFString,
+                kCFAllocatorDefault,
+                0
+            )?.takeRetainedValue() as? [String: Any]
             else { continue }
 
             guard let utilization = Self.utilizationKeys

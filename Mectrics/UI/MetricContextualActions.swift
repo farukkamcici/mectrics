@@ -7,7 +7,6 @@ enum MetricContextualAction: Equatable {
     case batterySettings
     case networkSettings
     case copyLocalAddress
-    case bluetoothSettings
 
     static func actions(
         for metricID: MetricID,
@@ -24,8 +23,6 @@ enum MetricContextualAction: Equatable {
             return hasLocalAddress
                 ? [.networkSettings, .copyLocalAddress]
                 : [.networkSettings]
-        case .bluetooth:
-            return [.bluetoothSettings]
         case .sensors, .fans:
             return []
         }
@@ -55,8 +52,6 @@ enum MetricContextualActionRunner {
             let pasteboard = NSPasteboard.general
             pasteboard.clearContents()
             return pasteboard.setString(visibleValue, forType: .string)
-        case .bluetoothSettings:
-            return openSettings("com.apple.BluetoothSettings")
         }
     }
 

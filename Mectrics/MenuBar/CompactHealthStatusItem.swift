@@ -139,6 +139,9 @@ final class CompactHealthStatusItem: NSObject {
     )
     var onClick: (() -> Void)?
 
+    /// The state the current glyph was drawn for, so repeat updates are no-ops.
+    private var lastState: CompactHealthState?
+
     override init() {
         super.init()
         item.autosaveName = "mectrics.compactHealth"
@@ -150,6 +153,10 @@ final class CompactHealthStatusItem: NSObject {
 
     func update(_ state: CompactHealthState) {
         guard let button = item.button else { return }
+        // This item spends most of its life in one state; re-handing AppKit the same
+        // glyph every second would cost far more than the comparison.
+        guard state != lastState else { return }
+        lastState = state
         let configuration = NSImage.SymbolConfiguration(
             pointSize: 13,
             weight: .medium
@@ -177,6 +184,11 @@ final class CompactHealthStatusItem: NSObject {
 
     func remove() {
         NSStatusBar.system.removeStatusItem(item)
+    }
+
+    /// Forces the next update to redraw even if the state is unchanged.
+    func invalidateCachedRender() {
+        lastState = nil
     }
 
     @objc private func clicked() {

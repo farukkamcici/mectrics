@@ -229,11 +229,11 @@ final class MetricsKitTests: XCTestCase {
         let policy = SamplingRuntimePolicy(
             intervalMultiplier: 0,
             heavyEveryNCycles: 0,
-            pausedMetricIDs: [.sensors, .bluetooth]
+            pausedMetricIDs: [.sensors, .fans]
         )
         XCTAssertEqual(policy.intervalMultiplier, 1)
         XCTAssertEqual(policy.heavyEveryNCycles, 1)
-        XCTAssertEqual(policy.pausedMetricIDs, [.sensors, .bluetooth])
+        XCTAssertEqual(policy.pausedMetricIDs, [.sensors, .fans])
     }
 
     // MARK: - Formatting
@@ -328,26 +328,6 @@ final class MetricsKitTests: XCTestCase {
         let total = (sample.detail["downTotal"] ?? 0) + (sample.detail["upTotal"] ?? 0)
         XCTAssertGreaterThan(total, 0)
         XCTAssertLessThan(total, Double(UInt64.max))
-    }
-
-    func testBluetoothDeviceNamesStayAlignedWithDetailEntries() {
-        // Hardware-dependent: only assert when a device publishes a battery level.
-        let provider = BluetoothProvider()
-        guard let sample = provider.sample() else {
-            XCTAssertTrue(
-                BluetoothProvider.latestDeviceNames().isEmpty,
-                "a scan without devices must not leave earlier names behind"
-            )
-            return
-        }
-        let count = Int(sample.detail["deviceCount"] ?? 0)
-        XCTAssertGreaterThan(count, 0)
-        XCTAssertEqual(BluetoothProvider.latestDeviceNames().count, count)
-        for i in 0..<count {
-            let percent = sample.detail["device\(i)"] ?? 0
-            XCTAssertTrue((1...100).contains(percent), "implausible battery \(percent)")
-        }
-        XCTAssertTrue((0...1).contains(sample.value))
     }
 
     func testDiskProviderReportsCapacity() {

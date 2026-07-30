@@ -31,11 +31,25 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
             name: NSApplication.didResignActiveNotification,
             object: nil
         )
+        // Items skip redrawing when their inputs are unchanged, and the system accent
+        // is a dynamic color that keeps its identity when the user picks a new one.
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(systemColorsDidChange),
+            name: NSColor.systemColorsDidChangeNotification,
+            object: nil
+        )
     }
 
     @objc private func applicationDidResignActive() {
         guard popover.isShown else { return }
         popover.performClose(nil)
+    }
+
+    @objc private func systemColorsDidChange() {
+        for statusItem in items.values { statusItem.invalidateCachedRender() }
+        compactHealthItem?.invalidateCachedRender()
+        refresh()
     }
 
     /// Rebuilds the menu bar items from scratch based on the enabled modules.
@@ -66,9 +80,23 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
     func refresh() {
         let accent = model.accentNSColor
         compactHealthItem?.update(model.compactHealthState)
+        // History is shared by every item of the same module, and only charted
+        // components need it at all.
+        var histories: [MetricID: [Double]] = [:]
         for statusItem in items.values {
             let id = statusItem.id
             let sample = model.latest[id]
+            let samples: [Double]
+            if statusItem.component.drawsSparkline {
+                if let cached = histories[id] {
+                    samples = cached
+                } else {
+                    samples = model.history(id)
+                    histories[id] = samples
+                }
+            } else {
+                samples = []
+            }
             statusItem.update(
                 visual: sample.map {
                     MenuBarText.visual(
@@ -79,7 +107,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
                     )
                 },
                 state: model.metricState(for: id, isEnabled: true),
-                samples: model.history(id),
+                samples: samples,
                 accent: accent,
                 showIcon: model.showMenuBarIcons
             )

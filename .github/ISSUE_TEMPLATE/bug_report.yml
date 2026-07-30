@@ -42,7 +42,6 @@ body:
         - GPU
         - Temperature
         - Fans
-        - Bluetooth
         - Compact Health
         - Alerts / notifications
         - Attention Log

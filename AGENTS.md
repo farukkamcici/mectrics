@@ -84,10 +84,18 @@ Do **not** commit: `Mectrics.xcodeproj/`, `DerivedData/`, `.build/` (see `.gitig
 
 - **Zero telemetry.** The only network calls allowed are (optional) update checks. No usage
   or hardware data ever leaves the device.
-- Adaptive sampling: faster on AC, slower on battery; pause work that isn't visible.
+- Adaptive sampling: faster on AC, slower on battery; pause work that isn't visible —
+  a sleeping display, a locked screen, and a switched-away session all count as invisible.
 - Keep the hot path allocation-free (the ring buffer is pre-allocated).
 - Targets: < 60 MB RAM, low/steady CPU, "Energy Impact: Low" in Activity Monitor.
-- Heavy providers (SMC/GPU/sensors) use `cost = .heavy` and are sampled less often.
+- `cost` decides how often a provider runs: `.light` every base cycle, `.medium`
+  (battery, disk) and `.heavy` (SMC/GPU/sensors) thinned by `SamplingRuntimePolicy`.
+- **Never hand AppKit a menu bar image that has not changed.** Assigning `button.image`
+  invalidates the status item and round trips to the window server; it costs far more
+  than drawing the image did. Status items compare their render inputs first.
+- Prefer `IORegistryEntryCreateCFProperty` over `IORegistryEntryCreateCFProperties`:
+  copying a driver's whole property dictionary to read one key is orders of magnitude
+  more expensive.
 
 ## 6. Adding a metric provider
 

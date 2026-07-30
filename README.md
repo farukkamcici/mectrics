@@ -15,10 +15,12 @@
   <img alt="Telemetry: none" src="https://img.shields.io/badge/telemetry-none-8957e5?style=flat-square">
 </p>
 
-<p><b>CPU · Memory · Battery · Network · Disk · GPU · Temperature · Fans · Bluetooth</b><br>
+<p><b>CPU · Memory · Battery · Network · Disk · GPU · Temperature · Fans</b><br>
 live in your menu bar — readable at a glance, and the bar never jumps around.</p>
 
 <p><a href="https://mectrics.app"><b>mectrics.app</b></a></p>
+
+<a href="https://www.producthunt.com/products/mectrics?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-mectrics" target="_blank" rel="noopener noreferrer"><img alt="mectrics - Your Mac's vitals in the menu bar. Free and open source. | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1210872&amp;theme=light&amp;t=1785433284857"></a>
 
 </div>
 
@@ -52,8 +54,7 @@ It is built around three commitments:
 </div>
 
 Unavailable hardware hides itself — no Fans module on a fanless MacBook Air, no Battery on
-a Mac mini, no Bluetooth module until a device that reports a battery is connected. **A
-missing reading shows a dash, never a fabricated `0`.**
+a Mac mini. **A missing reading shows a dash, never a fabricated `0`.**
 
 | Module | What you can put in the menu bar | Sparkline |
 |---|---|---|
@@ -64,7 +65,6 @@ missing reading shows a dash, never a fabricated `0`.**
 | **Network** | Stacked ↓/↑ activity, download only, upload only | — |
 | **Disk** | Usage %, ring, used, free | — |
 | **Fans** | Fastest fan RPM | — |
-| **Bluetooth** | Connected device battery % | — |
 
 Sparklines are drawn for the three metrics where a trend is genuinely informative. The rest
 show a value, because a chart of your disk's fill level is decoration.

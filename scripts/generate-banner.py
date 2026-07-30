@@ -213,7 +213,7 @@ def build(name, t, icon):
     )
 
     # ---- chips
-    chips = ["CPU", "Memory", "Battery", "Network", "Disk", "GPU", "Temperature", "Fans", "Bluetooth"]
+    chips = ["CPU", "Memory", "Battery", "Network", "Disk", "GPU", "Temperature", "Fans"]
     pad, gap, cy, ch = 15, 9, 376, 32
     widths = [round(len(c) * 7.6) + pad * 2 for c in chips]
     total = sum(widths) + gap * (len(chips) - 1)

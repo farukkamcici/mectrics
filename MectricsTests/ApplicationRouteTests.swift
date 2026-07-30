@@ -14,7 +14,6 @@ final class ApplicationRouteTests: XCTestCase {
             .metric(.gpu),
             .metric(.sensors),
             .metric(.fans),
-            .metric(.bluetooth),
             .alerts,
             .attentionLog,
             .about,
@@ -79,10 +78,6 @@ final class ApplicationRouteTests: XCTestCase {
         XCTAssertEqual(
             MetricContextualAction.actions(for: .network, hasLocalAddress: false),
             [.networkSettings]
-        )
-        XCTAssertEqual(
-            MetricContextualAction.actions(for: .bluetooth, hasLocalAddress: false),
-            [.bluetoothSettings]
         )
         XCTAssertTrue(
             MetricContextualAction.actions(for: .sensors, hasLocalAddress: false).isEmpty

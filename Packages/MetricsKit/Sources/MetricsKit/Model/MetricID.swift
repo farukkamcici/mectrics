@@ -11,7 +11,6 @@ public enum MetricID: String, CaseIterable, Codable, Sendable {
     case gpu
     case sensors
     case fans
-    case bluetooth
 
     /// Short, developer-facing (English) name. User-facing localized names are
     /// provided at the app layer (see `MetricID.localizedName`); this value is the
@@ -26,14 +25,16 @@ public enum MetricID: String, CaseIterable, Codable, Sendable {
         case .gpu: return "GPU"
         case .sensors: return "Sensors"
         case .fans: return "Fans"
-        case .bluetooth: return "Bluetooth"
         }
     }
 }
 
 /// Sampling cost of a provider — the scheduler uses this to decide frequency.
+/// Sampling cost of a provider. The scheduler samples `.light` on every base cycle and
+/// thins `.medium` and `.heavy` by the intervals in `SamplingRuntimePolicy`, so a
+/// provider's class decides how often it actually runs.
 public enum SamplingCost: Sendable {
-    case light   // cheap host_statistics-style calls (CPU, RAM)
-    case medium  // IOKit queries (battery, disk, network)
+    case light   // cheap syscalls (CPU, memory, network counters)
+    case medium  // IOKit queries (battery, disk)
     case heavy   // SMC / sensors / GPU — sampled less often
 }

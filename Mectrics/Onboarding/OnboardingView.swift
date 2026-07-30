@@ -261,7 +261,7 @@ struct OnboardingView: View {
     private func previewValue(for id: MetricID) -> String {
         guard let sample = model.latest[id] else { return "–" }
         switch id {
-        case .cpu, .memory, .battery, .disk, .gpu, .bluetooth:
+        case .cpu, .memory, .battery, .disk, .gpu:
             return MetricFormat.percent(sample.value)
         case .network:
             return "↓\(MetricFormat.menuRate(sample.detail["down"] ?? 0))"

@@ -59,15 +59,12 @@ final class EnergyGuardTests: XCTestCase {
             protected.runtimePolicy.pausedMetricIDs.contains(.sensors)
         )
         XCTAssertTrue(
-            protected.runtimePolicy.pausedMetricIDs.contains(.bluetooth)
+            protected.runtimePolicy.pausedMetricIDs.contains(.fans)
         )
 
         let reduced = EnergyGuardStateMachine.decision(
             mode: .reduced,
-            visibleHeavyMetricIDs: [.bluetooth]
-        )
-        XCTAssertFalse(
-            reduced.runtimePolicy.pausedMetricIDs.contains(.bluetooth)
+            visibleHeavyMetricIDs: []
         )
         XCTAssertGreaterThan(
             reduced.runtimePolicy.intervalMultiplier,
@@ -131,11 +128,36 @@ final class EnergyGuardTests: XCTestCase {
         )
         XCTAssertTrue(
             protected.pausedMetricIDs.isSuperset(
-                of: [.sensors, .bluetooth]
+                of: [.sensors, .fans]
             )
         )
         XCTAssertFalse(protected.pausedMetricIDs.contains(.cpu))
         XCTAssertFalse(protected.pausedMetricIDs.contains(.memory))
+    }
+
+    func testUnwatchedScreenProtectsWithoutClaimingTheMacIsAsleep() {
+        let screenOff = input(isScreenUnwatched: true)
+        XCTAssertEqual(EnergyGuardStateMachine.targetMode(screenOff), .protected)
+        XCTAssertEqual(EnergyGuardStateMachine.reason(screenOff), .screenUnwatched)
+
+        // Sleep is the stronger statement and keeps precedence.
+        let asleep = input(isSleeping: true, isScreenUnwatched: true)
+        XCTAssertEqual(EnergyGuardStateMachine.reason(asleep), .sleeping)
+
+        // A watched screen on AC stays at full rate.
+        XCTAssertEqual(EnergyGuardStateMachine.targetMode(input()), .normal)
+    }
+
+    func testUnwatchedScreenPausesEvenAVisibleDetailWindow() {
+        let machine = EnergyGuardStateMachine()
+        let decision = machine.update(
+            input: input(
+                isScreenUnwatched: true,
+                visibleHeavyMetricIDs: [.gpu]
+            )
+        )
+        XCTAssertEqual(decision.mode, .protected)
+        XCTAssertTrue(decision.runtimePolicy.pausedMetricIDs.contains(.gpu))
     }
 
     private func input(
@@ -143,7 +165,9 @@ final class EnergyGuardTests: XCTestCase {
         isOnBattery: Bool = false,
         isLowPowerModeEnabled: Bool = false,
         thermalState: EnergyThermalState = .nominal,
-        isSleeping: Bool = false
+        isSleeping: Bool = false,
+        isScreenUnwatched: Bool = false,
+        visibleHeavyMetricIDs: Set<MetricID> = []
     ) -> EnergyGuardInput {
         EnergyGuardInput(
             isEnabled: isEnabled,
@@ -151,7 +175,8 @@ final class EnergyGuardTests: XCTestCase {
             isLowPowerModeEnabled: isLowPowerModeEnabled,
             thermalState: thermalState,
             isSleeping: isSleeping,
-            visibleHeavyMetricIDs: []
+            isScreenUnwatched: isScreenUnwatched,
+            visibleHeavyMetricIDs: visibleHeavyMetricIDs
         )
     }
 }

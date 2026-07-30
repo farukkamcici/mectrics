@@ -469,7 +469,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 visible.insert(.sensors)
             case .gpu:
                 visible.formUnion([.gpu, .sensors])
-            case .sensors, .bluetooth, .fans:
+            case .sensors, .fans:
                 visible.insert(id)
             default:
                 break

@@ -233,7 +233,7 @@ struct DetailPopoverView: View {
         switch moduleID {
         case .cpu, .memory, .disk, .gpu:
             return MetricFormat.percent(sample.value, decimals: 1)
-        case .battery, .bluetooth:
+        case .battery:
             return "\(Int((sample.value * 100).rounded()))%"
         case .fans:
             return "\(Int((sample.detail["maxRpm"] ?? 0).rounded())) RPM"
@@ -241,8 +241,6 @@ struct DetailPopoverView: View {
             return MetricFormat.bytesPerSecond(sample.value)
         case .sensors:
             return String(format: "%.1f°C", sample.value)
-        default:
-            return MetricFormat.percent(sample.value, decimals: 0)
         }
     }
 
@@ -406,22 +404,6 @@ struct DetailPopoverView: View {
                 }
             }
             return r
-        case .bluetooth:
-            var r: [(String, String)] = [
-                (String(localized: "bt.deviceCount", defaultValue: "Device count"), "\(Int(d["deviceCount"] ?? 0))")
-            ]
-            let count = Int(d["deviceCount"] ?? 0)
-            let names = BluetoothProvider.latestDeviceNames()
-            for i in 0..<count {
-                if let pct = d["device\(i)"] {
-                    let fallback = String(localized: "bt.device", defaultValue: "Device \(i + 1)")
-                    let name = i < names.count && !names[i].isEmpty ? names[i] : fallback
-                    r.append((name, "\(Int(pct))%"))
-                }
-            }
-            return r
-        default:
-            return []
         }
     }
 
@@ -484,11 +466,6 @@ private extension MetricContextualAction {
                 localized: "action.copyLocalAddress",
                 defaultValue: "Copy Local Address"
             )
-        case .bluetoothSettings:
-            return String(
-                localized: "action.openBluetoothSettings",
-                defaultValue: "Open Bluetooth Settings"
-            )
         }
     }
 
@@ -499,7 +476,6 @@ private extension MetricContextualAction {
         case .batterySettings: return "battery.100percent"
         case .networkSettings: return "network"
         case .copyLocalAddress: return "doc.on.doc"
-        case .bluetoothSettings: return "wave.3.right"
         }
     }
 }

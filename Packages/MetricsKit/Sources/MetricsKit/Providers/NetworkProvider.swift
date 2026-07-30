@@ -13,7 +13,9 @@ import Darwin
 /// 32-bit and wrap at ~4 GB, which a decreasing total absorbs as a zero rate.
 public final class NetworkProvider: MetricProvider, @unchecked Sendable {
     public let id: MetricID = .network
-    public let cost: SamplingCost = .medium
+    /// One `sysctl` call, and throughput is the module's whole point — it stays on the
+    /// base cycle so the menu bar reflects traffic as it happens.
+    public let cost: SamplingCost = .light
 
     private var prevDown: UInt64 = 0
     private var prevUp: UInt64 = 0

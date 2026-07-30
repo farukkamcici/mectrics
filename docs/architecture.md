@@ -17,7 +17,7 @@ flowchart LR
     subgraph kit["MetricsKit — SwiftPM package, no UI and no localization"]
         direction TB
         SS["<b>SamplingScheduler</b><br/><i>adaptive, cost-aware</i>"]
-        PR["<b>MetricProvider</b> × 9<br/>CPU · Memory · Battery · Network · Disk<br/>GPU · Sensors · Fans · Bluetooth"]
+        PR["<b>MetricProvider</b> × 8<br/>CPU · Memory · Battery · Network · Disk<br/>GPU · Sensors · Fans"]
         ST["<b>MetricStore</b><br/><i>pre-allocated ring buffer</i>"]
         SS --> PR --> ST
     end
@@ -98,12 +98,11 @@ disappears from the UI rather than showing an empty row.
 | Memory | `host_statistics64(vm_statistics64)` + `sysctl(hw.memsize)` | Pressure and compressed pages are separate from plain "used". |
 | Battery | IOKit `IOPSCopyPowerSourcesInfo`; health and cycles from `IORegistry AppleSmartBattery` | Two different sources feed one module. |
 | Network | `sysctl(NET_RT_IFLIST2)` + `if_data64` | Δbytes/Δt. 64-bit counters are required — 32-bit ones wrap on a long uptime. Loopback is filtered by `IFF_LOOPBACK`. |
-| Disk space | `statfs` / `URL.resourceValues` | Straightforward. |
+| Disk space | `statfs`, plus `URL.resourceValues` for reclaimable space | `statfs` every sample; the reclaimable figure goes through the cache-deletion daemon and is refreshed once a minute. |
 | Disk throughput | IOKit `IOBlockStorageDriver` statistics | Δ read/write bytes. |
 | GPU | IOKit accelerator "Device Utilization %"; VRAM via IORegistry | Keys differ across Apple Silicon generations. |
 | Temperature | SMC key reads grouped into CPU, GPU, and Memory hardware domains | The SMC key set differs per machine — treat every key as optional. |
 | Fans | SMC `F*Ac` keys | Some Macs have no fans at all. |
-| Bluetooth | IORegistry device `BatteryPercent` | Only devices that report a battery appear. |
 
 All of these are read-only. Reading sensors, SMC, fans, and GPU is restricted under the App
 Store sandbox, which is why full functionality requires direct distribution with a Developer
@@ -146,9 +145,16 @@ the widget is positioned as "at a glance" while the menu bar carries the real-ti
 - **Adaptive sampling** — faster on AC, slower on battery, paused when the work is not
   visible.
 - **Energy Guard** moves the engine between normal, reduced, and protected modes based on
-  power source, Low Power Mode, and thermal pressure.
-- Heavy providers (SMC, GPU, sensors) declare `cost = .heavy` and are sampled less often.
+  power source, Low Power Mode, thermal pressure, and whether anyone can currently see the
+  menu bar — a sleeping display, a locked screen, and a switched-away session all count as
+  asleep.
+- Cost classes are the scheduler's dial: `.light` runs on every base cycle, `.medium`
+  (battery, disk) and `.heavy` (SMC, GPU, sensors) are thinned by the intervals in
+  `SamplingRuntimePolicy`, which Energy Guard widens as conditions tighten.
 - The hot path is allocation-free: the ring buffer is pre-allocated.
+- Providers copy the single IORegistry property they need rather than a whole property
+  dictionary, and anything that reaches a system daemon (reclaimable disk space) runs on
+  its own slow cadence.
 - Targets: under 60 MB RAM, low and steady CPU, "Energy Impact: Low" in Activity Monitor.
 
 ## Privacy and distribution

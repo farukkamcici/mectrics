@@ -43,9 +43,9 @@ roughly one idle wake per second.
 
 ### Added
 
-- **Menu bar modules** — CPU, Memory, Battery, Network, Disk, GPU, Temperature (SMC), Fans
-  (SMC), and Bluetooth, each drawn as a readable value, with live sparklines for CPU,
-  Memory, and GPU. Unavailable hardware hides its module; a missing reading renders as a
+- **Menu bar modules** — CPU, Memory, Battery, Network, Disk, GPU, Temperature (SMC), and
+  Fans (SMC), each drawn as a readable value, with live sparklines for CPU, Memory, and
+  GPU. Unavailable hardware hides its module; a missing reading renders as a
   dash rather than a fabricated zero.
 - **Fixed-width status items** — every component reserves a worst-case width and
   right-aligns monospaced digits, so values change without the menu bar shifting.

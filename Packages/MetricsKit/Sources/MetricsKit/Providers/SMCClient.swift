@@ -57,6 +57,11 @@ final class SMCClient {
 
     private var connection: io_connect_t = 0
 
+    /// A key's size and type are fixed by the firmware, so they are read once and
+    /// remembered. Without this every value read costs three round trips to the SMC
+    /// instead of one.
+    private var keyInfoCache: [String: KeyInfo] = [:]
+
     init?() {
         let service = IOServiceGetMatchingService(kIOMainPortDefault,
                                                   IOServiceMatching("AppleSMC"))
@@ -116,16 +121,23 @@ final class SMCClient {
     }
 
     func keyInfo(_ name: String) -> KeyInfo? {
+        if let cached = keyInfoCache[name] { return cached }
         var input = SMCParamStruct()
         input.key = Self.keyCode(name)
         input.data8 = Command.readKeyInfo.rawValue
         guard let output = call(&input) else { return nil }
+        keyInfoCache[name] = output.keyInfo
         return output.keyInfo
     }
 
     /// Raw bytes of a key's current value.
     func readData(_ name: String) -> [UInt8]? {
-        guard let info = keyInfo(name), info.dataSize > 0, info.dataSize <= 32 else { return nil }
+        guard let info = keyInfo(name) else { return nil }
+        return readData(name, info: info)
+    }
+
+    private func readData(_ name: String, info: KeyInfo) -> [UInt8]? {
+        guard info.dataSize > 0, info.dataSize <= 32 else { return nil }
         var input = SMCParamStruct()
         input.key = Self.keyCode(name)
         input.keyInfo = info
@@ -139,7 +151,7 @@ final class SMCClient {
     /// Key value decoded to Double for the numeric types monitors care about
     /// (`flt `, `sp78`, `fpe2`, `ui8 `, `ui16`, `ui32`). Unknown types → nil.
     func readValue(_ name: String) -> Double? {
-        guard let info = keyInfo(name), let data = readData(name) else { return nil }
+        guard let info = keyInfo(name), let data = readData(name, info: info) else { return nil }
         let type = Self.keyName(info.dataType)
         switch type {
         case "flt " where data.count >= 4:

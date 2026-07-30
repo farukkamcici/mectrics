@@ -11,7 +11,6 @@ enum MetricSymbol {
         case .battery:   return "battery.100percent"
         case .network:   return "arrow.up.arrow.down"
         case .disk:      return "internaldrive"
-        case .bluetooth: return "wave.3.right"
         case .gpu:       return "rectangle.on.rectangle"
         case .sensors:   return "thermometer.medium"
         case .fans:      return "fan"

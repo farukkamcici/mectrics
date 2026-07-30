@@ -20,6 +20,19 @@ final class MetricStatusItem: NSObject {
     private let reservedTextWidth: CGFloat
     /// Base (untinted) SF Symbol for the optional embedded module icon.
     private let iconSymbol: NSImage?
+    /// Everything the last drawn image was derived from. Handing AppKit an image
+    /// costs far more than drawing one — it invalidates the status item and round
+    /// trips to the window server — so an unchanged item is left alone.
+    private var lastRender: RenderInputs?
+
+    private struct RenderInputs: Equatable {
+        let visual: MenuBarVisual?
+        let state: MetricDataState
+        let samples: [Double]
+        let accent: NSColor
+        let showIcon: Bool
+        let appearanceName: NSAppearance.Name
+    }
 
     init(id: MetricID, component: MenuBarComponent) {
         self.id = id
@@ -53,6 +66,13 @@ final class MetricStatusItem: NSObject {
         onClick?(id)
     }
 
+    /// Forces the next update to redraw even if its inputs compare equal. Needed when
+    /// something outside those inputs changes what they resolve to — a dynamic system
+    /// color is the same object before and after the user picks a new accent.
+    func invalidateCachedRender() {
+        lastRender = nil
+    }
+
     func remove() {
         NSStatusBar.system.removeStatusItem(item)
     }
@@ -66,6 +86,19 @@ final class MetricStatusItem: NSObject {
         showIcon: Bool
     ) {
         guard let button = item.button else { return }
+        let appearance = button.effectiveAppearance
+        let inputs = RenderInputs(
+            visual: visual,
+            state: state,
+            // History only reaches the canvas for components that chart it.
+            samples: component.drawsSparkline ? samples : [],
+            accent: accent,
+            showIcon: showIcon,
+            appearanceName: appearance.name
+        )
+        guard inputs != lastRender else { return }
+        lastRender = inputs
+
         button.image = Self.render(
             visual: visual,
             state: state,
@@ -75,7 +108,7 @@ final class MetricStatusItem: NSObject {
             accent: accent,
             reservedTextWidth: reservedTextWidth,
             icon: (showIcon && !component.drawsModuleGlyph) ? iconSymbol : nil,
-            appearance: button.effectiveAppearance
+            appearance: appearance
         )
         button.setAccessibilityLabel(
             String(

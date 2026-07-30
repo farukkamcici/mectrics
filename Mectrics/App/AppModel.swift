@@ -257,8 +257,11 @@ final class AppModel {
     private static let legacyStylesKey = "moduleStyles"
 
     init() {
-        let providers = MetricsKit.coreProviders()
-        let available = providers.filter { $0.isAvailable }.map { $0.id }
+        // Availability is probed once and the result handed to the engine, because
+        // asking a hardware-backed provider whether it exists is as expensive as
+        // sampling it.
+        let availableProviders = MetricsKit.coreProviders().filter { $0.isAvailable }
+        let available = availableProviders.map(\.id)
         self.availableMetricIDs = Set(available)
         // Temperatures are not a standalone module: the sensors provider keeps
         // sampling in the background and its readings surface inside the CPU/GPU
@@ -266,7 +269,7 @@ final class AppModel {
         self.availableModules = available.filter { $0 != .sensors }
 
         let engine = MetricsEngine()
-        engine.register(providers)
+        engine.register(availableProviders, alreadyFiltered: true)
         self.engine = engine
 
         self.hasCompletedOnboarding =

@@ -57,12 +57,6 @@ func render(_ latest: [MetricID: MetricSample]) {
         print("Disk    \(MetricFormat.percent(disk.value, decimals: 0).padding(toLength: 7, withPad: " ", startingAt: 0)) [\(MetricFormat.bytes(used)) / \(MetricFormat.bytes(total))]  R \(MetricFormat.compactRate(r))/s  W \(MetricFormat.compactRate(w))/s")
     }
 
-    // Bluetooth
-    if let bt = store.latest(.bluetooth) {
-        let count = Int(bt.detail["deviceCount"] ?? 0)
-        print("BT      \(count) device(s)  lowest battery \(Int(bt.value * 100))%")
-    }
-
     // GPU
     if let gpu = store.latest(.gpu) {
         let hist = store.history(.gpu, count: 40).map(\.normalized)

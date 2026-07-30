@@ -58,7 +58,13 @@ struct EnergyGuardInput: Equatable {
     var isLowPowerModeEnabled: Bool
     var thermalState: EnergyThermalState
     var isSleeping: Bool
+    /// The display is off, the screen is locked, or another user's session is in
+    /// front — the menu bar exists but nobody can read it.
+    var isScreenUnwatched: Bool
     var visibleHeavyMetricIDs: Set<MetricID>
+
+    /// No reading can reach a person right now.
+    var isUnobservable: Bool { isSleeping || isScreenUnwatched }
 }
 
 /// Why the guard settled on its current mode. Shown next to the mode so the policy
@@ -66,6 +72,7 @@ struct EnergyGuardInput: Equatable {
 enum EnergyGuardReason: Equatable {
     case disabled
     case sleeping
+    case screenUnwatched
     case thermalState
     case lowPowerMode
     case onBattery
@@ -82,6 +89,11 @@ enum EnergyGuardReason: Equatable {
             return String(
                 localized: "energyGuard.reason.sleeping",
                 defaultValue: "the Mac is asleep"
+            )
+        case .screenUnwatched:
+            return String(
+                localized: "energyGuard.reason.screenUnwatched",
+                defaultValue: "the screen is off"
             )
         case .thermalState:
             return String(
@@ -140,7 +152,7 @@ final class EnergyGuardStateMachine {
         }
         return Self.decision(
             mode: mode,
-            visibleHeavyMetricIDs: input.isSleeping
+            visibleHeavyMetricIDs: input.isUnobservable
                 ? []
                 : input.visibleHeavyMetricIDs
         )
@@ -148,7 +160,7 @@ final class EnergyGuardStateMachine {
 
     static func targetMode(_ input: EnergyGuardInput) -> EnergyGuardMode {
         guard input.isEnabled else { return .normal }
-        if input.isSleeping
+        if input.isUnobservable
             || input.thermalState == .serious
             || input.thermalState == .critical {
             return .protected
@@ -164,6 +176,7 @@ final class EnergyGuardStateMachine {
     static func reason(_ input: EnergyGuardInput) -> EnergyGuardReason {
         guard input.isEnabled else { return .disabled }
         if input.isSleeping { return .sleeping }
+        if input.isScreenUnwatched { return .screenUnwatched }
         if input.thermalState == .serious
             || input.thermalState == .critical {
             return .thermalState
@@ -177,26 +190,27 @@ final class EnergyGuardStateMachine {
         mode: EnergyGuardMode,
         visibleHeavyMetricIDs: Set<MetricID>
     ) -> EnergyGuardDecision {
-        let allHeavy: Set<MetricID> = [
-            .sensors, .bluetooth, .fans, .gpu
-        ]
+        let allHeavy: Set<MetricID> = [.sensors, .fans, .gpu]
         let policy: SamplingRuntimePolicy
         switch mode {
         case .normal:
             policy = SamplingRuntimePolicy(
                 intervalMultiplier: 1,
+                mediumEveryNCycles: 1,
                 heavyEveryNCycles: 3
             )
         case .reduced:
             policy = SamplingRuntimePolicy(
                 intervalMultiplier: 1.5,
-                heavyEveryNCycles: 5,
-                pausedMetricIDs: Set<MetricID>([.bluetooth])
-                    .subtracting(visibleHeavyMetricIDs)
+                mediumEveryNCycles: 2,
+                heavyEveryNCycles: 5
             )
         case .protected:
+            // Battery and disk must still refresh inside `MetricDataState`'s 15-second
+            // staleness budget, and the slowest case is 2 s on battery × 3 × 2 = 12 s.
             policy = SamplingRuntimePolicy(
                 intervalMultiplier: 3,
+                mediumEveryNCycles: 2,
                 heavyEveryNCycles: 8,
                 pausedMetricIDs:
                     allHeavy.subtracting(visibleHeavyMetricIDs)
@@ -212,8 +226,12 @@ final class EnergyGuardController: NSObject {
     private let stateMachine: EnergyGuardStateMachine
     private var onBattery = false
     private var isSleeping = false
+    private var isScreenAsleep = false
+    private var isScreenLocked = false
+    private var isSessionInBackground = false
     private var visibleHeavyMetricIDs: Set<MetricID> = []
     private var lastMode = EnergyGuardMode.normal
+    private var lastReason = EnergyGuardReason.none
 
     init(
         model: AppModel,
@@ -250,12 +268,54 @@ final class EnergyGuardController: NSObject {
             name: NSWorkspace.didWakeNotification,
             object: nil
         )
+        // A dark display, a locked screen, and a switched-away session all leave the
+        // menu bar unreadable while the Mac itself stays awake — exactly the hours a
+        // laptop spends on battery with the lid open.
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(screensDidSleep),
+            name: NSWorkspace.screensDidSleepNotification,
+            object: nil
+        )
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(screensDidWake),
+            name: NSWorkspace.screensDidWakeNotification,
+            object: nil
+        )
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(sessionDidResignActive),
+            name: NSWorkspace.sessionDidResignActiveNotification,
+            object: nil
+        )
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(sessionDidBecomeActive),
+            name: NSWorkspace.sessionDidBecomeActiveNotification,
+            object: nil
+        )
+        // Screen locking has no AppKit notification; the distributed one is what
+        // every Mac utility uses.
+        DistributedNotificationCenter.default().addObserver(
+            self,
+            selector: #selector(screenDidLock),
+            name: Notification.Name("com.apple.screenIsLocked"),
+            object: nil
+        )
+        DistributedNotificationCenter.default().addObserver(
+            self,
+            selector: #selector(screenDidUnlock),
+            name: Notification.Name("com.apple.screenIsUnlocked"),
+            object: nil
+        )
         recompute()
     }
 
     func stop() {
         NotificationCenter.default.removeObserver(self)
         NSWorkspace.shared.notificationCenter.removeObserver(self)
+        DistributedNotificationCenter.default().removeObserver(self)
     }
 
     func updatePowerSource(onBattery: Bool) {
@@ -264,9 +324,7 @@ final class EnergyGuardController: NSObject {
     }
 
     func updateVisibleHeavyMetrics(_ ids: Set<MetricID>) {
-        visibleHeavyMetricIDs = ids.intersection([
-            .sensors, .bluetooth, .fans, .gpu
-        ])
+        visibleHeavyMetricIDs = ids.intersection([.sensors, .fans, .gpu])
         recompute()
     }
 
@@ -289,6 +347,43 @@ final class EnergyGuardController: NSObject {
         model.refreshMetrics()
     }
 
+    @objc private func screensDidSleep() {
+        isScreenAsleep = true
+        recompute()
+    }
+
+    @objc private func screensDidWake() {
+        isScreenAsleep = false
+        resumeWatching()
+    }
+
+    @objc private func screenDidLock() {
+        isScreenLocked = true
+        recompute()
+    }
+
+    @objc private func screenDidUnlock() {
+        isScreenLocked = false
+        resumeWatching()
+    }
+
+    @objc private func sessionDidResignActive() {
+        isSessionInBackground = true
+        recompute()
+    }
+
+    @objc private func sessionDidBecomeActive() {
+        isSessionInBackground = false
+        resumeWatching()
+    }
+
+    /// Whoever is back at the Mac must not be shown a stale reading, so the first
+    /// full pass happens immediately rather than on the next scheduled cycle.
+    private func resumeWatching() {
+        recompute()
+        model.refreshMetrics()
+    }
+
     private func recompute(now: Date = Date()) {
         let info = ProcessInfo.processInfo
         let input = EnergyGuardInput(
@@ -297,20 +392,30 @@ final class EnergyGuardController: NSObject {
             isLowPowerModeEnabled: info.isLowPowerModeEnabled,
             thermalState: EnergyThermalState(info.thermalState),
             isSleeping: isSleeping,
+            isScreenUnwatched: isScreenAsleep
+                || isScreenLocked
+                || isSessionInBackground,
             visibleHeavyMetricIDs: visibleHeavyMetricIDs
         )
         let decision = stateMachine.update(input: input, now: now)
+        let reason = EnergyGuardStateMachine.reason(input)
         model.engine.updateRuntimePolicy(decision.runtimePolicy)
         model.energyGuardMode = decision.mode
-        model.energyGuardReason = EnergyGuardStateMachine.reason(input)
+        model.energyGuardReason = reason
         if decision.mode != lastMode {
-            recordTransition(
-                from: lastMode,
-                to: decision.mode,
-                at: now
-            )
+            // Locking the screen or letting the display sleep happens several times a
+            // day and says nothing about the Mac's health. Recording it would bury the
+            // power and thermal events the log exists for.
+            if reason != .screenUnwatched, lastReason != .screenUnwatched {
+                recordTransition(
+                    from: lastMode,
+                    to: decision.mode,
+                    at: now
+                )
+            }
             lastMode = decision.mode
         }
+        lastReason = reason
     }
 
     private func recordTransition(

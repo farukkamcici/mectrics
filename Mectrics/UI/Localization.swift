@@ -47,7 +47,6 @@ extension MetricID {
         case .gpu:       return String(localized: "module.gpu", defaultValue: "GPU")
         case .sensors:   return String(localized: "module.sensors", defaultValue: "Sensors")
         case .fans:      return String(localized: "module.fans", defaultValue: "Fans")
-        case .bluetooth: return String(localized: "module.bluetooth", defaultValue: "Bluetooth")
         }
     }
 }

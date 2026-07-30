@@ -81,7 +81,6 @@ enum ApplicationRoute: Equatable, Sendable {
         .disk,
         .gpu,
         .sensors,
-        .fans,
-        .bluetooth
+        .fans
     ]
 }

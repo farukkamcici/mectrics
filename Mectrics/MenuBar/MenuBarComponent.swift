@@ -67,6 +67,12 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
         }
     }
 
+    /// True when the component draws a trend chart next to its value, so its item
+    /// needs sample history to render.
+    var drawsSparkline: Bool {
+        self == .valueGraph
+    }
+
     /// True when the component already draws the module's own hardware glyph, so the
     /// leading module icon would simply repeat it (a battery beside a battery).
     var drawsModuleGlyph: Bool {
@@ -96,7 +102,6 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
             switch module {
             // The charging bolt is part of the value, so it belongs in the template.
             case .battery:   return "⚡100%"
-            case .bluetooth: return "BT 100%"
             case .fans:      return "9.9K"
             default:         return "100%"
             }
@@ -106,7 +111,7 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
 
 /// What the status item should actually draw this cycle — resolved from
 /// (module, component, latest sample) by `MenuBarText.visual`.
-enum MenuBarVisual {
+enum MenuBarVisual: Equatable {
     case text(String)                          // right-aligned text (may be two-line)
     case textGraph(String)                     // text + sparkline
     case coreBars([Double])                    // one mini bar per CPU core

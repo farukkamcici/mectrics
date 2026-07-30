@@ -7,13 +7,15 @@ import Foundation
 /// Access is synchronized because the engine writes on its sampling queue while app and
 /// CLI consumers may read history from another thread.
 public final class MetricStore: @unchecked Sendable {
-    /// Samples kept per metric (e.g. 300 samples ≈ 5 min @1s).
+    /// Samples kept per metric. The deepest consumer is the popover sparkline at 60
+    /// points, so the default leaves headroom without retaining minutes of samples
+    /// nothing reads.
     public let capacity: Int
 
     private var buffers: [MetricID: RingBuffer<MetricSample>] = [:]
     private let lock = NSLock()
 
-    public init(capacity: Int = 300) {
+    public init(capacity: Int = 90) {
         self.capacity = capacity
     }
 
@@ -37,10 +39,7 @@ public final class MetricStore: @unchecked Sendable {
     public func history(_ id: MetricID, count: Int) -> [MetricSample] {
         lock.lock()
         defer { lock.unlock() }
-        guard let buffer = buffers[id] else { return [] }
-        let all = buffer.elements
-        if all.count <= count { return all }
-        return Array(all.suffix(count))
+        return buffers[id]?.suffix(count) ?? []
     }
 
     /// Full history.
@@ -76,12 +75,17 @@ struct RingBuffer<Element> {
     }
 
     /// Elements oldest-to-newest.
-    var elements: [Element] {
-        guard filled > 0 else { return [] }
+    var elements: [Element] { suffix(filled) }
+
+    /// The newest `count` elements, oldest-to-newest. Copies only what is asked for,
+    /// which matters because sparklines read this on every sampling cycle.
+    func suffix(_ count: Int) -> [Element] {
+        let wanted = min(max(count, 0), filled)
+        guard wanted > 0 else { return [] }
         var result: [Element] = []
-        result.reserveCapacity(filled)
-        let start = (head - filled + capacity) % capacity
-        for i in 0..<filled {
+        result.reserveCapacity(wanted)
+        let start = (head - wanted + capacity) % capacity
+        for i in 0..<wanted {
             if let e = storage[(start + i) % capacity] {
                 result.append(e)
             }

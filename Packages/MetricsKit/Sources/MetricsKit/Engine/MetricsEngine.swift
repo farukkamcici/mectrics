@@ -35,15 +35,25 @@ public final class MetricsEngine: @unchecked Sendable {
         self.store = store
         self.policy = policy
         self.runtimePolicy = SamplingRuntimePolicy(
+            mediumEveryNCycles: policy.mediumEveryNCycles,
             heavyEveryNCycles: policy.heavyEveryNCycles
         )
     }
 
     /// Registers the available providers (unavailable ones are dropped).
-    public func register(_ providers: [MetricProvider]) {
+    ///
+    /// Pass `alreadyFiltered: true` when the caller has taken its own availability
+    /// pass. Probing costs real work for hardware-backed providers, and asking twice
+    /// on launch delays the first reading for no gain.
+    public func register(
+        _ providers: [MetricProvider],
+        alreadyFiltered: Bool = false
+    ) {
         queue.async { [weak self] in
             guard let self else { return }
-            self.providers = providers.filter { $0.isAvailable }
+            self.providers = alreadyFiltered
+                ? providers
+                : providers.filter { $0.isAvailable }
         }
     }
 
@@ -118,6 +128,8 @@ public final class MetricsEngine: @unchecked Sendable {
 
     private func tick(forcingAllProviders: Bool = false) {
         cycleCount &+= 1
+        let runMedium = forcingAllProviders
+            || cycleCount % max(1, runtimePolicy.mediumEveryNCycles) == 0
         let runHeavy = forcingAllProviders
             || cycleCount % max(1, runtimePolicy.heavyEveryNCycles) == 0
         var updated: [MetricID: MetricSample] = [:]
@@ -128,6 +140,7 @@ public final class MetricsEngine: @unchecked Sendable {
             if let activeMetricIDs, !activeMetricIDs.contains(provider.id) { continue }
             if !forcingAllProviders,
                runtimePolicy.pausedMetricIDs.contains(provider.id) { continue }
+            if provider.cost == .medium && !runMedium { continue }
             if provider.cost == .heavy && !runHeavy { continue }
             attemptedAnyProvider = true
             if let sample = provider.sample() {

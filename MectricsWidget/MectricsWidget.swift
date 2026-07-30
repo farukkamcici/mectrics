@@ -175,7 +175,7 @@ private struct MetricsWidgetView: View {
     private func value(for id: MetricID) -> String {
         guard let sample = entry.snapshot.samples[id] else { return "–" }
         switch id {
-        case .cpu, .memory, .battery, .disk, .gpu, .bluetooth:
+        case .cpu, .memory, .battery, .disk, .gpu:
             return MetricFormat.percent(sample.value)
         case .network:
             return "↓\(MetricFormat.menuRate(sample.detail["down"] ?? 0))"
@@ -196,7 +196,6 @@ private struct MetricsWidgetView: View {
         case .gpu: return "rectangle.on.rectangle"
         case .sensors: return "thermometer.medium"
         case .fans: return "fan"
-        case .bluetooth: return "wave.3.right"
         }
     }
 
@@ -210,7 +209,6 @@ private struct MetricsWidgetView: View {
         case .gpu: return String(localized: "module.gpu", defaultValue: "GPU")
         case .sensors: return String(localized: "module.sensors", defaultValue: "Sensors")
         case .fans: return String(localized: "module.fans", defaultValue: "Fans")
-        case .bluetooth: return String(localized: "module.bluetooth", defaultValue: "Bluetooth")
         }
     }
 
