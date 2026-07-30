@@ -131,6 +131,22 @@ Mectrics has no Dock icon and no window — after launching, look for it in the 
 
 Updates are checked only when you ask, under **Settings → General → Check for Updates…**.
 
+### Uninstall
+
+Dragging Mectrics to the Trash removes the app but not its settings — macOS keeps those
+for every app, which is why a reinstall goes straight back to your old layout instead of
+showing onboarding again. To remove everything, download the uninstall script, read it,
+and run it:
+
+```bash
+curl -fsSL -o /tmp/mectrics-uninstall.sh https://raw.githubusercontent.com/farukkamcici/mectrics/main/scripts/uninstall.sh
+zsh /tmp/mectrics-uninstall.sh
+```
+
+It lists what it will delete and asks before touching anything. No administrator rights are
+needed: Mectrics installs no helper tool and no daemon, and writes nothing outside your home
+folder.
+
 ### Build from source
 
 ```bash
