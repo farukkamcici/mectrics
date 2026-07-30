@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>Mectrics</title>
+        <item>
+            <title>1.0.0</title>
+            <pubDate>Thu, 30 Jul 2026 11:20:23 +0300</pubDate>
+            <sparkle:version>1</sparkle:version>
+            <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/farukkamcici/mectrics/releases/download/v1.0.0/Mectrics.dmg" length="3852500" type="application/octet-stream" sparkle:edSignature="Rvx1wdvXaonlArdtO5OmamUrQXvJ9i4tNoc5VpYYb0BapS0eFUToH7YRYyOwVvqbKNDErJap7HnFrm4/yEhmBA=="/>
+        </item>
+    </channel>
+</rss>
