@@ -59,7 +59,7 @@ struct GeneralSettingsTab: View {
                         Text(
                             String(
                                 localized: "energyGuard.currently",
-                                defaultValue: "\(model.energyGuardMode.localizedName) — \(model.energyGuardReason.localizedName)"
+                                defaultValue: "\(model.energyGuardMode.localizedName) · \(model.energyGuardReason.localizedName)"
                             )
                         )
                         .foregroundStyle(.secondary)
@@ -68,7 +68,7 @@ struct GeneralSettingsTab: View {
             } header: {
                 Text("Energy")
             } footer: {
-                Text("Sensor and GPU readings — the expensive ones — are taken less often on battery, in Low Power Mode, or when your Mac runs hot. Your alerts keep their timing either way.")
+                Text("Sensor and GPU readings use more resources, so they are taken less often on battery, in Low Power Mode, or when your Mac runs hot. Your alerts keep their timing either way.")
             }
 
             Section {
@@ -157,10 +157,10 @@ struct GeneralSettingsTab: View {
         let bundle = Bundle.main
         let short = bundle.object(
             forInfoDictionaryKey: "CFBundleShortVersionString"
-        ) as? String ?? "—"
+        ) as? String ?? "–"
         let build = bundle.object(
             forInfoDictionaryKey: "CFBundleVersion"
-        ) as? String ?? "—"
+        ) as? String ?? "–"
         return "\(short) (\(build))"
     }
 }

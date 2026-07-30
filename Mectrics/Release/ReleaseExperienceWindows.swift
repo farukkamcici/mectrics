@@ -149,10 +149,10 @@ private struct AboutMectricsView: View {
         let bundle = Bundle.main
         let version = bundle.object(
             forInfoDictionaryKey: "CFBundleShortVersionString"
-        ) as? String ?? "—"
+        ) as? String ?? "–"
         let build = bundle.object(
             forInfoDictionaryKey: "CFBundleVersion"
-        ) as? String ?? "—"
+        ) as? String ?? "–"
         return String(
             localized: "about.versionBuild",
             defaultValue: "Version \(version) (\(build))"

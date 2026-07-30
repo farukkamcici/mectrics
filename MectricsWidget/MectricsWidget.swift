@@ -173,7 +173,7 @@ private struct MetricsWidgetView: View {
     }
 
     private func value(for id: MetricID) -> String {
-        guard let sample = entry.snapshot.samples[id] else { return "—" }
+        guard let sample = entry.snapshot.samples[id] else { return "–" }
         switch id {
         case .cpu, .memory, .battery, .disk, .gpu, .bluetooth:
             return MetricFormat.percent(sample.value)

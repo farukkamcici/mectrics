@@ -1099,40 +1099,6 @@
         }
       }
     },
-    "Alert after 5 minutes": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Оповещение через 5 минут"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "5 dakika sonra uyar"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Alerta después de 5 minutos"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Alerta após 5 minutos"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Alerte après 5 minutes"
-          }
-        }
-      }
-    },
     "Alert after 30 seconds": {
       "localizations": {
         "tr": {
@@ -1163,6 +1129,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Alerte après 30 secondes"
+          }
+        }
+      }
+    },
+    "Alert after 5 minutes": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Оповещение через 5 минут"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 dakika sonra uyar"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alerta después de 5 minutos"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alerta após 5 minutos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alerte après 5 minutes"
           }
         }
       }
@@ -1241,7 +1241,7 @@
         "en": {
           "stringUnit": {
             "state": "new",
-            "value": "%1$@ is at %2$lld%% — above your %3$lld%% threshold."
+            "value": "%1$@ is at %2$lld%%, above your %3$lld%% threshold."
           }
         },
         "es": {
@@ -1265,13 +1265,13 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ находится на уровне %2$lld%% — выше порога %3$lld%%."
+            "value": "%1$@ находится на уровне %2$lld%%, выше порога %3$lld%%."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@, %2$lld%% seviyesinde — %3$lld%% eşiğinizin üzerinde."
+            "value": "%1$@, %2$lld%% seviyesinde; %3$lld%% eşiğinizin üzerinde."
           }
         }
       }
@@ -1282,7 +1282,7 @@
         "en": {
           "stringUnit": {
             "state": "new",
-            "value": "%1$@ is at %2$lld%% — below your %3$lld%% threshold."
+            "value": "%1$@ is at %2$lld%%, below your %3$lld%% threshold."
           }
         },
         "es": {
@@ -1306,13 +1306,13 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ находится на уровне %2$lld%% — ниже порога %3$lld%%."
+            "value": "%1$@ находится на уровне %2$lld%%, ниже порога %3$lld%%."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@, %2$lld%% seviyesinde — %3$lld%% eşiğinizin altında."
+            "value": "%1$@, %2$lld%% seviyesinde; %3$lld%% eşiğinizin altında."
           }
         }
       }
@@ -1323,7 +1323,7 @@
         "en": {
           "stringUnit": {
             "state": "new",
-            "value": "CPU temperature is %1$lld°C — above your %2$lld°C threshold."
+            "value": "CPU temperature is %1$lld°C, above your %2$lld°C threshold."
           }
         },
         "es": {
@@ -1347,13 +1347,13 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Температура ЦП — %1$lld°C, выше заданного порога %2$lld°C."
+            "value": "Температура ЦП составляет %1$lld°C, выше заданного порога %2$lld°C."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "CPU sıcaklığı %1$lld°C — %2$lld°C eşiğinizin üzerinde."
+            "value": "CPU sıcaklığı %1$lld°C; %2$lld°C eşiğinizin üzerinde."
           }
         }
       }
@@ -1470,7 +1470,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Осталось %1$@ — меньше заданного предела %2$@."
+            "value": "Осталось %1$@, меньше заданного предела %2$@."
           }
         },
         "tr": {
@@ -6301,37 +6301,37 @@
         "en": {
           "stringUnit": {
             "state": "new",
-            "value": "%1$@ — %2$@"
+            "value": "%1$@ · %2$@"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ — %2$@"
+            "value": "%1$@ · %2$@"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ — %2$@"
+            "value": "%1$@ · %2$@"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ — %2$@"
+            "value": "%1$@ · %2$@"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ — %2$@"
+            "value": "%1$@ · %2$@"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ — %2$@"
+            "value": "%1$@ · %2$@"
           }
         }
       }
@@ -8032,7 +8032,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Основные показатели всегда видны в строке меню — открывать отдельное окно не нужно."
+            "value": "Основные показатели всегда видны в строке меню; открывать отдельное окно не нужно."
           }
         },
         "tr": {
@@ -8366,7 +8366,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "У Mectrics нет значка в Dock и постоянно открытого окна — приложение работает в строке меню."
+            "value": "У Mectrics нет значка в Dock и постоянно открытого окна; приложение работает в строке меню."
           }
         },
         "pt-BR": {
@@ -10124,24 +10124,24 @@
         }
       }
     },
-    "Nothing in the menu bar yet — pick a look for a module below.": {
+    "Nothing in the menu bar yet. Pick a look for a module below.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "В строке меню пока ничего нет — выберите ниже вид для модуля."
+            "value": "В строке меню пока ничего нет. Выберите ниже вид для модуля."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Menü çubuğunda henüz bir şey yok — aşağıdan bir modül görünümü seçin."
+            "value": "Menü çubuğunda henüz bir şey yok. Aşağıdan bir modül görünümü seçin."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rien dans la barre des menus pour l’instant — choisissez ci-dessous l’apparence d’un module."
+            "value": "Rien dans la barre des menus pour l’instant. Choisissez ci-dessous l’apparence d’un module."
           }
         },
         "es": {
@@ -10153,7 +10153,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ainda não há nada na barra de menus — escolha abaixo a aparência de um módulo."
+            "value": "Ainda não há nada na barra de menus. Escolha abaixo a aparência de um módulo."
           }
         }
       }
@@ -11317,37 +11317,37 @@
         "en": {
           "stringUnit": {
             "state": "new",
-            "value": "%1$@ — %2$lld items"
+            "value": "%1$@ · %2$lld items"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ — %2$lld elementos"
+            "value": "%1$@ · %2$lld elementos"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ — элементов: %2$lld"
+            "value": "%1$@ · элементов: %2$lld"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ — %2$lld öğe"
+            "value": "%1$@ · %2$lld öğe"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ — %2$lld éléments"
+            "value": "%1$@ · %2$lld éléments"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ — %2$lld itens"
+            "value": "%1$@ · %2$lld itens"
           }
         }
       }
@@ -12203,7 +12203,7 @@
         }
       }
     },
-    "Sensor and GPU readings — the expensive ones — are taken less often on battery, in Low Power Mode, or when your Mac runs hot. Your alerts keep their timing either way.": {
+    "Sensor and GPU readings use more resources, so they are taken less often on battery, in Low Power Mode, or when your Mac runs hot. Your alerts keep their timing either way.": {
       "localizations": {
         "tr": {
           "stringUnit": {
@@ -14259,7 +14259,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Состояние Mac — одним взглядом"
+            "value": "Состояние Mac с первого взгляда"
           }
         },
         "tr": {

@@ -273,17 +273,17 @@ final class ThresholdMonitor {
         if id == .sensors {
             content.body = String(
                 localized: "alert.body.temp",
-                defaultValue: "CPU temperature is \(measured)°C — above your \(rule.thresholdPercent)°C threshold."
+                defaultValue: "CPU temperature is \(measured)°C, above your \(rule.thresholdPercent)°C threshold."
             )
         } else {
             content.body = isBelowRule(id)
                 ? String(
                     localized: "alert.body.below",
-                    defaultValue: "\(id.localizedName) is at \(measured)% — below your \(rule.thresholdPercent)% threshold."
+                    defaultValue: "\(id.localizedName) is at \(measured)%, below your \(rule.thresholdPercent)% threshold."
                 )
                 : String(
                     localized: "alert.body.above",
-                    defaultValue: "\(id.localizedName) is at \(measured)% — above your \(rule.thresholdPercent)% threshold."
+                    defaultValue: "\(id.localizedName) is at \(measured)%, above your \(rule.thresholdPercent)% threshold."
                 )
         }
         content.sound = .default

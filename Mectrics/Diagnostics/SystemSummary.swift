@@ -56,10 +56,10 @@ enum SystemSummaryBuilder {
         return SystemSummaryInput(
             appVersion: bundle.object(
                 forInfoDictionaryKey: "CFBundleShortVersionString"
-            ) as? String ?? "—",
+            ) as? String ?? "–",
             appBuild: bundle.object(
                 forInfoDictionaryKey: "CFBundleVersion"
-            ) as? String ?? "—",
+            ) as? String ?? "–",
             operatingSystem:
                 ProcessInfo.processInfo.operatingSystemVersionString,
             architecture: architecture(),

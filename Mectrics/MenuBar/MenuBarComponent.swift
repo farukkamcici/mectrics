@@ -138,12 +138,12 @@ extension MenuBarText {
         // for a battery that simply did not report them.
         case .health:
             guard let health = sample.detail["healthPercent"] else {
-                return .text("—")
+                return .text("–")
             }
             return .text("\(Int(health))%")
         case .cycles:
             guard let cycles = sample.detail["cycleCount"] else {
-                return .text("—")
+                return .text("–")
             }
             return .text("\(Int(cycles))")
         case .netActivity:

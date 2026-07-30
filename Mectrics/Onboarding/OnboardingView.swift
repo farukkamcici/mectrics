@@ -259,7 +259,7 @@ struct OnboardingView: View {
     }
 
     private func previewValue(for id: MetricID) -> String {
-        guard let sample = model.latest[id] else { return "—" }
+        guard let sample = model.latest[id] else { return "–" }
         switch id {
         case .cpu, .memory, .battery, .disk, .gpu, .bluetooth:
             return MetricFormat.percent(sample.value)

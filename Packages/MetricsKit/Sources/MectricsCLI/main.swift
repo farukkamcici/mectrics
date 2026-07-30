@@ -12,7 +12,7 @@ engine.register(MetricsKit.coreProviders())
 func render(_ latest: [MetricID: MetricSample]) {
     // Clear the terminal and move to the top.
     print("\u{1B}[2J\u{1B}[H", terminator: "")
-    print("mectrics — live system metrics (Ctrl-C to quit)\n")
+    print("mectrics: live system metrics (Ctrl-C to quit)\n")
 
     // CPU
     if let cpu = store.latest(.cpu) {

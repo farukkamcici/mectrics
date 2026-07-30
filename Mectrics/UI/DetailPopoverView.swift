@@ -229,7 +229,7 @@ struct DetailPopoverView: View {
     // MARK: - Value formatting
 
     private var primaryValueString: String {
-        guard let sample else { return "—" }
+        guard let sample else { return "–" }
         switch moduleID {
         case .cpu, .memory, .disk, .gpu:
             return MetricFormat.percent(sample.value, decimals: 1)
@@ -443,7 +443,7 @@ struct DetailPopoverView: View {
         case 1:  return String(localized: "pressure.normal", defaultValue: "Normal")
         case 2:  return String(localized: "pressure.warning", defaultValue: "Warning")
         case 4:  return String(localized: "pressure.critical", defaultValue: "Critical")
-        default: return "—"
+        default: return "–"
         }
     }
 }

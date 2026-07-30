@@ -74,7 +74,7 @@ struct MenuBarBuilderView: View {
                 Button(
                     String(
                         localized: "preset.menuTitle",
-                        defaultValue: "\(preset.name) — \(count) items"
+                        defaultValue: "\(preset.name) · \(count) items"
                     )
                 ) {
                     apply(preset)
@@ -117,7 +117,7 @@ struct MenuBarBuilderView: View {
                 previewItem(entry.module, entry.component)
             }
             if model.orderedEnabledItems.isEmpty && !model.compactHealthEnabled {
-                Text("Nothing in the menu bar yet — pick a look for a module below.")
+                Text("Nothing in the menu bar yet. Pick a look for a module below.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
@@ -315,7 +315,7 @@ struct MenuBarBuilderView: View {
     }
 
     private func previewText(_ id: MetricID, _ component: MenuBarComponent) -> String {
-        guard let sample = model.latest[id] else { return "—" }
+        guard let sample = model.latest[id] else { return "–" }
         if case .text(let text) = MenuBarText.visual(for: id, component: component, sample: sample) {
             return text.replacingOccurrences(of: "\n", with: " ")
         }
