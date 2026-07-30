@@ -17,36 +17,52 @@ enum DiagnosticsSection: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 
     var localizedName: String {
+        localizedName()
+    }
+
+    func localizedName(locale: Locale? = nil) -> String {
         switch self {
         case .systemSummary:
             return String(
                 localized: "diagnostics.section.summary",
-                defaultValue: "System Summary"
+                defaultValue: "System Summary",
+                bundle: AppLocalization.bundle(for: locale),
+                locale: locale ?? .current
             )
         case .applicationLog:
             return String(
                 localized: "diagnostics.section.log",
-                defaultValue: "Application Log"
+                defaultValue: "Application Log",
+                bundle: AppLocalization.bundle(for: locale),
+                locale: locale ?? .current
             )
         case .providers:
             return String(
                 localized: "diagnostics.section.providers",
-                defaultValue: "Provider Status"
+                defaultValue: "Provider Status",
+                bundle: AppLocalization.bundle(for: locale),
+                locale: locale ?? .current
             )
         case .alertConfiguration:
             return String(
                 localized: "diagnostics.section.alerts",
-                defaultValue: "Alert Configuration"
+                defaultValue: "Alert Configuration",
+                bundle: AppLocalization.bundle(for: locale),
+                locale: locale ?? .current
             )
         case .widget:
             return String(
                 localized: "diagnostics.section.widget",
-                defaultValue: "Widget Status"
+                defaultValue: "Widget Status",
+                bundle: AppLocalization.bundle(for: locale),
+                locale: locale ?? .current
             )
         case .attentionLog:
             return String(
                 localized: "diagnostics.section.attention",
-                defaultValue: "Recent Attention Log"
+                defaultValue: "Recent Attention Log",
+                bundle: AppLocalization.bundle(for: locale),
+                locale: locale ?? .current
             )
         }
     }
@@ -252,22 +268,28 @@ enum DiagnosticsBuilder {
 
     static func render(
         _ input: DiagnosticsInput,
-        sections: Set<DiagnosticsSection>
+        sections: Set<DiagnosticsSection>,
+        locale: Locale? = nil
     ) -> String {
         var output = [
             String(
                 localized: "diagnostics.export.title",
-                defaultValue: "Mectrics Diagnostics"
+                defaultValue: "Mectrics Diagnostics",
+                bundle: AppLocalization.bundle(for: locale),
+                locale: locale ?? .current
             ),
             "Schema: \(schema)",
             "Generated: \(iso8601.string(from: input.generatedAt))"
         ].joined(separator: "\n") + "\n"
 
         for section in DiagnosticsSection.allCases where sections.contains(section) {
-            output += "\n## \(section.localizedName)\n"
+            output += "\n## \(section.localizedName(locale: locale))\n"
             switch section {
             case .systemSummary:
-                output += SystemSummaryBuilder.render(input.systemSummary)
+                output += SystemSummaryBuilder.render(
+                    input.systemSummary,
+                    locale: locale
+                )
             case .applicationLog:
                 output += renderLog(input.applicationLog)
             case .providers:

@@ -40,8 +40,11 @@ Do **not** commit: `Mectrics.xcodeproj/`, `DerivedData/`, `.build/` (see `.gitig
 
 - All user-facing strings go through `String(localized:)` or SwiftUI `Text`/`Label`.
 - Never hardcode user-facing prose as a plain `String` without localization.
-- Strings are extracted into `Mectrics/Resources/Localizable.xcstrings` (String Catalog).
-  To add a language: open the catalog in Xcode, add the language, translate. No code change.
+- App strings live in `Mectrics/Resources/Localizable.xcstrings`; widget strings live in
+  `MectricsWidget/Localizable.xcstrings`. Both catalogs ship English, Turkish, Russian,
+  Spanish, French, and Brazilian Portuguese.
+- The General Settings language picker is backed by `AppLanguage`. Adding a language means
+  adding its case and identifier there, then translating every entry in both catalogs.
 - Module display names: use `MetricID.localizedName` (app layer), not the package's
   `displayName` (which is the English fallback).
 - Numeric/symbolic menu-bar strings (percentages, rates, arrows) are not localized.
@@ -68,8 +71,10 @@ Do **not** commit: `Mectrics.xcodeproj/`, `DerivedData/`, `.build/` (see `.gitig
 - **The menu bar is the only live surface.** The always-on-top floating panel and its
   global hotkey were removed; the optional **Compact Health** item is the supported
   overview. Do not reintroduce a second always-visible rendering surface.
-- **Settings holds configuration, not actions.** Quit, copy, and export belong to the
-  surfaces that own them (popover, Diagnostics, Attention Log), not to a preferences pane.
+- **Settings holds configuration, not routine actions.** Quit, copy, and export belong to
+  the surfaces that own them (popover, Diagnostics, Attention Log), not to a preferences
+  pane. The destructive, one-time app removal action is the sole exception because no
+  other surface owns the app lifecycle.
 - Every Settings pane uses `Form(.grouped)` and shares one window size — switching tabs
   moves the selection, never the window.
 - Prefer progressive disclosure over dimmed controls: hide a control that cannot act yet

@@ -5,6 +5,28 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] — 2026-07-30
+
+### Added
+
+- Complete English, Turkish, Russian, Spanish, French, and Brazilian Portuguese
+  localizations for the app and widgets, with an in-app language picker under General
+  Settings.
+- A built-in clean uninstall flow that removes Mectrics, its preferences, alert rules,
+  local history, and caches without requiring administrator access.
+
+### Changed
+
+- Diagnostics and system-summary exports now follow the selected app language.
+- Technical translations use the terminology found in each language's macOS interface,
+  including Activity Monitor, System Settings, battery, memory, disk, and network labels.
+- Translation contributor guidance now covers both String Catalogs and the language picker.
+
+### Fixed
+
+- The manual uninstall script now removes the Sparkle cache.
+- Failed login-item changes are reported to the uninstall flow instead of being ignored.
+
 ## [1.0.0] — 2026-07-30
 
 The first release. Distributed as a signed and notarized DMG.
@@ -42,4 +64,5 @@ roughly one idle wake per second.
 - Automatic update checks are disabled; the Sparkle appcast is fetched only on an explicit
   **Check for Updates…** and verified against a pinned EdDSA public key.
 
+[1.1.0]: https://github.com/farukkamcici/mectrics/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/farukkamcici/mectrics/releases/tag/v1.0.0

@@ -6,11 +6,34 @@ import MetricsKit
 // The app is English-first but built to be localizable. All user-facing strings go
 // through `String(localized:)` (or SwiftUI `Text`/`Label`, which localize automatically),
 // so they are extracted into `Resources/Localizable.xcstrings` (String Catalog) at build
-// time. To add a language, open the catalog in Xcode, add the language, and translate the
-// entries — no code changes required.
+// time. A supported language is represented in both String Catalogs and in `AppLanguage`,
+// which powers the in-app language picker.
 //
 // MetricsKit stays localization-free (data-only); user-facing module names are provided
 // here at the app layer.
+
+enum AppLocalization {
+    /// Returns a language-specific resource bundle when a caller needs deterministic
+    /// localized output, such as a test fixture. Normal app UI uses `Bundle.main`.
+    static func bundle(for locale: Locale?) -> Bundle {
+        guard let locale else { return .main }
+        let identifier = locale.identifier.replacingOccurrences(of: "_", with: "-")
+        let candidates = [
+            identifier,
+            identifier.split(separator: "-").first.map(String.init)
+        ].compactMap { $0 }
+
+        for candidate in candidates {
+            if let url = Bundle.main.url(
+                forResource: candidate,
+                withExtension: "lproj"
+            ), let bundle = Bundle(url: url) {
+                return bundle
+            }
+        }
+        return .main
+    }
+}
 
 extension MetricID {
     /// Localized, user-facing module name (English is the development-language default).

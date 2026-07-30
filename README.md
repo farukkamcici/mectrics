@@ -131,21 +131,27 @@ Mectrics has no Dock icon and no window — after launching, look for it in the 
 
 Updates are checked only when you ask, under **Settings → General → Check for Updates…**.
 
+The interface is available in English, Turkish, Russian, Spanish, French, and Brazilian
+Portuguese. Choose **Settings → General → Language**, then relaunch Mectrics when prompted.
+
 ### Uninstall
 
 Dragging Mectrics to the Trash removes the app but not its settings — macOS keeps those
 for every app, which is why a reinstall goes straight back to your old layout instead of
-showing onboarding again. To remove everything, download the uninstall script, read it,
-and run it:
+showing onboarding again. For a clean removal, choose **Settings → General → Uninstall…**.
+Mectrics unregisters its login item, quits, then removes the app, its settings, alert rules,
+Attention Log, and caches. No administrator rights are needed.
+
+macOS may retain the widget's protected cached snapshot after removal; it reclaims that
+container once the extension is gone. If Mectrics cannot be opened, use the manual
+uninstall script instead:
 
 ```bash
 curl -fsSL -o /tmp/mectrics-uninstall.sh https://raw.githubusercontent.com/farukkamcici/mectrics/main/scripts/uninstall.sh
 zsh /tmp/mectrics-uninstall.sh
 ```
 
-It lists what it will delete and asks before touching anything. No administrator rights are
-needed: Mectrics installs no helper tool and no daemon, and writes nothing outside your home
-folder.
+It lists what it will delete and asks before touching anything.
 
 ### Build from source
 
@@ -179,9 +185,7 @@ Contributions are welcome — new hardware coverage and translations especially.
 - [`docs/architecture.md`](docs/architecture.md) — how the app and the metric engine fit
   together, and where each number comes from
 
-**Adding a language needs no code change:** open
-[`Localizable.xcstrings`](Mectrics/Resources/Localizable.xcstrings) in Xcode, add your
-language, translate, and open a pull request.
+The translation workflow is documented in [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Security
 

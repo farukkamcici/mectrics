@@ -6,9 +6,18 @@ final class DiagnosticsExportTests: XCTestCase {
     func testPreviewAndSavedBytesComeFromTheSameDeterministicRender() {
         let input = fixture()
         let sections: Set<DiagnosticsSection> = [.widget]
-        let preview = DiagnosticsBuilder.render(input, sections: sections)
+        let english = Locale(identifier: "en")
+        let preview = DiagnosticsBuilder.render(
+            input,
+            sections: sections,
+            locale: english
+        )
         let exportBytes = Data(
-            DiagnosticsBuilder.render(input, sections: sections).utf8
+            DiagnosticsBuilder.render(
+                input,
+                sections: sections,
+                locale: english
+            ).utf8
         )
 
         XCTAssertEqual(exportBytes, Data(preview.utf8))

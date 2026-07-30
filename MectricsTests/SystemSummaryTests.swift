@@ -34,7 +34,10 @@ final class SystemSummaryTests: XCTestCase {
         )
 
         XCTAssertEqual(
-            SystemSummaryBuilder.render(input),
+            SystemSummaryBuilder.render(
+                input,
+                locale: Locale(identifier: "en")
+            ),
             """
             Mectrics System Summary
             Schema: mectrics.system-summary.v1

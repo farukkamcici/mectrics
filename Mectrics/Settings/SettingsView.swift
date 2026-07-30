@@ -6,6 +6,10 @@ import MetricsKit
 struct GeneralSettingsTab: View {
     @Bindable var model: AppModel
     @State private var launchAtLogin = LoginItem.isEnabled
+    @State private var selectedLanguage = AppLanguage.selected()
+    @State private var showUninstallConfirmation = false
+    @State private var uninstallFailed = false
+    @State private var relaunchFailed = false
 
     var body: some View {
         Form {
@@ -18,6 +22,31 @@ struct GeneralSettingsTab: View {
                 Text("Startup")
             } footer: {
                 Text("Mectrics has no Dock icon or window of its own; it lives in the menu bar.")
+            }
+
+            Section {
+                Picker("Application", selection: $selectedLanguage) {
+                    ForEach(AppLanguage.allCases) { language in
+                        Text(language.localizedName).tag(language)
+                    }
+                }
+                .onChange(of: selectedLanguage) { _, newValue in
+                    AppLanguage.apply(newValue)
+                }
+
+                if selectedLanguage != AppLanguage.selectionAtLaunch {
+                    Button("Relaunch Mectrics") {
+                        if !AppRelauncher.relaunch() {
+                            relaunchFailed = true
+                        }
+                    }
+                }
+            } header: {
+                Text("Language")
+            } footer: {
+                if selectedLanguage != AppLanguage.selectionAtLaunch {
+                    Text("Relaunch Mectrics to apply the selected language.")
+                }
             }
 
             Section {
@@ -72,10 +101,56 @@ struct GeneralSettingsTab: View {
                 Label("Your readings never leave this Mac. Mectrics has no telemetry.",
                       systemImage: "lock.shield")
             }
+
+            Section {
+                LabeledContent {
+                    Button("Uninstall…", role: .destructive) {
+                        showUninstallConfirmation = true
+                    }
+                } label: {
+                    Text("Remove Mectrics")
+                    Text("Deletes the app, settings, and local history stored on this Mac")
+                }
+            } footer: {
+                Text("macOS may retain the widget’s protected cache after removal and reclaims it once the extension is gone.")
+            }
         }
         .formStyle(.grouped)
         // The toggle can be flipped elsewhere (onboarding); re-read on every appearance.
-        .onAppear { launchAtLogin = LoginItem.isEnabled }
+        .onAppear {
+            launchAtLogin = LoginItem.isEnabled
+            selectedLanguage = AppLanguage.selected()
+        }
+        .confirmationDialog(
+            Text("Remove Mectrics and its local data?"),
+            isPresented: $showUninstallConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Remove Mectrics", role: .destructive) {
+                if !Uninstaller.performUninstall() {
+                    uninstallFailed = true
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Mectrics will quit and then delete itself, its settings, your alert rules, and the Attention Log. This cannot be undone.")
+        }
+        .alert(
+            Text("Mectrics could not remove itself."),
+            isPresented: $uninstallFailed
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Nothing was deleted. Drag Mectrics to the Trash instead, or run the uninstall script from the project page.")
+        }
+        .alert(
+            Text("Mectrics could not relaunch."),
+            isPresented: $relaunchFailed
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Quit and reopen Mectrics to apply the selected language.")
+        }
     }
 
     private static var versionString: String {

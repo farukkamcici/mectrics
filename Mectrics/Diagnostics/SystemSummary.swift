@@ -78,11 +78,16 @@ enum SystemSummaryBuilder {
         )
     }
 
-    static func render(_ input: SystemSummaryInput) -> String {
+    static func render(
+        _ input: SystemSummaryInput,
+        locale: Locale? = nil
+    ) -> String {
         var lines = [
             String(
                 localized: "summary.title",
-                defaultValue: "Mectrics System Summary"
+                defaultValue: "Mectrics System Summary",
+                bundle: AppLocalization.bundle(for: locale),
+                locale: locale ?? .current
             ),
             "Schema: \(schema)",
             "App: \(input.appVersion) (\(input.appBuild))",
@@ -91,7 +96,12 @@ enum SystemSummaryBuilder {
             "Mac family: \(input.modelFamily)",
             "Energy Guard: \(input.energyGuardMode.rawValue)",
             "",
-            String(localized: "summary.metrics", defaultValue: "Metrics:")
+            String(
+                localized: "summary.metrics",
+                defaultValue: "Metrics:",
+                bundle: AppLocalization.bundle(for: locale),
+                locale: locale ?? .current
+            )
         ]
         if input.metrics.isEmpty {
             lines.append("- none")
@@ -109,7 +119,9 @@ enum SystemSummaryBuilder {
         lines.append(
             String(
                 localized: "summary.conditions",
-                defaultValue: "Active conditions:"
+                defaultValue: "Active conditions:",
+                bundle: AppLocalization.bundle(for: locale),
+                locale: locale ?? .current
             )
         )
         if input.conditions.isEmpty {
@@ -165,4 +177,5 @@ enum SystemSummaryBuilder {
             }
         }
     }
+
 }

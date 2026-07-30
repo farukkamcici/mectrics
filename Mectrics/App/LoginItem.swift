@@ -7,7 +7,9 @@ enum LoginItem {
         SMAppService.mainApp.status == .enabled
     }
 
-    static func setEnabled(_ enabled: Bool) {
+    /// Returns whether Service Management accepted the requested change.
+    @discardableResult
+    static func setEnabled(_ enabled: Bool) -> Bool {
         do {
             if enabled {
                 if SMAppService.mainApp.status != .enabled {
@@ -18,8 +20,10 @@ enum LoginItem {
                     try SMAppService.mainApp.unregister()
                 }
             }
+            return true
         } catch {
             NSLog("LoginItem error: \(error.localizedDescription)")
+            return false
         }
     }
 }

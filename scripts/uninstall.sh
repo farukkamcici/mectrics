@@ -24,6 +24,7 @@ targets=(
   "$HOME/Library/Containers/com.mectrics.app.widget"
   "$HOME/Library/Application Support/Mectrics"
   "$HOME/Library/Caches/com.mectrics.app"
+  "$HOME/Library/Caches/com.mectrics.app.sparkle"
   "$HOME/Library/HTTPStorages/com.mectrics.app"
   "$HOME/Library/Saved Application State/com.mectrics.app.savedState"
 )

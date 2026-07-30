@@ -92,11 +92,12 @@ budget; a provider that blocks the queue degrades every other module.
 
 ## Adding a translation
 
-No code change required:
-
-1. Open `Mectrics/Resources/Localizable.xcstrings` in Xcode.
-2. Add your language and translate the entries.
-3. Open a pull request. Please translate whole strings rather than partial catalogs.
+1. Add the language and its identifier to `Mectrics/App/AppLanguage.swift`.
+2. Add it to both `Mectrics/Resources/Localizable.xcstrings` and
+   `MectricsWidget/Localizable.xcstrings`.
+3. Translate every entry in both catalogs; partial catalogs are not accepted.
+4. Verify the language picker and relaunch flow, then check the widget under that system
+   language.
 
 Note that numeric and symbolic menu bar strings (percentages, rates, arrows) are
 intentionally not localized.
