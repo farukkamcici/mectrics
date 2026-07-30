@@ -80,4 +80,35 @@ xcrun notarytool submit "$dmg_path" \
 xcrun stapler staple "$dmg_path"
 xcrun stapler validate "$dmg_path"
 
-echo "Release ready: $dmg_path"
+# ---- appcast
+#
+# SUFeedURL points at appcast.xml on the main branch, so a release is not finished
+# until that file describes it. generate_appcast signs each entry with the private
+# EdDSA key from the login Keychain, the half that never leaves this machine.
+version=$(defaults read "$app_path/Contents/Info" CFBundleShortVersionString)
+
+appcast_tool=${MECTRICS_APPCAST_TOOL:-$(command -v generate_appcast || true)}
+if [[ -z "$appcast_tool" ]]; then
+  appcast_tool=$(find "$HOME/Library/Developer/Xcode/DerivedData" \
+    -path '*artifacts/sparkle/Sparkle/bin/generate_appcast' -print -quit 2>/dev/null || true)
+fi
+: "${appcast_tool:?Could not find generate_appcast. Set MECTRICS_APPCAST_TOOL to its path.}"
+
+# generate_appcast reads a directory of archives, so give it one holding only the DMG.
+appcast_staging="$release_root/appcast"
+rm -rf "$appcast_staging"
+mkdir -p "$appcast_staging"
+cp "$dmg_path" "$appcast_staging/"
+
+"$appcast_tool" \
+  --download-url-prefix "https://github.com/farukkamcici/mectrics/releases/download/v$version/" \
+  --maximum-versions 5 \
+  -o "$repo_root/appcast.xml" \
+  "$appcast_staging"
+
+echo
+echo "Release ready:  $dmg_path"
+echo "Appcast:        $repo_root/appcast.xml (version $version)"
+echo
+echo "Next: create the v$version tag and GitHub Release, attach the DMG, then commit"
+echo "appcast.xml — the enclosure URL above only resolves once the release exists."
