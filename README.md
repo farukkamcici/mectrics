@@ -73,9 +73,18 @@ builder, so you choose from what you can actually see. Each popover adds the det
 the value: per-core load and top processes for CPU, swap and pressure for Memory,
 read/write throughput for Disk, and so on.
 
-<div align="center">
-  <img src="docs/assets/popover-disk.png" alt="The Disk popover: a usage ring, a used/purgeable/free bar, capacity figures, and live read and write throughput" width="620">
-</div>
+<table>
+<tr>
+<td width="50%" valign="top">
+  <img src="docs/assets/popover-cpu.png" alt="The CPU popover: a load sparkline, a bar per core, core count, busiest core, temperature, and uptime" width="100%">
+  <p align="center"><sub><b>CPU</b> — a bar per core, and the top processes behind the disclosure</sub></p>
+</td>
+<td width="50%" valign="top">
+  <img src="docs/assets/popover-disk.png" alt="The Disk popover: a usage ring, a used, purgeable and free bar, capacity figures, and live read and write throughput" width="100%">
+  <p align="center"><sub><b>Disk</b> — capacity split three ways, plus live throughput</sub></p>
+</td>
+</tr>
+</table>
 
 ## Beyond the numbers
 
@@ -90,6 +99,11 @@ read/write throughput for Disk, and so on.
 - **Widgets** — small / medium / large WidgetKit overviews for Notification Center.
 - **Diagnostics** — a local-only system summary you can copy or export as plain text.
 - **Three-step onboarding**, accent themes, and launch at login.
+
+<div align="center">
+  <img src="docs/assets/compact-health.png" alt="The Compact Health popover reading All systems normal, with CPU, Memory, Network and Disk summarized in one list" width="620">
+  <p><sub><b>Compact Health</b> — the whole machine in one item, quiet until it is not</sub></p>
+</div>
 
 <table>
 <tr>
