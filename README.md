@@ -17,6 +17,8 @@
 <p><b>CPU · Memory · Battery · Network · Disk · GPU · Temperature · Fans · Bluetooth</b><br>
 live in your menu bar — readable at a glance, and the bar never jumps around.</p>
 
+<p><a href="https://mectrics.app"><b>mectrics.app</b></a></p>
+
 </div>
 
 ---
