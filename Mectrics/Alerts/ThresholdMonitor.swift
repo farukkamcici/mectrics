@@ -1,282 +1,23 @@
 import AppKit
 import Foundation
-import UserNotifications
 import MetricsKit
+import UserNotifications
 
-enum AlertDestination: String, Codable, CaseIterable, Hashable {
-    case notification
-    case compactHealth
-    case attentionLog
-}
-
-enum AlertConditionState: String, Codable, Equatable {
-    case normal
-    case pending
-    case active
-}
-
-enum AlertConditionTransition: Equatable {
-    case pending
-    case activated
-    case recovered
-}
-
-struct AlertConditionUpdate: Equatable {
-    let conditionKey: String
-    let metricID: MetricID
-    let state: AlertConditionState
-    let transition: AlertConditionTransition
-    let measuredValue: Double
-    let unit: MetricUnit
-    let thresholdValue: Double
-    let durationSeconds: Int
-    let startedAt: Date?
-    let destinations: Set<AlertDestination>
-
-    init(
-        conditionKey: String? = nil,
-        metricID: MetricID,
-        state: AlertConditionState,
-        transition: AlertConditionTransition,
-        measuredValue: Double,
-        unit: MetricUnit? = nil,
-        thresholdValue: Double,
-        durationSeconds: Int,
-        startedAt: Date?,
-        destinations: Set<AlertDestination>
-    ) {
-        self.conditionKey = conditionKey ?? "threshold.\(metricID.rawValue)"
-        self.metricID = metricID
-        self.state = state
-        self.transition = transition
-        self.measuredValue = measuredValue
-        self.unit = unit ?? (metricID == .sensors ? .celsius : .percent)
-        self.thresholdValue = thresholdValue
-        self.durationSeconds = durationSeconds
-        self.startedAt = startedAt
-        self.destinations = destinations
-    }
-}
-
-/// One user-configurable threshold rule per module. `thresholdPercent` compares
-/// against the module's primary value (× 100). Battery fires below its threshold;
-/// every other current percentage rule fires above it.
-struct AlertRule: Codable, Equatable {
-    var enabled: Bool
-    var thresholdPercent: Int
-    var durationSeconds: Int
-    var cooldownSeconds: Int
-    var destinations: Set<AlertDestination>
-
-    init(
-        enabled: Bool,
-        thresholdPercent: Int,
-        durationSeconds: Int = 30,
-        cooldownSeconds: Int = 15 * 60,
-        destinations: Set<AlertDestination> = [.attentionLog]
-    ) {
-        self.enabled = enabled
-        self.thresholdPercent = thresholdPercent
-        self.durationSeconds = durationSeconds
-        self.cooldownSeconds = cooldownSeconds
-        self.destinations = destinations
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case enabled
-        case thresholdPercent
-        case durationSeconds
-        case cooldownSeconds
-        case destinations
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        enabled = try container.decode(Bool.self, forKey: .enabled)
-        thresholdPercent = try container.decode(Int.self, forKey: .thresholdPercent)
-        durationSeconds = try container.decodeIfPresent(
-            Int.self,
-            forKey: .durationSeconds
-        ) ?? 30
-        cooldownSeconds = try container.decodeIfPresent(
-            Int.self,
-            forKey: .cooldownSeconds
-        ) ?? 15 * 60
-
-        if let decodedDestinations = try container.decodeIfPresent(
-            Set<AlertDestination>.self,
-            forKey: .destinations
-        ) {
-            destinations = decodedDestinations
-        } else {
-            // Legacy rules were implicitly notification-only. Preserve that choice
-            // for enabled rules while giving every enabled rule a local lifecycle.
-            destinations = enabled
-                ? [.notification, .attentionLog]
-                : [.attentionLog]
-        }
-    }
-}
-
-/// Evaluates alert rules as a small incident state machine. A continuous violation has
-/// one identity from pending through recovery, regardless of how many destinations
-/// display it.
-final class ThresholdMonitor {
-    typealias NotificationHandler = (MetricID, AlertRule, Int) -> Void
-
-    var onConditionUpdate: ((AlertConditionUpdate) -> Void)?
-
-    private static var authorizationRequested = false
-    private var lastFired: [MetricID: Date] = [:]
-    private var violationStartedAt: [MetricID: Date] = [:]
-    private var states: [MetricID: AlertConditionState] = [:]
-    private let notificationHandler: NotificationHandler
-
-    init(notificationHandler: NotificationHandler? = nil) {
-        self.notificationHandler = notificationHandler ?? Self.postNotification
-    }
-
-    /// Requests permission only after an explicit user action enables or tests
-    /// notification delivery.
-    static func requestAuthorizationIfNeeded() {
-        guard !authorizationRequested else { return }
-        authorizationRequested = true
-        UNUserNotificationCenter.current().requestAuthorization(
-            options: [.alert, .sound]
-        ) { _, _ in }
-    }
-
-    func state(for metricID: MetricID) -> AlertConditionState {
-        states[metricID] ?? .normal
-    }
-
-    func evaluate(
-        latest: [MetricID: MetricSample],
-        rules: [MetricID: AlertRule],
-        now: Date = Date()
-    ) {
-        for (id, rule) in rules where rule.enabled {
-            guard let sample = latest[id] else { continue }
-            let measured = sample.unit == .celsius ? sample.value : sample.value * 100
-            let violating = Self.isBelowRule(id)
-                ? measured <= Double(rule.thresholdPercent)
-                : measured >= Double(rule.thresholdPercent)
-
-            guard violating else {
-                recoverIfNeeded(
-                    metricID: id,
-                    measured: measured,
-                    rule: rule,
-                    destinations: rule.destinations
-                )
-                continue
-            }
-
-            let startedAt = violationStartedAt[id] ?? now
-            if violationStartedAt[id] == nil {
-                violationStartedAt[id] = startedAt
-                setState(
-                    .pending,
-                    transition: .pending,
-                    metricID: id,
-                    measured: measured,
-                    rule: rule,
-                    startedAt: startedAt,
-                    destinations: rule.destinations
-                )
-            }
-
-            guard now.timeIntervalSince(startedAt) >= Double(rule.durationSeconds),
-                  state(for: id) != .active,
-                  now.timeIntervalSince(lastFired[id] ?? .distantPast)
-                    >= Double(rule.cooldownSeconds)
-            else { continue }
-
-            lastFired[id] = now
-            setState(
-                .active,
-                transition: .activated,
-                metricID: id,
-                measured: measured,
-                rule: rule,
-                startedAt: startedAt,
-                destinations: rule.destinations
-            )
-            if rule.destinations.contains(.notification) {
-                notificationHandler(id, rule, Int(measured.rounded()))
-            }
-        }
-
-        let enabledIDs = Set(rules.compactMap { $0.value.enabled ? $0.key : nil })
-        let inactiveIDs = Set(states.keys).subtracting(enabledIDs)
-        for id in inactiveIDs {
-            violationStartedAt[id] = nil
-            states[id] = .normal
-        }
-    }
-
-    /// Battery alerts when the value drops below the threshold; everything else above.
-    static func isBelowRule(_ id: MetricID) -> Bool { id == .battery }
-
-    private func recoverIfNeeded(
-        metricID: MetricID,
-        measured: Double,
-        rule: AlertRule,
-        destinations: Set<AlertDestination>
-    ) {
-        let priorState = state(for: metricID)
-        let startedAt = violationStartedAt[metricID]
-        violationStartedAt[metricID] = nil
-        states[metricID] = .normal
-        guard priorState != .normal else { return }
-        onConditionUpdate?(AlertConditionUpdate(
-            metricID: metricID,
-            state: .normal,
-            transition: .recovered,
-            measuredValue: measured,
-            thresholdValue: Double(rule.thresholdPercent),
-            durationSeconds: rule.durationSeconds,
-            startedAt: startedAt,
-            destinations: destinations
-        ))
-    }
-
-    private func setState(
-        _ state: AlertConditionState,
-        transition: AlertConditionTransition,
-        metricID: MetricID,
-        measured: Double,
-        rule: AlertRule,
-        startedAt: Date?,
-        destinations: Set<AlertDestination>
-    ) {
-        states[metricID] = state
-        onConditionUpdate?(AlertConditionUpdate(
-            metricID: metricID,
-            state: state,
-            transition: transition,
-            measuredValue: measured,
-            thresholdValue: Double(rule.thresholdPercent),
-            durationSeconds: rule.durationSeconds,
-            startedAt: startedAt,
-            destinations: destinations
-        ))
-    }
-
-    private static func postNotification(
+enum AlertNotificationDelivery {
+    static func threshold(
         for id: MetricID,
         rule: AlertRule,
         measured: Int
     ) {
         let content = UNMutableNotificationContent()
-        content.title = title(for: id)
+        content.title = thresholdTitle(for: id)
         if id == .sensors {
             content.body = String(
                 localized: "alert.body.temp",
                 defaultValue: "CPU temperature is \(measured)°C, above your \(rule.thresholdPercent)°C threshold."
             )
         } else {
-            content.body = isBelowRule(id)
+            content.body = ThresholdMonitor.isBelowRule(id)
                 ? String(
                     localized: "alert.body.below",
                     defaultValue: "\(id.localizedName) is at \(measured)%, below your \(rule.thresholdPercent)% threshold."
@@ -296,7 +37,27 @@ final class ThresholdMonitor {
         UNUserNotificationCenter.current().add(request)
     }
 
-    private static func title(for id: MetricID) -> String {
+    static func systemCondition(
+        signal: SystemAlertSignal,
+        rule: SystemAlertRule,
+        reading: SystemConditionReading
+    ) {
+        let content = UNMutableNotificationContent()
+        content.title = signal.notificationTitle
+        content.body = signal.notificationBody(
+            value: reading.value,
+            threshold: rule.thresholdValue
+        )
+        content.sound = .default
+        let request = UNNotificationRequest(
+            identifier: "mectrics.alert.\(signal.conditionKey)",
+            content: content,
+            trigger: nil
+        )
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    private static func thresholdTitle(for id: MetricID) -> String {
         switch id {
         case .battery:
             return String(localized: "alert.title.battery", defaultValue: "Low battery")
@@ -362,11 +123,6 @@ enum NotificationPermissionManager {
     }
 
     /// Opens Notification settings, preferring this app's own row.
-    ///
-    /// The per-app query parameter and the pane identifier have both changed across
-    /// macOS releases, so each candidate is tried in turn rather than assuming one
-    /// works — a button that silently does nothing is worse than a less specific
-    /// destination.
     @MainActor
     @discardableResult
     static func openSystemSettings() -> Bool {
@@ -422,6 +178,60 @@ enum NotificationPermissionManager {
         )
         UNUserNotificationCenter.current().add(request) { error in
             completion(error == nil ? .authorized : .unknown)
+        }
+    }
+}
+
+private extension SystemAlertSignal {
+    var notificationTitle: String {
+        switch self {
+        case .thermalPressure:
+            return String(
+                localized: "alert.system.thermal.title",
+                defaultValue: "Your Mac is slowing down to cool off"
+            )
+        case .memoryPressure:
+            return String(
+                localized: "alert.system.memoryPressure.title",
+                defaultValue: "Your Mac is short on memory"
+            )
+        case .diskAvailableCapacity:
+            return String(
+                localized: "alert.system.diskCapacity.title",
+                defaultValue: "Disk space is running low"
+            )
+        case .batteryService:
+            return String(
+                localized: "alert.system.batteryService.title",
+                defaultValue: "Battery service is recommended"
+            )
+        }
+    }
+
+    func notificationBody(value: Double, threshold: Double) -> String {
+        switch self {
+        case .thermalPressure:
+            // Named for the whole chip: on Apple silicon this state covers the GPU
+            // as well, and a person waiting on a render should know that.
+            return String(
+                localized: "alert.system.thermal.body",
+                defaultValue: "macOS is limiting CPU and GPU performance to cool your Mac down. Slowdown is \(SystemSignalFormat.thermal(value))."
+            )
+        case .memoryPressure:
+            return String(
+                localized: "alert.system.memoryPressure.body",
+                defaultValue: "Memory pressure reached \(SystemSignalFormat.pressure(value)). macOS is compressing and swapping to keep apps running."
+            )
+        case .diskAvailableCapacity:
+            return String(
+                localized: "alert.system.diskCapacity.body",
+                defaultValue: "\(MetricFormat.bytes(value)) remains, below your \(MetricFormat.bytes(threshold)) limit."
+            )
+        case .batteryService:
+            return String(
+                localized: "alert.system.batteryService.body",
+                defaultValue: "macOS reports that the battery needs service."
+            )
         }
     }
 }

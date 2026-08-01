@@ -43,7 +43,7 @@ It is built around three commitments:
 | 📐 **Stable in the menu bar** | Items reserve a fixed width, so values change without anything shifting sideways. |
 
 <div align="center">
-  <a href="https://github.com/farukkamcici/mectrics/releases/latest/download/Mectrics.dmg"><b>⬇︎ Download Mectrics 1.2.0</b></a><br>
+  <a href="https://github.com/farukkamcici/mectrics/releases/latest/download/Mectrics.dmg"><b>⬇︎ Download Mectrics 1.3.0</b></a><br>
   <sub>macOS 15+ · signed and notarized · 3.8 MB</sub>
 </div>
 
@@ -92,15 +92,20 @@ throughput for Disk, and so on.
 ## Beyond the numbers
 
 - **Compact Health** — one status item that summarizes the whole machine and surfaces only
-  what is off.
-- **Alert rules** — sustained-threshold notifications with a live preview and test delivery,
-  so you know what a rule will look like before it fires at 3am.
+  what is off, including the two conditions macOS reports itself.
+- **Alert rules** — sustained notifications with a live preview and test delivery, so you
+  know what a rule will look like before it fires at 3am. Rules watch either a number you
+  pick or a state macOS reports: your Mac slowing its CPU and GPU down to cool off, and
+  the kernel's own memory pressure. A hot sensor is not the same thing as a machine that
+  has actually been slowed, and memory can be nearly full with nothing wrong.
 - **Attention Log** — a local, exportable record of what tripped and when.
 - **Energy Guard** — sampling that steps down under Low Power Mode and thermal pressure.
 - **Menu bar builder** — a visual layout editor with presets, where you toggle components
   by clicking their live preview instead of guessing from a list.
 - **Widgets** — small / medium / large WidgetKit overviews for Notification Center.
 - **Diagnostics** — a local-only system summary you can copy or export as plain text.
+- **Headless CLI** — a read-only automation interface for alert events and one-shot health
+  checks on Macs whose menu bar is not visible.
 - **Three-step onboarding**, accent themes, and launch at login.
 
 <div align="center">
@@ -137,13 +142,66 @@ Updates are checked only when you ask, under **Settings → General → Check fo
 The interface is available in English, Turkish, Russian, Spanish, French, and Brazilian
 Portuguese. Choose **Settings → General → Language**, then relaunch Mectrics when prompted.
 
+### Headless automation
+
+The app bundle includes a read-only `mectrics` CLI for Macs whose menu bar is not visible.
+The app remains the place where alert rules are configured. The CLI reads those rules and
+exposes them to scripts and agents without changing any settings.
+
+Choose **Settings → Alerts → Install CLI…** once to make `mectrics` available in every
+Terminal. This creates a symbolic link at `/usr/local/bin/mectrics`; it does not download
+another executable or install a background service. macOS may ask for administrator
+permission.
+
+Check the enabled rules without parsing output:
+
+```bash
+mectrics check
+```
+
+`check` exits with `0` when every current reading is within its limit, `1` when at least
+one limit is crossed, and `2` when no rules are configured or the result cannot be
+determined because a reading is unavailable. Add `--json` when details are needed:
+
+```bash
+mectrics check --json
+```
+
+Take a one-shot snapshot of every available module:
+
+```bash
+mectrics snapshot --json
+```
+
+The snapshot includes each module's primary value, unit, timestamp, and detail fields;
+unsupported hardware is listed as unavailable rather than reported as zero. Stream actual
+alert activation and recovery events as newline-delimited JSON with:
+
+```bash
+mectrics alerts watch --json
+```
+
+`watch` does not print an initial snapshot. It waits quietly until a rule activates or
+recovers, then writes that event to the Terminal as one JSON line. Use `check --json` when
+the current state is needed immediately.
+
+A known crossed limit takes priority over an unavailable reading. `check` is immediate, so
+a crossed limit means the corresponding sustained rule would enter its pending state now;
+`alerts watch` remains the source for actual activation and recovery events.
+
+JSON output goes to standard output. Startup information and errors go to standard error,
+so pipes stay machine-readable. The CLI samples only the metrics needed for the requested
+operation and makes no network requests. It does not include the app's live dashboard,
+settings, widgets, or history.
+
 ### Uninstall
 
 Dragging Mectrics to the Trash removes the app but not its settings — macOS keeps those
 for every app, which is why a reinstall goes straight back to your old layout instead of
 showing onboarding again. For a clean removal, choose **Settings → General → Uninstall…**.
 Mectrics unregisters its login item, quits, then removes the app, its settings, alert rules,
-Attention Log, and caches. No administrator rights are needed.
+Attention Log, caches, and its optional `/usr/local/bin/mectrics` link. macOS may ask for
+administrator permission when that link is present.
 
 macOS may retain the widget's protected cached snapshot after removal; it reclaims that
 container once the extension is gone. If Mectrics cannot be opened, use the manual
@@ -176,6 +234,29 @@ local, read-only system interface.
 
 The single network request the app can make is an update check, and only when you choose
 **Check for Updates…**. Read the full statement in [`PRIVACY.md`](PRIVACY.md).
+
+## Non-goals
+
+Knowing what a project will not do is what keeps it small enough to trust. Mectrics reads
+the machine it runs on and reports what it finds. Everything below is out of scope, and an
+issue asking for one of them will be closed with a link here rather than a debate.
+
+- **Telemetry of any kind**, including anonymous, aggregated, or opt-in. There is no
+  version of this that gets built.
+- **Accounts, cloud sync, or a companion service.** Nothing here needs a server, so
+  nothing here will grow one.
+- **Anything outside the machine.** Remote hosts, SaaS quotas, API usage, container fleets:
+  all reasonable things to monitor, none of them this app's job.
+- **Acting on what it finds.** Mectrics does not kill processes, purge caches, or change
+  system settings. It shows you the number and hands you off to the tool that owns the
+  action, which is why the popovers open Activity Monitor and System Settings instead of
+  reimplementing them.
+- **Benchmarking or stress testing.** Reading a load is not the same as creating one.
+- **Other platforms.** macOS only. No iOS companion, no Linux port.
+- **A window.** The menu bar is the interface. There is no Dock icon and no main window,
+  and that is a design decision rather than a missing feature.
+
+Forks are welcome to disagree with every line of this. That is what the MIT license is for.
 
 ## Contributing
 

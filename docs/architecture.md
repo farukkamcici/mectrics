@@ -19,24 +19,28 @@ flowchart LR
         SS["<b>SamplingScheduler</b><br/><i>adaptive, cost-aware</i>"]
         PR["<b>MetricProvider</b> × 8<br/>CPU · Memory · Battery · Network · Disk<br/>GPU · Sensors · Fans"]
         ST["<b>MetricStore</b><br/><i>pre-allocated ring buffer</i>"]
+        AE["<b>Alert evaluators</b><br/><i>thresholds · system conditions</i>"]
         SS --> PR --> ST
+        ST --> AE
     end
 
     subgraph app["Mectrics.app — LSUIElement agent, no Dock icon"]
         AM["<b>AppModel</b><br/><i>@Observable</i>"]
         MB["<b>MenuBarController</b><br/>one NSStatusItem per component"]
         PO["<b>Popovers</b><br/>details · Compact Health · Settings"]
-        AL["<b>ThresholdMonitor</b><br/>alert rules · Attention Log"]
+        AL["<b>Alert delivery</b><br/>notifications · Compact Health · Attention Log"]
         AM --> MB
         AM --> PO
         AM --> AL
     end
 
     WG["<b>MectricsWidget</b><br/><i>WidgetKit extension</i>"]
+    CLI["<b>mectrics CLI</b><br/><i>check · snapshot · events · rules</i>"]
 
     EG -->|"sampling policy"| SS
     ST -->|"snapshot"| AM
     ST -->|"JSON via App Group"| WG
+    AE -->|"text or NDJSON"| CLI
 ```
 
 ## Technology choices
@@ -102,11 +106,34 @@ disappears from the UI rather than showing an empty row.
 | Disk throughput | IOKit `IOBlockStorageDriver` statistics | Δ read/write bytes. |
 | GPU | IOKit accelerator "Device Utilization %"; VRAM via IORegistry | Keys differ across Apple Silicon generations. |
 | Temperature | SMC key reads grouped into CPU, GPU, and Memory hardware domains | The SMC key set differs per machine — treat every key as optional. |
-| Fans | SMC `F*Ac` keys | Some Macs have no fans at all. |
+| Fans | SMC `FNum` and `F*Ac` keys | Some Macs have no fans at all; speed keys provide a fallback when the count key is unavailable. |
 
 All of these are read-only. Reading sensors, SMC, fans, and GPU is restricted under the App
 Store sandbox, which is why full functionality requires direct distribution with a Developer
 ID and notarization.
+
+### Where the system's own verdicts come from
+
+Four alert conditions are not thresholds on a sampled number but states macOS reports
+directly. `SystemConditionSource` resolves all four from one sampling pass, so the app, the
+CLI, and the one-shot health report read them identically.
+
+| Condition | Source | Why it is not a number rule |
+|-----------|--------|-----------------------------|
+| Thermal pressure | `ProcessInfo.thermalState` | A temperature says how hot a part is; this says whether the machine is being slowed down. On Apple silicon the state covers the whole package, so a throttled GPU is included — there is no separate public GPU signal, and reading clock frequencies would mean private interfaces (`IOReport`) that put notarization at risk. |
+| Memory pressure | `sysctl(kern.memorystatus_vm_pressure_level)` | Memory can sit at 95% used with the kernel under no pressure at all. The percentage cannot tell a healthy full machine from a struggling one. |
+| Disk capacity | `statfs` free bytes, via the disk provider's detail | Free space is already the right signal; there is nothing for macOS to judge. |
+| Battery service | IOKit's service-recommended flag | A hardware fault macOS has decided on, not a reading to compare. |
+
+Thermal pressure is the only one with no provider behind it, so it stays readable when a
+sampling cycle turns up nothing. Its rule is filed under the CPU module for grouping and
+for opening the right detail window; its wording names the GPU as well.
+
+Both state conditions run through the same sustained-duration and cooldown machinery as the
+number rules (`SystemConditionMonitor`): a state has to persist for the rule's window before
+it alerts, because a build that pushes the chip into throttling for twenty seconds is
+ordinary work, not news. `EnergyGuard` reads the same thermal enum it uses to slow its own
+sampling, so Mectrics eases off on exactly the states it would report.
 
 ## Menu bar rendering
 
@@ -132,6 +159,33 @@ The optional **Compact Health** item replaced it — a single stable-width statu
 stays quiet and turns into a warning only when an alert routed to it activates. Real-time
 viewing therefore lives entirely in the menu bar and its popovers, and no second
 always-visible surface should be reintroduced.
+
+The bundled `mectrics` CLI is a read-only automation interface for unattended machines,
+not another dashboard. The app owns configuration. The CLI reads its enabled rules and can:
+
+- wait for actual activation and recovery transitions, then print each new event as text
+  or newline-delimited JSON without emitting an initial snapshot;
+- list the effective rules in a stable, versioned JSON envelope;
+- compare one fresh set of readings with the configured limits through `mectrics check`
+  and return a script-friendly exit code;
+- capture every available module once through `mectrics snapshot`, including the full
+  detail dictionary in its versioned JSON output.
+
+The one-shot check deliberately reports `limitCrossed`, not `active`: it does not wait for
+a rule's sustained duration. Exit code `0` means healthy, `1` means at least one current
+limit is crossed, and `2` means unconfigured or indeterminate because a reading is
+unavailable. A known crossed limit takes priority over an unavailable reading. Both the app
+and CLI use the same UI-independent alert models and evaluators from MetricsKit.
+
+The executable remains inside the signed app bundle. The optional **Install CLI…** action
+creates `/usr/local/bin/mectrics` as a symbolic link to that executable, so app updates also
+update the command. It downloads no second binary and installs no background service. The
+installer refuses to overwrite an unrelated command at that path, and app removal also
+removes a link that belongs to Mectrics.
+
+The internal `metricskit-demo` executable is separate. It renders every provider in a live
+terminal view for development and hardware validation, is available only through SwiftPM,
+and is not embedded in `Mectrics.app`.
 
 ## Widget
 
@@ -169,8 +223,9 @@ the widget is positioned as "at a glance" while the menu bar carries the real-ti
 
 ## Testing
 
-- `MetricsKitTests` covers computation correctness (Δbytes/Δt, CPU percentages) and store
-  behaviour, including concurrent reads and writes.
+- `MetricsKitTests` covers computation correctness (Δbytes/Δt, CPU percentages), alert
+  state transitions and JSON contracts, and store behaviour including concurrent reads
+  and writes.
 - `MectricsTests` covers app-layer logic: alert rules, Energy Guard, the Attention Log,
   diagnostics export redaction, menu bar layout presets, and URL routing.
 - Hardware coverage is inherently manual: fanless machines, external displays, low battery,
@@ -199,8 +254,9 @@ mectrics/
 ├── MectricsWidget/           # small/medium/large WidgetKit overview
 ├── MectricsTests/            # app-layer unit tests
 ├── Packages/MetricsKit/      # the metric engine (SwiftPM)
-│   ├── Sources/MetricsKit/   # providers, scheduler, store, engine, sharing
-│   ├── Sources/MectricsCLI/  # `swift run mectrics-cli` — terminal readout
+│   ├── Sources/MetricsKit/   # providers, scheduler, store, alerts, engine, sharing
+│   ├── Sources/MectricsCLI/  # read-only user automation interface
+│   ├── Sources/MetricsKitDemo/ # internal live provider readout
 │   └── Tests/
 └── scripts/
     ├── release.sh            # archive → sign → DMG → notarize → staple

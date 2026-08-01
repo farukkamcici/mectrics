@@ -30,11 +30,32 @@ struct ActiveAlertCondition: Equatable, Identifiable {
         for update: AlertConditionUpdate
     ) -> AttentionSeverity {
         guard update.state == .active else { return .info }
+        return AlertConditionSeverity.resolve(update)
+    }
+}
+
+/// Severity of an alerting condition, shared by the Compact Health item and the
+/// Attention Log so one event cannot be a warning in the menu bar and critical in the
+/// log. Critical is reserved for a state macOS itself calls its worst.
+enum AlertConditionSeverity {
+    static func resolve(_ update: AlertConditionUpdate) -> AttentionSeverity {
+        switch update.conditionKey {
         // A battery macOS wants serviced is a hardware fault, not a passing spike.
-        if update.conditionKey == SystemAlertSignal.batteryService.conditionKey {
+        case SystemAlertSignal.batteryService.conditionKey:
             return .critical
+        case SystemAlertSignal.thermalPressure.conditionKey:
+            return update.measuredValue
+                >= Double(ThermalPressureLevel.critical.rawValue)
+                ? .critical
+                : .warning
+        case SystemAlertSignal.memoryPressure.conditionKey:
+            return update.measuredValue
+                >= Double(MemoryPressureLevel.critical.rawValue)
+                ? .critical
+                : .warning
+        default:
+            return .warning
         }
-        return .warning
     }
 }
 
@@ -372,6 +393,16 @@ extension AttentionSeverity {
 private extension ActiveAlertCondition {
     var summary: String {
         switch conditionKey {
+        case SystemAlertSignal.thermalPressure.conditionKey:
+            return String(
+                localized: "health.condition.thermal",
+                defaultValue: "CPU and GPU held back to cool down (\(SystemSignalFormat.thermal(measuredValue)))"
+            )
+        case SystemAlertSignal.memoryPressure.conditionKey:
+            return String(
+                localized: "health.condition.memoryPressure",
+                defaultValue: "Memory pressure is \(SystemSignalFormat.pressure(measuredValue))"
+            )
         case SystemAlertSignal.diskAvailableCapacity.conditionKey:
             return String(
                 localized: "health.condition.diskCapacity",

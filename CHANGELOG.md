@@ -5,6 +5,36 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- A bundled, read-only `mectrics` CLI for headless Macs. It reuses the alert rules enabled
+  in the app, streams activation and recovery events as text or newline-delimited JSON,
+  lists configured rules, provides a cron-friendly `check` with meaningful exit codes,
+  and captures every available module through a one-shot `snapshot`.
+- A one-click CLI installer in Alert settings. It creates `/usr/local/bin/mectrics` as a
+  link to the signed executable inside the app, with no second download or background
+  service.
+- Two alert rules for what macOS itself reports, alongside the existing number
+  thresholds. **CPU and GPU slowed to cool down** fires when the system holds the chip
+  back — a hot sensor and a machine that is actually being slowed are not the same
+  thing, and only the second one costs you time. On Apple silicon the state covers the
+  whole chip, so a throttled GPU is included. **Memory pressure** fires on the kernel's
+  own verdict rather than on how full memory looks; a Mac can sit at 95% with nothing
+  wrong. Both wait for the condition to persist before they say anything, both appear on
+  the Compact Health item, and both are recorded in the Attention Log — so after a long
+  job you can go back and see the hours your Mac spent held back.
+
+### Changed
+
+- Fan detection now falls back to the read-only per-fan speed keys when a Mac exposes
+  fan data but does not return the usual SMC fan-count key.
+
+- Temperatures are no longer sampled for a module that is only being watched by an alert
+  rule. Reading the SMC is the most expensive thing Mectrics does, and a rule on CPU
+  usage never needed it.
+
 ## [1.3.0] — 2026-07-30
 
 ### Changed
@@ -87,6 +117,8 @@ roughly one idle wake per second.
 - Automatic update checks are disabled; the Sparkle appcast is fetched only on an explicit
   **Check for Updates…** and verified against a pinned EdDSA public key.
 
+[Unreleased]: https://github.com/farukkamcici/mectrics/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/farukkamcici/mectrics/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/farukkamcici/mectrics/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/farukkamcici/mectrics/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/farukkamcici/mectrics/releases/tag/v1.0.0

@@ -432,6 +432,49 @@ final class MetricsKitTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(Int(sample.detail["fanCount"] ?? 0), 1)
     }
 
+    func testFansProviderSamplesDetectedFans() throws {
+        let reader = MockSMCValueReader(values: [
+            "FNum": 2,
+            "F0Ac": 2_000,
+            "F0Mx": 5_000,
+            "F1Ac": 2_400,
+            "F1Mx": 4_800
+        ])
+        let provider = FansProvider(smc: reader)
+
+        XCTAssertTrue(provider.isAvailable)
+        let sample = try XCTUnwrap(provider.sample())
+        XCTAssertEqual(sample.unit, .fraction)
+        XCTAssertEqual(sample.value, 0.5, accuracy: 0.001)
+        XCTAssertEqual(sample.detail["fanCount"], 2)
+        XCTAssertEqual(sample.detail["fan0Rpm"], 2_000)
+        XCTAssertEqual(sample.detail["fan1Rpm"], 2_400)
+        XCTAssertEqual(sample.detail["maxRpm"], 2_400)
+    }
+
+    func testFansProviderFallsBackToSpeedKeysWhenCountIsMissing() throws {
+        let reader = MockSMCValueReader(values: [
+            "F0Ac": 1_800,
+            "F0Mx": 4_500
+        ])
+        let provider = FansProvider(smc: reader)
+
+        XCTAssertTrue(provider.isAvailable)
+        let sample = try XCTUnwrap(provider.sample())
+        XCTAssertEqual(sample.detail["fanCount"], 1)
+        XCTAssertEqual(sample.detail["fan0Rpm"], 1_800)
+        XCTAssertEqual(sample.value, 0.4, accuracy: 0.001)
+    }
+
+    func testFansProviderKeepsFanlessMacsUnavailable() {
+        let provider = FansProvider(
+            smc: MockSMCValueReader(values: ["FNum": 0])
+        )
+
+        XCTAssertFalse(provider.isAvailable)
+        XCTAssertNil(provider.sample())
+    }
+
     func testMenuRateIsCompactAndBounded() {
         // Sub-KB/s collapses to "0".
         XCTAssertEqual(MetricFormat.menuRate(0), "0")
@@ -447,6 +490,18 @@ final class MetricsKitTests: XCTestCase {
             XCTAssertLessThanOrEqual(MetricFormat.menuRate(v).count, 4,
                                      "menuRate(\(v)) too wide")
         }
+    }
+}
+
+private final class MockSMCValueReader: SMCValueReading {
+    private let values: [String: Double]
+
+    init(values: [String: Double]) {
+        self.values = values
+    }
+
+    func readValue(_ name: String) -> Double? {
+        values[name]
     }
 }
 

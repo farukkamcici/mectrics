@@ -38,8 +38,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var whatsNewWindow: WhatsNewWindowController!
     private let updates = UpdateController()
     private var onboarding: OnboardingWindowController?
-    private let thresholds = ThresholdMonitor()
-    private let systemConditions = SystemConditionMonitor()
+    private let thresholds = ThresholdMonitor(
+        notificationHandler: AlertNotificationDelivery.threshold
+    )
+    private let systemConditions = SystemConditionMonitor(
+        notificationHandler: AlertNotificationDelivery.systemCondition
+    )
     private var energyGuard: EnergyGuardController!
     private let widgetSnapshots = WidgetSnapshotPublisher()
     private var powerSourceRunLoopSource: CFRunLoopSource?

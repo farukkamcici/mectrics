@@ -35,6 +35,58 @@ enum AppLocalization {
     }
 }
 
+extension ThermalPressureLevel {
+    /// How much the Mac is being held back, in words a person can act on.
+    ///
+    /// Apple's own names — nominal, fair, serious, critical — describe the thermal
+    /// situation. What someone actually notices is how much slower their machine has
+    /// become, so the scale is named for that instead.
+    var localizedName: String {
+        switch self {
+        case .nominal:
+            return String(localized: "thermal.nominal", defaultValue: "None")
+        case .fair:
+            return String(localized: "thermal.fair", defaultValue: "Light")
+        case .serious:
+            return String(localized: "thermal.serious", defaultValue: "Noticeable")
+        case .critical:
+            return String(localized: "thermal.critical", defaultValue: "Severe")
+        }
+    }
+}
+
+extension MemoryPressureLevel {
+    /// Activity Monitor's own vocabulary for the same kernel value, so the two agree
+    /// when someone opens both.
+    var localizedName: String {
+        switch self {
+        case .normal:
+            return String(localized: "pressure.normal", defaultValue: "Normal")
+        case .warning:
+            return String(localized: "pressure.warning", defaultValue: "Warning")
+        case .critical:
+            return String(localized: "pressure.critical", defaultValue: "Critical")
+        }
+    }
+}
+
+/// Every alert condition travels through the pipeline as one `Double`, so the level
+/// words are resolved back from that value here rather than in each surface.
+enum SystemSignalFormat {
+    static func thermal(_ value: Double) -> String {
+        let clamped = min(
+            max(Int(value), ThermalPressureLevel.nominal.rawValue),
+            ThermalPressureLevel.critical.rawValue
+        )
+        return (ThermalPressureLevel(rawValue: clamped) ?? .nominal).localizedName
+    }
+
+    /// The kernel's levels skip 3; anything it does not define reads as normal.
+    static func pressure(_ value: Double) -> String {
+        (MemoryPressureLevel(rawValue: Int(value)) ?? .normal).localizedName
+    }
+}
+
 extension MetricID {
     /// Localized, user-facing module name (English is the development-language default).
     var localizedName: String {

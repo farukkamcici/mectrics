@@ -51,7 +51,11 @@ The metric engine is a standalone SwiftPM package, so most core work needs no Xc
 ```bash
 cd Packages/MetricsKit
 swift test
-swift run mectrics-cli   # live readout of every provider
+swift run metricskit-demo               # internal live readout of every provider
+swift run mectrics --help               # read-only user automation interface
+swift run mectrics check --json         # alert-rule check with a script-friendly exit code
+swift run mectrics snapshot --json      # one current reading from every available module
+swift run mectrics alerts watch --json  # saved app rules as an NDJSON event stream
 ```
 
 For app-layer changes:
@@ -111,9 +115,21 @@ plain text and is the fastest way to give a complete picture; review it before a
 
 ## Scope
 
+Read the [Non-goals](README.md#non-goals) section before starting anything large. It is
+the fastest way to find out that an idea will not be merged, and it is kept short so that
+there is no excuse for not reading it.
+
 Some things were tried and deliberately reversed: the always-on-top floating panel and its
-global hotkey, the 30-day archive and CSV export, and kernel memory-pressure / thermal-state
-alert rules. Please open an issue for discussion before reviving any of them.
+global hotkey, and the 30-day archive with CSV export. Please open an issue for discussion
+before reviving either of them.
+
+Kernel memory-pressure and thermal-state alert rules were also once reversed, then brought
+back after a user pointed out that a hot sensor and a throttled machine are not the same
+thing. A reversal is a decision about a moment, not a permanent verdict; argue with one if
+you have the case for it.
+
+This is a side project maintained around a full-time job. Issues and pull requests may sit
+for a week or two. That is not disinterest, and a polite nudge is welcome.
 
 ## Code of Conduct
 

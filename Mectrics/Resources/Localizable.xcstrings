@@ -1481,6 +1481,170 @@
         }
       }
     },
+    "alert.system.thermal.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Your Mac is slowing down to cool off"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mac’iniz soğumak için yavaşlıyor"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваш Mac замедляется, чтобы охладиться"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu Mac se está ralentizando para enfriarse"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre Mac ralentit pour refroidir"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seu Mac está desacelerando para esfriar"
+          }
+        }
+      }
+    },
+    "alert.system.thermal.body": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "macOS is limiting CPU and GPU performance to cool your Mac down. Slowdown is %@."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS, Mac’inizi soğutmak için CPU ve GPU başarımını sınırlıyor. Yavaşlama: %@."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS ограничивает производительность CPU и GPU, чтобы охладить Mac. Замедление: %@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS está limitando el rendimiento de la CPU y la GPU para enfriar tu Mac. Ralentización: %@."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS limite les performances du CPU et du GPU pour refroidir votre Mac. Ralentissement : %@."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O macOS está limitando o desempenho da CPU e da GPU para esfriar seu Mac. Lentidão: %@."
+          }
+        }
+      }
+    },
+    "alert.system.memoryPressure.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Your Mac is short on memory"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mac’inizin belleği yetersiz"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вашему Mac не хватает памяти"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu Mac tiene poca memoria"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre Mac manque de mémoire"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seu Mac está com pouca memória"
+          }
+        }
+      }
+    },
+    "alert.system.memoryPressure.body": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Memory pressure reached %@. macOS is compressing and swapping to keep apps running."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bellek baskısı %@ düzeyine ulaştı. macOS, uygulamaları çalışır tutmak için sıkıştırma ve takas kullanıyor."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нагрузка на память достигла уровня «%@». macOS сжимает и выгружает память, чтобы приложения продолжали работать."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La presión de memoria alcanzó %@. macOS está comprimiendo e intercambiando para mantener las apps en marcha."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La pression mémoire a atteint %@. macOS compresse et permute pour garder les apps en fonctionnement."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A pressão de memória atingiu %@. O macOS está comprimindo e usando swap para manter os apps funcionando."
+          }
+        }
+      }
+    },
     "alert.test.body": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -1805,6 +1969,375 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ altında"
+          }
+        }
+      }
+    },
+    "alerts.cli.commands": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Available commands"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comandos disponibles"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Commandes disponibles"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comandos disponíveis"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступные команды"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kullanılabilir komutlar"
+          }
+        }
+      }
+    },
+    "alerts.cli.conflict": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "A different command already exists at /usr/local/bin/mectrics."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya existe otro comando en /usr/local/bin/mectrics."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une autre commande existe déjà dans /usr/local/bin/mectrics."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Já existe outro comando em /usr/local/bin/mectrics."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "По адресу /usr/local/bin/mectrics уже существует другая команда."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/usr/local/bin/mectrics konumunda farklı bir komut zaten var."
+          }
+        }
+      }
+    },
+    "alerts.cli.description": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Install the bundled CLI to run mectrics from any Terminal. It remains read-only and uses the rules enabled above."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instala la CLI incluida para ejecutar mectrics desde cualquier Terminal. Sigue siendo de solo lectura y usa las reglas activadas arriba."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installez la CLI incluse pour exécuter mectrics depuis n’importe quel Terminal. Elle reste en lecture seule et utilise les règles activées ci-dessus."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instale a CLI incluída para executar mectrics em qualquer Terminal. Ela continua somente leitura e usa as regras ativadas acima."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установите встроенный CLI, чтобы запускать mectrics из любого Терминала. CLI работает только для чтения и использует включённые выше правила."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Birlikte gelen CLI’ı yükleyerek mectrics komutunu her Terminal penceresinde çalıştırın. CLI yalnızca okur ve yukarıda etkinleştirilen kuralları kullanır."
+          }
+        }
+      }
+    },
+    "alerts.cli.failed": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Installation was cancelled or failed. Nothing changed."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La instalación se canceló o falló. No se cambió nada."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’installation a été annulée ou a échoué. Rien n’a été modifié."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A instalação foi cancelada ou falhou. Nada foi alterado."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установка отменена или завершилась с ошибкой. Ничего не изменилось."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yükleme iptal edildi veya başarısız oldu. Hiçbir şey değişmedi."
+          }
+        }
+      }
+    },
+    "alerts.cli.footer": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Installation creates a link at /usr/local/bin/mectrics. macOS may ask for administrator permission."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La instalación crea un enlace en /usr/local/bin/mectrics. macOS puede pedir permiso de administrador."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’installation crée un lien dans /usr/local/bin/mectrics. macOS peut demander l’autorisation d’un administrateur."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A instalação cria um link em /usr/local/bin/mectrics. O macOS pode pedir permissão de administrador."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установка создаёт ссылку /usr/local/bin/mectrics. macOS может запросить права администратора."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yükleme /usr/local/bin/mectrics konumunda bir bağlantı oluşturur. macOS yönetici izni isteyebilir."
+          }
+        }
+      }
+    },
+    "alerts.cli.install": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Install CLI…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar CLI…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installer la CLI…"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar CLI…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установить CLI…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CLI’ı Yükle…"
+          }
+        }
+      }
+    },
+    "alerts.cli.installed": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Installed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installée"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalada"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установлено"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yüklendi"
+          }
+        }
+      }
+    },
+    "alerts.cli.remove": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Remove"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remover"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaldır"
+          }
+        }
+      }
+    },
+    "alerts.cli.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Command Line Access"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceso por línea de comandos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accès en ligne de commande"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acesso pela linha de comando"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступ из командной строки"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komut Satırı Erişimi"
           }
         }
       }
@@ -2219,6 +2752,88 @@
         }
       }
     },
+    "alerts.system.thermalPressure": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "CPU and GPU slowed to cool down"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU ve GPU soğumak için yavaşlatıldı"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU и GPU замедлены для охлаждения"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU y GPU ralentizadas para enfriar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU et GPU ralentis pour refroidir"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU e GPU desacelerados para esfriar"
+          }
+        }
+      }
+    },
+    "alerts.system.memoryPressure": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Memory pressure reaches"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bellek baskısı şu düzeye ulaştığında"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нагрузка на память достигает"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La presión de memoria alcanza"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La pression mémoire atteint"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A pressão de memória atinge"
+          }
+        }
+      }
+    },
     "alerts.temp": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -2624,6 +3239,47 @@
           "stringUnit": {
             "state": "translated",
             "value": "Enerji Koruması"
+          }
+        }
+      }
+    },
+    "attention.event.thermalPressure": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Thermal throttling"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termal kısıtlama"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тепловой троттлинг"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limitación térmica"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limitation thermique"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limitação térmica"
           }
         }
       }
@@ -3280,6 +3936,88 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$@, %5$lld saniye boyunca %3$@%4$@ değerinin %2$@ kaldı"
+          }
+        }
+      }
+    },
+    "attention.trigger.thermalPressure": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "macOS limited CPU and GPU performance (%1$@) for %2$lld seconds"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS, %2$lld saniye boyunca CPU ve GPU başarımını sınırladı (%1$@)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS ограничивал производительность CPU и GPU (%1$@) в течение %2$lld секунд"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS limitó el rendimiento de la CPU y la GPU (%1$@) durante %2$lld segundos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS a limité les performances du CPU et du GPU (%1$@) pendant %2$lld secondes"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O macOS limitou o desempenho da CPU e da GPU (%1$@) por %2$lld segundos"
+          }
+        }
+      }
+    },
+    "attention.trigger.memoryPressure": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Memory pressure stayed at %1$@ for %2$lld seconds"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bellek baskısı %2$lld saniye boyunca %1$@ düzeyinde kaldı"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нагрузка на память оставалась на уровне «%1$@» в течение %2$lld секунд"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La presión de memoria se mantuvo en %1$@ durante %2$lld segundos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La pression mémoire est restée à %1$@ pendant %2$lld secondes"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A pressão de memória permaneceu em %1$@ por %2$lld segundos"
           }
         }
       }
@@ -4038,6 +4776,47 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pas dans la barre de menu"
+          }
+        }
+      }
+    },
+    "builder.modules.footer": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Modules appear only when this Mac reports the required hardware. Temperatures are available inside CPU, Memory, and GPU."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los módulos solo aparecen cuando este Mac detecta el hardware necesario. Las temperaturas están disponibles dentro de CPU, Memoria y GPU."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les modules apparaissent uniquement lorsque ce Mac détecte le matériel requis. Les températures sont disponibles dans Processeur, Mémoire et GPU."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os módulos aparecem somente quando este Mac detecta o hardware necessário. As temperaturas estão disponíveis em CPU, Memória e GPU."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Модули отображаются только тогда, когда этот Mac обнаруживает необходимое оборудование. Температура доступна в разделах ЦП, Память и ГП."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modüller yalnızca bu Mac gerekli donanımı algıladığında görünür. Sıcaklık seçenekleri CPU, Bellek ve GPU içinde yer alır."
           }
         }
       }
@@ -7172,6 +7951,88 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@, koşulun sürmesi bekleniyor"
+          }
+        }
+      }
+    },
+    "health.condition.thermal": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "CPU and GPU held back to cool down (%@)"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU ve GPU soğumak için kısıtlanıyor (%@)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU и GPU ограничены для охлаждения (%@)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU y GPU limitadas para enfriar (%@)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU et GPU bridés pour refroidir (%@)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU e GPU limitados para esfriar (%@)"
+          }
+        }
+      }
+    },
+    "health.condition.memoryPressure": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Memory pressure is %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bellek baskısı: %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нагрузка на память: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La presión de memoria es %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pression mémoire : %@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A pressão de memória é %@"
           }
         }
       }
@@ -11427,6 +12288,40 @@
         }
       }
     },
+    "Pressure level": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baskı düzeyi"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Уровень нагрузки"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nivel de presión"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Niveau de pression"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nível de pressão"
+          }
+        }
+      }
+    },
     "pressure.critical": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -13773,6 +14668,40 @@
         }
       }
     },
+    "Slowdown": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yavaşlama"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Замедление"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ralentización"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ralentissement"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lentidão"
+          }
+        }
+      }
+    },
     "The diagnostics file could not be saved.": {
       "localizations": {
         "es": {
@@ -13953,6 +14882,170 @@
           "stringUnit": {
             "state": "translated",
             "value": "İşlem listesini göster veya gizle"
+          }
+        }
+      }
+    },
+    "thermal.nominal": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "None"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yok"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ninguna"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhuma"
+          }
+        }
+      }
+    },
+    "thermal.fair": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Light"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hafif"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Небольшое"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leve"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Léger"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leve"
+          }
+        }
+      }
+    },
+    "thermal.serious": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Noticeable"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Belirgin"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Заметное"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apreciable"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notable"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perceptível"
+          }
+        }
+      }
+    },
+    "thermal.critical": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Severe"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ağır"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сильное"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grave"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sévère"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grave"
           }
         }
       }

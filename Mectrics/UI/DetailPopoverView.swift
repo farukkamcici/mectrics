@@ -427,14 +427,10 @@ struct DetailPopoverView: View {
         return "\(minutes)m"
     }
 
-    /// Kernel pressure level (1/2/4) → user-facing label.
+    /// Kernel pressure level (1/2/4) → user-facing label. A value the kernel does not
+    /// define is shown as a dash rather than guessed at.
     private static func pressureLabel(_ level: Double) -> String {
-        switch Int(level) {
-        case 1:  return String(localized: "pressure.normal", defaultValue: "Normal")
-        case 2:  return String(localized: "pressure.warning", defaultValue: "Warning")
-        case 4:  return String(localized: "pressure.critical", defaultValue: "Critical")
-        default: return "–"
-        }
+        MemoryPressureLevel(rawValue: Int(level))?.localizedName ?? "–"
     }
 }
 

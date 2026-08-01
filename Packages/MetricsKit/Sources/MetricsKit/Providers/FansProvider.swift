@@ -1,5 +1,11 @@
 import Foundation
 
+protocol SMCValueReading: AnyObject {
+    func readValue(_ name: String) -> Double?
+}
+
+extension SMCClient: SMCValueReading {}
+
 /// Fan speeds via the SMC (`FNum`, `F0Ac` actual RPM, `F0Mx` max RPM).
 ///
 /// Fanless machines (MacBook Air) report no fans and the module hides itself.
@@ -9,26 +15,31 @@ public final class FansProvider: MetricProvider, @unchecked Sendable {
     public let id: MetricID = .fans
     public let cost: SamplingCost = .heavy
 
-    private let smc: SMCClient?
-    private let fanCount: Int
+    private let smc: (any SMCValueReading)?
+    private let fanIndices: [Int]
 
-    public init() {
-        self.smc = SMCClient()
-        let count = smc?.readValue("FNum").map(Int.init) ?? 0
-        self.fanCount = (0...8).contains(count) ? count : 0
+    public convenience init() {
+        self.init(smc: SMCClient())
     }
 
-    public var isAvailable: Bool { smc != nil && fanCount > 0 }
+    init(smc: (any SMCValueReading)?) {
+        self.smc = smc
+        fanIndices = Self.detectFanIndices(using: smc)
+    }
+
+    public var isAvailable: Bool { smc != nil && !fanIndices.isEmpty }
 
     public func sample() -> MetricSample? {
-        guard let smc, fanCount > 0 else { return nil }
+        guard let smc, !fanIndices.isEmpty else { return nil }
 
-        var detail: [String: Double] = ["fanCount": Double(fanCount)]
+        var detail: [String: Double] = [
+            "fanCount": Double(fanIndices.count)
+        ]
         var maxRatio = 0.0
         var maxRpm = 0.0
         var gotAny = false
 
-        for i in 0..<fanCount {
+        for i in fanIndices {
             guard let actual = smc.readValue("F\(i)Ac"), actual >= 0 else { continue }
             gotAny = true
             detail["fan\(i)Rpm"] = actual
@@ -42,5 +53,21 @@ public final class FansProvider: MetricProvider, @unchecked Sendable {
 
         detail["maxRpm"] = maxRpm
         return MetricSample(value: maxRatio, unit: .fraction, detail: detail)
+    }
+
+    private static func detectFanIndices(
+        using smc: (any SMCValueReading)?
+    ) -> [Int] {
+        guard let smc else { return [] }
+        if let rawCount = smc.readValue("FNum"), rawCount.isFinite {
+            let count = Int(rawCount)
+            if count == 0 { return [] }
+            if (1...8).contains(count) { return Array(0..<count) }
+        }
+
+        // Some SMC implementations expose current fan speeds even when the count
+        // key cannot be read. Probe the read-only speed keys once so a real fan is
+        // not hidden solely because FNum is missing or malformed.
+        return (0..<8).filter { smc.readValue("F\($0)Ac") != nil }
     }
 }

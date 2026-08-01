@@ -9,8 +9,10 @@ let package = Package(
     products: [
         // UI-independent core: providers, scheduler, store, and engine.
         .library(name: "MetricsKit", targets: ["MetricsKit"]),
-        // Demo tool for viewing live metrics without opening Xcode.
-        .executable(name: "mectrics-cli", targets: ["MectricsCLI"])
+        // Read-only automation interface shipped inside Mectrics.app.
+        .executable(name: "mectrics", targets: ["MectricsCLI"]),
+        // Internal provider readout for development and hardware validation.
+        .executable(name: "metricskit-demo", targets: ["MetricsKitDemo"])
     ],
     targets: [
         // The whole package builds in the Swift 6 language mode: providers wrap C-based
@@ -19,6 +21,10 @@ let package = Package(
         .target(name: "MetricsKit"),
         .executableTarget(
             name: "MectricsCLI",
+            dependencies: ["MetricsKit"]
+        ),
+        .executableTarget(
+            name: "MetricsKitDemo",
             dependencies: ["MetricsKit"]
         ),
         .testTarget(

@@ -53,6 +53,9 @@ xcodebuild -exportArchive \
   -allowProvisioningUpdates
 
 app_path="$export_path/Mectrics.app"
+cli_path="$app_path/Contents/Helpers/mectrics"
+[[ -x "$cli_path" ]]
+codesign --verify --strict --verbose=2 "$cli_path"
 codesign --verify --deep --strict --verbose=2 "$app_path"
 
 rm -rf "$staging_path"

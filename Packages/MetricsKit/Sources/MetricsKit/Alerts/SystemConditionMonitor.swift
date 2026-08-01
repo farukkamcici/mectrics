@@ -1,91 +1,31 @@
 import Foundation
-import MetricsKit
-import UserNotifications
 
-/// Conditions macOS reports directly, rather than thresholds on a sampled value.
-///
-/// Kernel memory pressure and thermal state were removed: they are power-user
-/// concepts that most people cannot act on, and each duplicated a rule that is
-/// already here in plainer terms.
-enum SystemAlertSignal: String, Codable, CaseIterable, Hashable {
-    case diskAvailableCapacity
-    case batteryService
-
-    var metricID: MetricID {
-        switch self {
-        case .diskAvailableCapacity: return .disk
-        case .batteryService: return .battery
-        }
-    }
-
-    var unit: MetricUnit {
-        switch self {
-        case .diskAvailableCapacity: return .bytes
-        case .batteryService: return .count
-        }
-    }
-
-    var conditionKey: String { "system.\(rawValue)" }
-}
-
-struct SystemAlertRule: Codable, Equatable {
-    var enabled: Bool
-    var thresholdValue: Double
-    var durationSeconds: Int
-    var cooldownSeconds: Int
-    var destinations: Set<AlertDestination>
-
-    init(
-        enabled: Bool,
-        thresholdValue: Double,
-        durationSeconds: Int = 30,
-        cooldownSeconds: Int = 15 * 60,
-        destinations: Set<AlertDestination> = [.attentionLog]
-    ) {
-        self.enabled = enabled
-        self.thresholdValue = thresholdValue
-        self.durationSeconds = durationSeconds
-        self.cooldownSeconds = cooldownSeconds
-        self.destinations = destinations
-    }
-}
-
-struct SystemConditionReading: Equatable {
-    let signal: SystemAlertSignal
-    let value: Double
-
-    init(_ signal: SystemAlertSignal, value: Double) {
-        self.signal = signal
-        self.value = value
-    }
-}
-
-/// Evaluates native system signals independently of percentage-based module rules.
-/// A missing reading means unavailable hardware or an unsupported provider value; it
-/// never fabricates a healthy or failing state.
-final class SystemConditionMonitor {
-    typealias NotificationHandler = (
+/// Evaluates native system signals independently of percentage-based metric rules.
+public final class SystemConditionMonitor {
+    public typealias NotificationHandler = (
         SystemAlertSignal,
         SystemAlertRule,
         SystemConditionReading
     ) -> Void
 
-    var onConditionUpdate: ((AlertConditionUpdate) -> Void)?
+    public var onConditionUpdate: ((AlertConditionUpdate) -> Void)?
 
     private var lastFired: [SystemAlertSignal: Date] = [:]
     private var violationStartedAt: [SystemAlertSignal: Date] = [:]
     private var states: [SystemAlertSignal: AlertConditionState] = [:]
     private let notificationHandler: NotificationHandler
 
-    init(notificationHandler: NotificationHandler? = nil) {
-        self.notificationHandler = notificationHandler ?? Self.postNotification
+    public init(
+        notificationHandler: @escaping NotificationHandler = { _, _, _ in }
+    ) {
+        self.notificationHandler = notificationHandler
     }
 
-    func state(for signal: SystemAlertSignal) -> AlertConditionState {
+    public func state(for signal: SystemAlertSignal) -> AlertConditionState {
         states[signal] ?? .normal
     }
 
-    func evaluate(
+    public func evaluate(
         readings: [SystemAlertSignal: SystemConditionReading],
         rules: [SystemAlertSignal: SystemAlertRule],
         now: Date = Date()
@@ -97,11 +37,7 @@ final class SystemConditionMonitor {
             }
 
             guard Self.isViolating(reading, threshold: rule.thresholdValue) else {
-                recoverIfNeeded(
-                    signal: signal,
-                    reading: reading,
-                    rule: rule
-                )
+                recoverIfNeeded(signal: signal, reading: reading, rule: rule)
                 continue
             }
 
@@ -146,14 +82,14 @@ final class SystemConditionMonitor {
         }
     }
 
-    static func isViolating(
+    public static func isViolating(
         _ reading: SystemConditionReading,
         threshold: Double
     ) -> Bool {
         switch reading.signal {
         case .diskAvailableCapacity:
             return reading.value <= threshold
-        case .batteryService:
+        case .thermalPressure, .memoryPressure, .batteryService:
             return reading.value >= threshold
         }
     }
@@ -222,57 +158,5 @@ final class SystemConditionMonitor {
             startedAt: startedAt,
             destinations: rule.destinations
         )
-    }
-
-    private static func postNotification(
-        signal: SystemAlertSignal,
-        rule: SystemAlertRule,
-        reading: SystemConditionReading
-    ) {
-        let content = UNMutableNotificationContent()
-        content.title = signal.notificationTitle
-        content.body = signal.notificationBody(
-            value: reading.value,
-            threshold: rule.thresholdValue
-        )
-        content.sound = .default
-        let request = UNNotificationRequest(
-            identifier: "mectrics.alert.\(signal.conditionKey)",
-            content: content,
-            trigger: nil
-        )
-        UNUserNotificationCenter.current().add(request)
-    }
-}
-
-private extension SystemAlertSignal {
-    var notificationTitle: String {
-        switch self {
-        case .diskAvailableCapacity:
-            return String(
-                localized: "alert.system.diskCapacity.title",
-                defaultValue: "Disk space is running low"
-            )
-        case .batteryService:
-            return String(
-                localized: "alert.system.batteryService.title",
-                defaultValue: "Battery service is recommended"
-            )
-        }
-    }
-
-    func notificationBody(value: Double, threshold: Double) -> String {
-        switch self {
-        case .diskAvailableCapacity:
-            return String(
-                localized: "alert.system.diskCapacity.body",
-                defaultValue: "\(MetricFormat.bytes(value)) remains, below your \(MetricFormat.bytes(threshold)) limit."
-            )
-        case .batteryService:
-            return String(
-                localized: "alert.system.batteryService.body",
-                defaultValue: "macOS reports that the battery needs service."
-            )
-        }
     }
 }

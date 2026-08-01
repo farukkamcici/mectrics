@@ -73,6 +73,59 @@ final class CompactHealthTests: XCTestCase {
         )
     }
 
+    /// Severity separates "the Mac is working hard" from "macOS says this is as bad
+    /// as it gets", so the menu bar's red state stays worth looking at.
+    func testWorstNativeStatesAreCriticalAndLesserOnesAreNot() {
+        XCTAssertEqual(
+            severity(
+                SystemAlertSignal.thermalPressure.conditionKey,
+                measured: Double(ThermalPressureLevel.serious.rawValue)
+            ),
+            .warning
+        )
+        XCTAssertEqual(
+            severity(
+                SystemAlertSignal.thermalPressure.conditionKey,
+                measured: Double(ThermalPressureLevel.critical.rawValue)
+            ),
+            .critical
+        )
+        XCTAssertEqual(
+            severity(
+                SystemAlertSignal.memoryPressure.conditionKey,
+                measured: Double(MemoryPressureLevel.warning.rawValue)
+            ),
+            .warning
+        )
+        XCTAssertEqual(
+            severity(
+                SystemAlertSignal.memoryPressure.conditionKey,
+                measured: Double(MemoryPressureLevel.critical.rawValue)
+            ),
+            .critical
+        )
+    }
+
+    /// The Compact Health item and the Attention Log must never disagree about how
+    /// serious one event was.
+    func testCompactHealthAndAttentionLogAgreeOnSeverity() {
+        for key in [
+            SystemAlertSignal.thermalPressure.conditionKey,
+            SystemAlertSignal.memoryPressure.conditionKey,
+            SystemAlertSignal.batteryService.conditionKey,
+            "threshold.cpu"
+        ] {
+            for measured in [0.0, 1, 2, 3, 4] {
+                let update = update(key, measured: measured)
+                XCTAssertEqual(
+                    ActiveAlertCondition(update: update).severity,
+                    AlertConditionSeverity.resolve(update),
+                    "\(key) at \(measured)"
+                )
+            }
+        }
+    }
+
     func testMenuBarSlotHasOneInvariantLength() {
         XCTAssertEqual(CompactHealthStatusItem.fixedLength, 26)
         XCTAssertTrue(
@@ -107,6 +160,33 @@ final class CompactHealthTests: XCTestCase {
     private func value(_ number: Double, _ unit: MetricUnit) -> String {
         CompactHealthValue.text(
             for: MetricSample(value: number, unit: unit, detail: [:])
+        )
+    }
+
+    private func severity(
+        _ conditionKey: String,
+        measured: Double
+    ) -> AttentionSeverity {
+        ActiveAlertCondition(
+            update: update(conditionKey, measured: measured)
+        ).severity
+    }
+
+    private func update(
+        _ conditionKey: String,
+        measured: Double
+    ) -> AlertConditionUpdate {
+        AlertConditionUpdate(
+            conditionKey: conditionKey,
+            metricID: .cpu,
+            state: .active,
+            transition: .activated,
+            measuredValue: measured,
+            unit: .count,
+            thresholdValue: 1,
+            durationSeconds: 30,
+            startedAt: Date(timeIntervalSince1970: 1),
+            destinations: [.compactHealth, .attentionLog]
         )
     }
 

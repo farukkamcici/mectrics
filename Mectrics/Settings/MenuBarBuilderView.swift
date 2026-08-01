@@ -32,6 +32,13 @@ struct MenuBarBuilderView: View {
                     Spacer()
                     presetsMenu
                 }
+            } footer: {
+                Text(
+                    String(
+                        localized: "builder.modules.footer",
+                        defaultValue: "Modules appear only when this Mac reports the required hardware. Temperatures are available inside CPU, Memory, and GPU."
+                    )
+                )
             }
 
             Section {

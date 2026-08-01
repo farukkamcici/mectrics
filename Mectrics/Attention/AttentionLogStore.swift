@@ -276,10 +276,6 @@ final class AttentionLogStore {
         for update: AlertConditionUpdate
     ) -> AttentionSeverity {
         guard update.state == .active else { return .info }
-        // A battery macOS wants serviced is a hardware fault, not a passing spike.
-        if update.conditionKey == SystemAlertSignal.batteryService.conditionKey {
-            return .critical
-        }
-        return .warning
+        return AlertConditionSeverity.resolve(update)
     }
 }

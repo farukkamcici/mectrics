@@ -21,7 +21,10 @@ may write in Turkish). Nothing from that chat leaks into the repo in another lan
 
 - `Packages/MetricsKit/` — UI-independent metric engine (SwiftPM). Providers, scheduler,
   ring-buffer store, engine. **No UI, no localization** (data-only, English identifiers).
-  - `swift build`, `swift test`, `swift run mectrics-cli` (live terminal readout).
+  - `swift build`, `swift test`, `swift run metricskit-demo` (internal live provider
+    readout).
+  - `swift run mectrics` runs the read-only user CLI. It reads alert configuration from
+    the app and offers `check`, `snapshot`, event streaming, and rule listing.
   - Builds in the **Swift 6 language mode** and must stay warning-free. `MetricProvider`
     requires `Sendable`; providers are `@unchecked Sendable` because the engine samples
     them on one serial queue. Guard anything read outside that queue with a lock.
@@ -71,6 +74,14 @@ Do **not** commit: `Mectrics.xcodeproj/`, `DerivedData/`, `.build/` (see `.gitig
 - **The menu bar is the only live surface.** The always-on-top floating panel and its
   global hotkey were removed; the optional **Compact Health** item is the supported
   overview. Do not reintroduce a second always-visible rendering surface.
+- The bundled CLI is a headless **automation interface**, not a second live dashboard. It
+  reuses the app's saved rules, offers event streaming and one-shot checks, and keeps
+  standard output pipe-safe. `check` and alert streaming sample only the metrics they need;
+  `snapshot` samples every available module once. It is read-only; alert configuration
+  remains in the app.
+- The optional CLI installation is a symbolic link at `/usr/local/bin/mectrics` pointing
+  into the signed app bundle. Never download or copy a second binary, overwrite an unrelated
+  command at that path, or install a daemon. App removal also removes a Mectrics-owned link.
 - **Settings holds configuration, not routine actions.** Quit, copy, and export belong to
   the surfaces that own them (popover, Diagnostics, Attention Log), not to a preferences
   pane. The destructive, one-time app removal action is the sole exception because no
@@ -110,7 +121,7 @@ Do **not** commit: `Mectrics.xcodeproj/`, `DerivedData/`, `.build/` (see `.gitig
 
 ```bash
 # Core engine (no Xcode)
-cd Packages/MetricsKit && swift test && swift run mectrics-cli
+cd Packages/MetricsKit && swift test && swift run metricskit-demo
 
 # App
 xcodegen generate
@@ -141,8 +152,16 @@ xcodebuild -project Mectrics.xcodeproj -scheme Mectrics -configuration Debug bui
     for the maintainer. `SUPublicEDKey` in `project.yml` is a *public* key and belongs
     there — the private half never leaves the signing machine's Keychain.
 - Decisions that were tried and reversed — the floating panel and its global hotkey, the
-  30-day archive and CSV export, kernel memory-pressure and thermal-state alert rules —
-  stay reversed. Do not reintroduce them without an explicit decision from the user.
+  30-day archive and CSV export — stay reversed. Do not reintroduce them without an
+  explicit decision from the user.
+- Memory-pressure and thermal-state alert rules were removed in `9af7262` as power-user
+  vocabulary that restated the memory and temperature rules, then **reinstated by the
+  user** after launch feedback. They are back because the original reasoning was wrong on
+  the facts: a hot sensor is not a throttled machine, and a full memory bar is not a
+  machine under pressure. What stays true from that removal is the objection to the
+  wording, so these rules are named for what a person notices — how much the Mac has been
+  slowed — not for Apple's `nominal`/`fair`/`serious`/`critical` scale. Critical severity
+  is now reachable from three signals, not only a battery needing service.
 
 ## 10. Public-facing files
 

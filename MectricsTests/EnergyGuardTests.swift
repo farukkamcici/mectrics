@@ -160,6 +160,75 @@ final class EnergyGuardTests: XCTestCase {
         XCTAssertTrue(decision.runtimePolicy.pausedMetricIDs.contains(.gpu))
     }
 
+    /// Energy Guard and the thermal alert rule read one signal, so Mectrics eases off
+    /// on exactly the states it would tell the user their Mac is being held back on.
+    /// If these ever drift, the app is quietly sampling less while reporting nothing.
+    func testGuardProtectsAtExactlyTheStatesTheThermalRuleReports() {
+        let ruleThreshold = Double(ThermalPressureLevel.serious.rawValue)
+        for level in ThermalPressureLevel.allCases {
+            let reported = SystemConditionMonitor.isViolating(
+                SystemConditionReading(
+                    .thermalPressure,
+                    value: Double(level.rawValue)
+                ),
+                threshold: ruleThreshold
+            )
+            let protected = EnergyGuardStateMachine.targetMode(
+                input(thermalState: level)
+            ) == .protected
+            XCTAssertEqual(reported, protected, "thermal state \(level)")
+            XCTAssertEqual(
+                EnergyGuardStateMachine.reason(input(thermalState: level))
+                    == .thermalState,
+                protected,
+                "thermal state \(level)"
+            )
+        }
+    }
+
+    /// A sustained window is the whole difference between "your Mac throttled" and
+    /// "your Mac did a build". A single hot cycle must not alert.
+    func testMomentaryThrottlingDoesNotAlertButASustainedStateDoes() {
+        let monitor = SystemConditionMonitor()
+        var transitions: [AlertConditionTransition] = []
+        monitor.onConditionUpdate = { transitions.append($0.transition) }
+        let start = Date(timeIntervalSince1970: 3_000)
+        let rule = SystemAlertRule(
+            enabled: true,
+            thresholdValue: Double(ThermalPressureLevel.serious.rawValue),
+            durationSeconds: 120,
+            destinations: [.attentionLog]
+        )
+
+        evaluate(monitor, .serious, rule: rule, at: start)
+        evaluate(monitor, .fair, rule: rule, at: start.addingTimeInterval(10))
+        XCTAssertEqual(transitions, [.pending, .recovered])
+
+        evaluate(monitor, .serious, rule: rule, at: start.addingTimeInterval(20))
+        evaluate(monitor, .serious, rule: rule, at: start.addingTimeInterval(141))
+        XCTAssertEqual(
+            transitions,
+            [.pending, .recovered, .pending, .activated]
+        )
+        XCTAssertEqual(monitor.state(for: .thermalPressure), .active)
+    }
+
+    private func evaluate(
+        _ monitor: SystemConditionMonitor,
+        _ level: ThermalPressureLevel,
+        rule: SystemAlertRule,
+        at now: Date
+    ) {
+        monitor.evaluate(
+            readings: SystemConditionSource.readings(
+                latest: [:],
+                thermalLevel: level
+            ),
+            rules: [.thermalPressure: rule],
+            now: now
+        )
+    }
+
     private func input(
         isEnabled: Bool = true,
         isOnBattery: Bool = false,

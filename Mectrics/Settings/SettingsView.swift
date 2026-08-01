@@ -127,6 +127,12 @@ struct GeneralSettingsTab: View {
             titleVisibility: .visible
         ) {
             Button("Remove Mectrics", role: .destructive) {
+                let cliState = CLIInstaller.installationState()
+                if (cliState == .installed || cliState == .repairable),
+                   CLIInstaller.remove() != .success {
+                    uninstallFailed = true
+                    return
+                }
                 if !Uninstaller.performUninstall() {
                     uninstallFailed = true
                 }
@@ -175,6 +181,8 @@ struct AlertsSettingsTab: View {
     @Bindable var model: AppModel
     @State private var notificationAccess = NotificationAccessState.unknown
     @State private var testResult: NotificationAccessState?
+    @State private var cliInstallation = CLIInstaller.installationState()
+    @State private var cliInstallationFailed = false
 
     /// A rule is either a percentage threshold on a module or a native system signal.
     private enum RuleKey: Hashable, Identifiable {
@@ -242,9 +250,139 @@ struct AlertsSettingsTab: View {
             } footer: {
                 Text("macOS owns notification permission and decides how alerts are presented. Mectrics cannot show one until you allow it there.")
             }
+
+            Section {
+                VStack(alignment: .leading, spacing: ExperienceSpacing.small) {
+                    Text(
+                        String(
+                            localized: "alerts.cli.description",
+                            defaultValue: "Install the bundled CLI to run mectrics from any Terminal. It remains read-only and uses the rules enabled above."
+                        )
+                    )
+                    cliInstallationControl
+                    if cliInstallationFailed {
+                        Label(
+                            String(
+                                localized: "alerts.cli.failed",
+                                defaultValue: "Installation was cancelled or failed. Nothing changed."
+                            ),
+                            systemImage: "xmark.circle"
+                        )
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                    }
+                    Text(
+                        String(
+                            localized: "alerts.cli.commands",
+                            defaultValue: "Available commands"
+                        )
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    Text(
+                        verbatim: """
+                        mectrics check
+                        mectrics check --json
+                        mectrics snapshot --json
+                        mectrics alerts watch --json
+                        """
+                    )
+                    .font(.system(.caption, design: .monospaced))
+                    .textSelection(.enabled)
+                }
+                .padding(.vertical, ExperienceSpacing.xSmall)
+            } header: {
+                Text(
+                    String(
+                        localized: "alerts.cli.title",
+                        defaultValue: "Command Line Access"
+                    )
+                )
+            } footer: {
+                Text(
+                    String(
+                        localized: "alerts.cli.footer",
+                        defaultValue: "Installation creates a link at /usr/local/bin/mectrics. macOS may ask for administrator permission."
+                    )
+                )
+            }
         }
         .formStyle(.grouped)
-        .onAppear { refreshNotificationAccess() }
+        .onAppear {
+            refreshNotificationAccess()
+            cliInstallation = CLIInstaller.installationState()
+        }
+    }
+
+    @ViewBuilder
+    private var cliInstallationControl: some View {
+        switch cliInstallation {
+        case .installed:
+            HStack {
+                Label(
+                    String(
+                        localized: "alerts.cli.installed",
+                        defaultValue: "Installed"
+                    ),
+                    systemImage: "checkmark.circle.fill"
+                )
+                .foregroundStyle(.green)
+                Text(verbatim: "/usr/local/bin/mectrics")
+                    .font(.system(.caption, design: .monospaced))
+                    .textSelection(.enabled)
+                Spacer()
+                Button(
+                    String(
+                        localized: "alerts.cli.remove",
+                        defaultValue: "Remove"
+                    )
+                ) {
+                    removeCLI()
+                }
+            }
+        case .conflict:
+            Label(
+                String(
+                    localized: "alerts.cli.conflict",
+                    defaultValue: "A different command already exists at /usr/local/bin/mectrics."
+                ),
+                systemImage: "exclamationmark.triangle"
+            )
+            .foregroundStyle(.orange)
+        case .notInstalled, .repairable:
+            Button(
+                String(
+                    localized: "alerts.cli.install",
+                    defaultValue: "Install CLI…"
+                )
+            ) {
+                installCLI()
+            }
+        }
+    }
+
+    private func installCLI() {
+        cliInstallationFailed = false
+        switch CLIInstaller.install() {
+        case .success:
+            cliInstallation = CLIInstaller.installationState()
+        case .conflict:
+            cliInstallation = .conflict
+        case .failed:
+            cliInstallationFailed = true
+        }
+    }
+
+    private func removeCLI() {
+        cliInstallationFailed = false
+        switch CLIInstaller.remove() {
+        case .success:
+            cliInstallation = CLIInstaller.installationState()
+        case .conflict:
+            cliInstallation = .conflict
+        case .failed:
+            cliInstallationFailed = true
+        }
     }
 
     // MARK: - Rule list
@@ -363,6 +501,24 @@ struct AlertsSettingsTab: View {
     private func systemThresholdControl(_ signal: SystemAlertSignal) -> some View {
         let rule = systemRuleBinding(signal)
         switch signal {
+        case .thermalPressure:
+            Picker("Slowdown", selection: rule.thresholdValue) {
+                Text(ThermalPressureLevel.serious.localizedName)
+                    .tag(Double(ThermalPressureLevel.serious.rawValue))
+                Text(ThermalPressureLevel.critical.localizedName)
+                    .tag(Double(ThermalPressureLevel.critical.rawValue))
+            }
+            .labelsHidden()
+            .fixedSize()
+        case .memoryPressure:
+            Picker("Pressure level", selection: rule.thresholdValue) {
+                Text(MemoryPressureLevel.warning.localizedName)
+                    .tag(Double(MemoryPressureLevel.warning.rawValue))
+                Text(MemoryPressureLevel.critical.localizedName)
+                    .tag(Double(MemoryPressureLevel.critical.rawValue))
+            }
+            .labelsHidden()
+            .fixedSize()
         case .diskAvailableCapacity:
             Picker("Available capacity", selection: rule.thresholdValue) {
                 ForEach([5, 10, 20, 50], id: \.self) { gigabytes in
@@ -460,6 +616,10 @@ struct AlertsSettingsTab: View {
         case .system(let signal):
             let value = model.systemAlertRules[signal]?.thresholdValue ?? 0
             switch signal {
+            case .thermalPressure:
+                return SystemSignalFormat.thermal(value)
+            case .memoryPressure:
+                return SystemSignalFormat.pressure(value)
             case .diskAvailableCapacity:
                 return MetricFormat.bytes(value)
             case .batteryService:
@@ -492,6 +652,10 @@ struct AlertsSettingsTab: View {
                 )
             }
             switch signal {
+            case .thermalPressure:
+                return SystemSignalFormat.thermal(reading.value)
+            case .memoryPressure:
+                return SystemSignalFormat.pressure(reading.value)
             case .diskAvailableCapacity:
                 return MetricFormat.bytes(reading.value)
             case .batteryService:
@@ -726,6 +890,16 @@ private extension AlertConditionState {
 private extension SystemAlertSignal {
     var triggerLabel: String {
         switch self {
+        case .thermalPressure:
+            return String(
+                localized: "alerts.system.thermalPressure",
+                defaultValue: "CPU and GPU slowed to cool down"
+            )
+        case .memoryPressure:
+            return String(
+                localized: "alerts.system.memoryPressure",
+                defaultValue: "Memory pressure reaches"
+            )
         case .diskAvailableCapacity:
             return String(
                 localized: "alerts.system.diskCapacity",

@@ -23,7 +23,7 @@ Guidance for Claude Code (and other agents) working in this repository.
 ## Fast local loop (no Xcode UI)
 
 ```bash
-cd Packages/MetricsKit && swift test && swift run mectrics-cli
+cd Packages/MetricsKit && swift test && swift run metricskit-demo
 ```
 
 ## Build & run the app
@@ -37,7 +37,7 @@ open ~/Library/Developer/Xcode/DerivedData/Mectrics-*/Build/Products/Debug/Mectr
 ## Notes
 
 - This is a menu bar agent (`LSUIElement`), so there is no Dock icon or window — verify via
-  the menu bar and the popover, or via `mectrics-cli` for the raw metrics.
+  the menu bar and the popover, or via `metricskit-demo` for the raw metrics.
 - Screenshotting the desktop menu bar requires Screen Recording permission granted to the
   host app; otherwise `screencapture` fails with "could not create image from display".
 - When the user sets a new rule, record it in `AGENTS.md` (source of truth).

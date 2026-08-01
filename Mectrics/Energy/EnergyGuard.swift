@@ -35,22 +35,10 @@ enum EnergyGuardMode: String, Codable, CaseIterable, Equatable {
     }
 }
 
-enum EnergyThermalState: Int, Equatable {
-    case nominal
-    case fair
-    case serious
-    case critical
-
-    init(_ state: ProcessInfo.ThermalState) {
-        switch state {
-        case .nominal: self = .nominal
-        case .fair: self = .fair
-        case .serious: self = .serious
-        case .critical: self = .critical
-        @unknown default: self = .nominal
-        }
-    }
-}
+/// The guard and the thermal alert rule read the same signal, so they share one
+/// definition: what makes Mectrics sample less often is exactly what tells the user
+/// their Mac is being held back.
+typealias EnergyThermalState = ThermalPressureLevel
 
 struct EnergyGuardInput: Equatable {
     var isEnabled: Bool

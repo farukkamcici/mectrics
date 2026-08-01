@@ -373,20 +373,25 @@ final class AppModel {
     /// popovers and optional menu bar components show them.
     private func refreshActiveMetrics() {
         var active = enabledModules
-        for (id, rule) in alertRules where rule.enabled {
-            active.insert(id)
-        }
-        for (signal, rule) in systemAlertRules where rule.enabled {
-            active.insert(signal.metricID)
-        }
         if onboardingPreviewActive {
             active.formUnion([.cpu, .memory, .battery, .network])
         }
         if builderPreviewActive {
             active.formUnion(availableModules)
         }
+        // Temperatures accompany a module that is on screen, because its popover and
+        // optional menu bar component show them. A rule watching that module needs no
+        // temperature of its own — the CPU temperature rule asks for `.sensors`
+        // directly, and thermal pressure comes from ProcessInfo, not the SMC. Reading
+        // the SMC is the most expensive thing this app does; nothing invisible earns it.
         if !active.isDisjoint(with: [.cpu, .memory, .gpu]) {
             active.insert(.sensors)
+        }
+        for (id, rule) in alertRules where rule.enabled {
+            active.insert(id)
+        }
+        for (signal, rule) in systemAlertRules where rule.enabled {
+            active.insert(signal.metricID)
         }
         engine.setActiveMetrics(active)
     }
@@ -499,20 +504,7 @@ final class AppModel {
     }
 
     var systemConditionReadings: [SystemAlertSignal: SystemConditionReading] {
-        var readings: [SystemAlertSignal: SystemConditionReading] = [:]
-        if let free = latest[.disk]?.detail["free"] {
-            readings[.diskAvailableCapacity] = SystemConditionReading(
-                .diskAvailableCapacity,
-                value: free
-            )
-        }
-        if let service = latest[.battery]?.detail["serviceRecommended"] {
-            readings[.batteryService] = SystemConditionReading(
-                .batteryService,
-                value: service
-            )
-        }
-        return readings
+        SystemConditionSource.readings(latest: latest)
     }
 
     var compactHealthConditions: [ActiveAlertCondition] {
@@ -551,6 +543,19 @@ final class AppModel {
     private static func defaultSystemAlertRules()
         -> [SystemAlertSignal: SystemAlertRule] {
         [
+            // A build that pushes the chip into throttling for twenty seconds is
+            // normal work, not news. These two default to longer sustained windows
+            // than the percentage rules because only a state that *stays* is a cost.
+            .thermalPressure: SystemAlertRule(
+                enabled: false,
+                thresholdValue: Double(ThermalPressureLevel.serious.rawValue),
+                durationSeconds: 120
+            ),
+            .memoryPressure: SystemAlertRule(
+                enabled: false,
+                thresholdValue: Double(MemoryPressureLevel.warning.rawValue),
+                durationSeconds: 60
+            ),
             .diskAvailableCapacity: SystemAlertRule(
                 enabled: false,
                 thresholdValue: 20 * 1_024 * 1_024 * 1_024

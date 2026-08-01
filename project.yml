@@ -36,6 +36,13 @@ targets:
     dependencies:
       - package: MetricsKit
         product: MetricsKit
+      - target: MectricsCLI
+        embed: true
+        link: false
+        codeSign: true
+        copy:
+          destination: wrapper
+          subpath: Contents/Helpers
       - target: MectricsWidget
         embed: true
       - sdk: Security.framework
@@ -118,6 +125,28 @@ targets:
           DEVELOPMENT_TEAM: ${MECTRICS_TEAM_ID}
           CODE_SIGN_ENTITLEMENTS: MectricsWidget/MectricsWidget.entitlements
           ENABLE_APP_SANDBOX: YES
+          ENABLE_HARDENED_RUNTIME: YES
+
+  MectricsCLI:
+    type: tool
+    platform: macOS
+    sources:
+      - path: Packages/MetricsKit/Sources/MectricsCLI
+    dependencies:
+      - package: MetricsKit
+        product: MetricsKit
+    settings:
+      base:
+        PRODUCT_NAME: mectrics
+        PRODUCT_BUNDLE_IDENTIFIER: com.mectrics.cli
+        SWIFT_VERSION: "6.0"
+        CODE_SIGN_STYLE: Automatic
+        SKIP_INSTALL: YES
+      configs:
+        Debug:
+          DEVELOPMENT_TEAM: ${MECTRICS_TEAM_ID}
+        Release:
+          DEVELOPMENT_TEAM: ${MECTRICS_TEAM_ID}
           ENABLE_HARDENED_RUNTIME: YES
 
   MectricsTests:

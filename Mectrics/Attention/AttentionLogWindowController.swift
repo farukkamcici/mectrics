@@ -168,6 +168,16 @@ private struct AttentionLogView: View {
                 localized: "attention.trigger.energyGuard",
                 defaultValue: "Monitoring changed to \(energyGuardMode(event.observedValue).localizedName) to reduce Mectrics energy use"
             )
+        case SystemAlertSignal.thermalPressure.conditionKey:
+            return String(
+                localized: "attention.trigger.thermalPressure",
+                defaultValue: "macOS limited CPU and GPU performance (\(SystemSignalFormat.thermal(event.observedValue))) for \(event.durationSeconds) seconds"
+            )
+        case SystemAlertSignal.memoryPressure.conditionKey:
+            return String(
+                localized: "attention.trigger.memoryPressure",
+                defaultValue: "Memory pressure stayed at \(SystemSignalFormat.pressure(event.observedValue)) for \(event.durationSeconds) seconds"
+            )
         case SystemAlertSignal.diskAvailableCapacity.conditionKey:
             return String(
                 localized: "attention.trigger.diskCapacity",
@@ -199,6 +209,15 @@ private struct AttentionLogView: View {
             return String(
                 localized: "attention.event.energyGuard",
                 defaultValue: "Energy Guard"
+            )
+        }
+        // Thermal pressure covers the whole chip, so filing it under the CPU module
+        // would understate it — someone scanning for why a long job crawled needs to
+        // recognize the entry at a glance.
+        if event.conditionKey == SystemAlertSignal.thermalPressure.conditionKey {
+            return String(
+                localized: "attention.event.thermalPressure",
+                defaultValue: "Thermal throttling"
             )
         }
         return event.metricID.localizedName

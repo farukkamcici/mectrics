@@ -9,14 +9,16 @@
 # reinstall skips onboarding — macOS keeps preferences and containers when an
 # app goes to the Trash. This removes those too, so a reinstall starts clean.
 #
-# No administrator rights are needed: Mectrics installs no helper tool, no
-# LaunchDaemon, and writes nothing outside your own home folder.
+# Mectrics installs no helper tool or LaunchDaemon. If the optional Terminal
+# command was installed, macOS may ask for administrator permission to remove
+# its symbolic link from /usr/local/bin.
 set -euo pipefail
 
 assume_yes=0
 [[ "${1:-}" == "--yes" || "${1:-}" == "-y" ]] && assume_yes=1
 
 app="/Applications/Mectrics.app"
+cli_link="/usr/local/bin/mectrics"
 targets=(
   "$app"
   "$HOME/Library/Preferences/com.mectrics.app.plist"
@@ -28,6 +30,13 @@ targets=(
   "$HOME/Library/HTTPStorages/com.mectrics.app"
   "$HOME/Library/Saved Application State/com.mectrics.app.savedState"
 )
+
+if [[ -L "$cli_link" ]]; then
+  cli_target="$(readlink "$cli_link")"
+  if [[ "$cli_target" == */Mectrics.app/Contents/Helpers/mectrics ]]; then
+    targets+=("$cli_link")
+  fi
+fi
 
 present=()
 for t in "${targets[@]}"; do
@@ -72,12 +81,18 @@ defaults delete com.mectrics.app 2>/dev/null || true
 # for to delete one JSON snapshot.
 failed=()
 for t in "${present[@]}"; do
-  rm -rf "$t" 2>/dev/null || failed+=("$t")
+  if [[ "$t" == "$cli_link" ]]; then
+    rm -f "$t" 2>/dev/null \
+      || sudo rm -f "$t" \
+      || failed+=("$t")
+  else
+    rm -rf "$t" 2>/dev/null || failed+=("$t")
+  fi
 done
 
 echo
 if (( ${#failed[@]} == 0 )); then
-  echo "Removed. Mectrics left no helper tools, daemons, or files elsewhere."
+  echo "Removed. Mectrics left no command links, helper tools, daemons, or files elsewhere."
 else
   echo "Removed everything except:"
   printf '  %s\n' "${failed[@]}"
