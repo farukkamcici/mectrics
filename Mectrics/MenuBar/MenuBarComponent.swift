@@ -84,12 +84,17 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
 
     /// Worst-case template reserving a stable text slot ("" = pictorial, no text).
     /// Real values must never exceed this width.
+    ///
+    /// Digits are monospaced, letters are not, so a template has to be picked for the
+    /// widest *unit letter* a formatter can emit and not just for its longest digit
+    /// run. `M` is the widest of `MetricFormat.menuRate`'s K/M/G/T, which is why the
+    /// byte and rate templates below carry an `M` rather than the larger-sounding `G`.
     func template(for module: MetricID) -> String {
         switch self {
         case .coreBars, .ring, .batteryIcon, .batteryIconValue:
             return ""
         case .usedBytes, .freeBytes:
-            return "999GB"
+            return "999MB"
         case .health:
             return "100%"
         case .cycles:
@@ -102,7 +107,9 @@ enum MenuBarComponent: String, CaseIterable, Identifiable {
             switch module {
             // The charging bolt is part of the value, so it belongs in the template.
             case .battery:   return "⚡100%"
-            case .fans:      return "9.9K"
+            // A fan reads in the thousands of RPM, and `FansProvider` rejects anything
+            // above 30 000, so the K slot is the widest this can ever render.
+            case .fans:      return "999K"
             default:         return "100%"
             }
         }

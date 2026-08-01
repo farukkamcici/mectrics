@@ -34,17 +34,35 @@ final class MetricStatusItem: NSObject {
         let appearanceName: NSAppearance.Name
     }
 
+    /// The font a component's text is drawn in. Width stability is checked against
+    /// this, so it lives here rather than being duplicated by whoever measures.
+    static func font(for component: MenuBarComponent) -> NSFont {
+        // The stacked network activity item uses a small two-line font.
+        component == .netActivity
+            ? .monospacedDigitSystemFont(ofSize: 8.5, weight: .semibold)
+            : .monospacedDigitSystemFont(ofSize: 12, weight: .medium)
+    }
+
+    /// Width reserved for a component's text, from its worst-case template.
+    static func reservedTextWidth(
+        for component: MenuBarComponent,
+        module: MetricID
+    ) -> CGFloat {
+        let template = component.template(for: module)
+        guard !template.isEmpty else { return 0 }
+        return ceil(
+            (template as NSString)
+                .size(withAttributes: [.font: font(for: component)])
+                .width
+        )
+    }
+
     init(id: MetricID, component: MenuBarComponent) {
         self.id = id
         self.component = component
         self.item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        // The stacked network activity item uses a small two-line font.
-        self.textFont = component == .netActivity
-            ? .monospacedDigitSystemFont(ofSize: 8.5, weight: .semibold)
-            : .monospacedDigitSystemFont(ofSize: 12, weight: .medium)
-        let template = component.template(for: id)
-        self.reservedTextWidth = template.isEmpty ? 0
-            : ceil((template as NSString).size(withAttributes: [.font: textFont]).width)
+        self.textFont = Self.font(for: component)
+        self.reservedTextWidth = Self.reservedTextWidth(for: component, module: id)
         self.iconSymbol = NSImage(
             systemSymbolName: MetricSymbol.name(for: id),
             accessibilityDescription: nil

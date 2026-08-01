@@ -343,6 +343,8 @@ final class MetricsKitTests: XCTestCase {
         }
         let next = disk.sample()
         XCTAssertNotNil(next?.detail["readRate"])
+        XCTAssertGreaterThanOrEqual(next?.detail["readRate"] ?? -1, 0)
+        XCTAssertGreaterThanOrEqual(next?.detail["writeRate"] ?? -1, 0)
         XCTAssertNotNil(next?.detail["writeRate"])
     }
 
@@ -466,6 +468,54 @@ final class MetricsKitTests: XCTestCase {
         XCTAssertEqual(sample.value, 0.4, accuracy: 0.001)
     }
 
+    func testDiskThroughputSurvivesAVolumeDisappearing() {
+        let disk = DiskProvider()
+        let start = Date()
+
+        // First reading is only a reference point.
+        XCTAssertTrue(
+            disk.throughput(read: 8_000, write: 4_000, now: start).isEmpty
+        )
+
+        let rates = disk.throughput(
+            read: 10_000,
+            write: 5_000,
+            now: start.addingTimeInterval(2)
+        )
+        XCTAssertEqual(rates["readRate"], 1_000)
+        XCTAssertEqual(rates["writeRate"], 500)
+
+        // Unplugging an external disk takes its lifetime counters out of the sum, so
+        // the totals go backwards. Unsigned subtraction would wrap that into ~10^19
+        // bytes per second; no traffic is the honest answer.
+        let afterEject = disk.throughput(
+            read: 1_000,
+            write: 500,
+            now: start.addingTimeInterval(4)
+        )
+        XCTAssertEqual(afterEject["readRate"], 0)
+        XCTAssertEqual(afterEject["writeRate"], 0)
+
+        // The smaller totals become the new baseline, so counting resumes normally.
+        let resumed = disk.throughput(
+            read: 3_000,
+            write: 1_500,
+            now: start.addingTimeInterval(6)
+        )
+        XCTAssertEqual(resumed["readRate"], 1_000)
+        XCTAssertEqual(resumed["writeRate"], 500)
+    }
+
+    func testFansProviderRejectsImplausibleSpeeds() {
+        // A key decoded under the wrong SMC type yields a number, not an error. Such a
+        // reading is not a fan, and must not reach the menu bar as one.
+        let provider = FansProvider(
+            smc: MockSMCValueReader(values: ["FNum": 1, "F0Ac": 4_000_000])
+        )
+
+        XCTAssertNil(provider.sample())
+    }
+
     func testFansProviderKeepsFanlessMacsUnavailable() {
         let provider = FansProvider(
             smc: MockSMCValueReader(values: ["FNum": 0])
@@ -489,6 +539,17 @@ final class MetricsKitTests: XCTestCase {
         for v in stride(from: 0.0, through: 5_000_000_000, by: 137_113) {
             XCTAssertLessThanOrEqual(MetricFormat.menuRate(v).count, 4,
                                      "menuRate(\(v)) too wide")
+        }
+        // Above the largest unit there is nothing left to scale by. Without a clamp the
+        // mantissa grows without bound and the menu bar item outgrows its reserved
+        // slot, so the ceiling is checked here rather than assumed unreachable.
+        XCTAssertEqual(MetricFormat.menuRate(999_000_000_000_000_000), "999T")
+        for exponent in 3...30 {
+            let value = pow(10.0, Double(exponent))
+            XCTAssertLessThanOrEqual(MetricFormat.menuRate(value).count, 4,
+                                     "menuRate(1e\(exponent)) too wide")
+            XCTAssertLessThanOrEqual(MetricFormat.menuRate(value * 5.5).count, 4,
+                                     "menuRate(5.5e\(exponent)) too wide")
         }
     }
 }

@@ -69,6 +69,11 @@ public enum MetricFormat {
         var i = 0
         // Scale at 999.5 (not 1000) so "%.0f" rounding can never produce "1000K".
         while v >= 999.5 && i < units.count - 1 { v /= 1000; i += 1 }
+        // Past the largest unit there is nothing left to divide by, so without this the
+        // mantissa would keep growing and the output would outgrow its reserved menu bar
+        // slot. Holding it at the ceiling is what makes the "≤ 4 glyphs" promise above
+        // provable for every input rather than merely true for the ones we expect.
+        v = min(v, 999)
         // Mantissa is now in 1...999.
         if v >= 10 { return String(format: "%.0f%@", v, units[i]) }   // 10–999 → "35K", "999K"
         return String(format: "%.1f%@", v, units[i])                  // 1.0–9.9 → "1.2K", "9.9M"

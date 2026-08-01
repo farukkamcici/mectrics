@@ -15,6 +15,15 @@ public final class FansProvider: MetricProvider, @unchecked Sendable {
     public let id: MetricID = .fans
     public let cost: SamplingCost = .heavy
 
+    /// Speeds a Mac fan can actually reach. The SMC has no public contract, and a key
+    /// that decodes under the wrong type yields a number rather than an error, so a
+    /// reading outside this range is a decode artifact and not a fan — the same
+    /// plausibility check `SensorsProvider` applies to temperatures. The ceiling is
+    /// well above the loudest Mac Pro so no real fan is ever discarded.
+    /// Public because the menu bar reserves its fan slot from this ceiling: the widest
+    /// speed a fan item can ever render is the widest speed this range admits.
+    public static let plausibleRPM: ClosedRange<Double> = 0...30_000
+
     private let smc: (any SMCValueReading)?
     private let fanIndices: [Int]
 
@@ -40,11 +49,15 @@ public final class FansProvider: MetricProvider, @unchecked Sendable {
         var gotAny = false
 
         for i in fanIndices {
-            guard let actual = smc.readValue("F\(i)Ac"), actual >= 0 else { continue }
+            guard let actual = smc.readValue("F\(i)Ac"),
+                  Self.plausibleRPM.contains(actual)
+            else { continue }
             gotAny = true
             detail["fan\(i)Rpm"] = actual
             maxRpm = max(maxRpm, actual)
-            if let limit = smc.readValue("F\(i)Mx"), limit > 0 {
+            if let limit = smc.readValue("F\(i)Mx"),
+               limit > 0,
+               Self.plausibleRPM.contains(limit) {
                 detail["fan\(i)MaxRpm"] = limit
                 maxRatio = max(maxRatio, min(actual / limit, 1))
             }
