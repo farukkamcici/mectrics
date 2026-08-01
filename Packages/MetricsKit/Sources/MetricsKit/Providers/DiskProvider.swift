@@ -51,20 +51,41 @@ public final class DiskProvider: MetricProvider, @unchecked Sendable {
             "used": used,
             "purgeable": purgeable
         ]
-        if let last = prevTime {
-            let dt = now.timeIntervalSince(last)
-            if dt > 0 {
-                detail["readRate"] = Double(read &- prevRead) / dt
-                detail["writeRate"] = Double(write &- prevWrite) / dt
-            }
-        }
-        prevRead = read; prevWrite = write; prevTime = now
+        detail.merge(throughput(read: read, write: write, now: now)) { _, new in new }
 
         return MetricSample(
             value: usage,
             unit: .fraction,
             detail: detail
         )
+    }
+
+    /// Turns two cumulative byte counters into rates. Separated from the IOKit read so
+    /// the first-sample and counter-reset behavior can be tested deterministically.
+    ///
+    /// The totals are summed across every `IOBlockStorageDriver` on the machine, so
+    /// unplugging an external disk takes its lifetime counters out of the sum and the
+    /// next reading is *smaller* than the last. Unsigned subtraction would wrap that
+    /// into roughly 10^19 bytes per second. A shrinking total means a volume went away,
+    /// not that the disk moved exabytes in a second, so report no throughput for that
+    /// direction — the same reasoning `NetworkProvider` applies to a disappearing
+    /// interface.
+    func throughput(read: UInt64, write: UInt64, now: Date) -> [String: Double] {
+        defer {
+            prevRead = read
+            prevWrite = write
+            prevTime = now
+        }
+
+        // First sample: store the reference, don't produce a rate.
+        guard let last = prevTime else { return [:] }
+        let dt = now.timeIntervalSince(last)
+        guard dt > 0 else { return [:] }
+
+        return [
+            "readRate": read >= prevRead ? Double(read - prevRead) / dt : 0,
+            "writeRate": write >= prevWrite ? Double(write - prevWrite) / dt : 0
+        ]
     }
 
     /// Total and strictly-free bytes on `/` from one `statfs` syscall. `f_bavail` is
