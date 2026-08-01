@@ -39,11 +39,11 @@ It is built around three commitments:
 | | |
 |---|---|
 | 🔒 **Private by construction** | Zero telemetry. No analytics, no identifiers, no crash reports. The only network request the app can make is an update check you trigger yourself — automatic checks are off by default. |
-| 🪶 **Light on the machine** | Sampling slows down on battery and backs off under Low Power Mode and thermal pressure. The 1.0 release build holds steady at **25 MB** against a 60 MB budget, with about one idle wake per second. |
+| 🪶 **Light on the machine** | Sampling slows down on battery and backs off under Low Power Mode and thermal pressure. A release build idles at about **24 MB** against a 60 MB budget — that is `phys_footprint`, the same number Activity Monitor's Memory column shows — with roughly one wake per second. |
 | 📐 **Stable in the menu bar** | Items reserve a fixed width, so values change without anything shifting sideways. |
 
 <div align="center">
-  <a href="https://github.com/farukkamcici/mectrics/releases/latest/download/Mectrics.dmg"><b>⬇︎ Download Mectrics 1.3.0</b></a><br>
+  <a href="https://github.com/farukkamcici/mectrics/releases/latest/download/Mectrics.dmg"><b>⬇︎ Download Mectrics 1.4.0</b></a><br>
   <sub>macOS 15+ · signed and notarized · 3.8 MB</sub>
 </div>
 

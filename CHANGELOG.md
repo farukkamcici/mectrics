@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.4.0] — 2026-08-01
+
 ### Added
 
 - A bundled, read-only `mectrics` CLI for headless Macs. It reuses the alert rules enabled
@@ -34,6 +36,21 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Temperatures are no longer sampled for a module that is only being watched by an alert
   rule. Reading the SMC is the most expensive thing Mectrics does, and a rule on CPU
   usage never needed it.
+
+### Fixed
+
+- Disk read and write throughput no longer reports an impossible figure after a volume
+  is ejected. Throughput is the difference between two lifetime byte counters summed
+  across every disk, so unplugging an external drive made the total go *backwards* and
+  the subtraction wrapped around into roughly ten quintillion bytes per second. A
+  shrinking total now reads as no traffic, the same way the network module already
+  handled an interface disappearing.
+- The Used and Free menu bar items no longer draw outside their reserved slot. Digits are
+  monospaced but unit letters are not, and `MB` is wider than the `GB` the slot had been
+  sized for — so a disk with a few hundred megabytes left could nudge its neighbours.
+- Fan speeds that no fan could reach are ignored instead of shown. An SMC key decoded
+  under the wrong type returns a number rather than an error, and that number used to
+  reach the menu bar as a fan reading.
 
 ## [1.3.0] — 2026-07-30
 
