@@ -5,19 +5,36 @@ import MetricsKit
 enum StartupPresentation: Equatable {
     case onboarding
     case routes
+    case whatsNew
     case none
 }
 
 enum StartupPresentationPolicy {
+    /// What a launch should put on screen, in order of who asked for it.
+    ///
+    /// Someone arriving for the first time gets onboarding. Someone who opened a
+    /// `mectrics://` link named a destination, and that beats anything Mectrics wants
+    /// to say on its own. An upgrade is last: it is the app's news, not the user's
+    /// errand.
+    ///
+    /// What's New belongs on this path and not only on reopen. Sparkle installs an
+    /// update by quitting the app and starting it again, which is a launch — so
+    /// handling the upgrade only in `applicationShouldHandleReopen` meant the window
+    /// never appeared at the one moment it exists for. A menu bar agent has no Dock
+    /// icon to click, so reopen almost never fires at all.
     static func presentation(
         hasCompletedOnboarding: Bool,
-        hasPendingRoutes: Bool
+        hasPendingRoutes: Bool,
+        hasUpgraded: Bool = false
     ) -> StartupPresentation {
         if !hasCompletedOnboarding {
             return .onboarding
         }
         if hasPendingRoutes {
             return .routes
+        }
+        if hasUpgraded {
+            return .whatsNew
         }
         return .none
     }
@@ -154,10 +171,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         switch StartupPresentationPolicy.presentation(
             hasCompletedOnboarding: model.hasCompletedOnboarding,
-            hasPendingRoutes: !pendingRoutes.isEmpty
+            hasPendingRoutes: !pendingRoutes.isEmpty,
+            hasUpgraded: hasUnpresentedUpgrade
         ) {
         case .onboarding:
             showOnboarding()
+        case .whatsNew:
+            presentWhatsNewAfterUpgradeIfNeeded()
         case .routes, .none:
             break
         }
@@ -317,6 +337,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         UserDefaults.standard.set(
             currentMarketingVersion,
             forKey: Self.lastPresentedWhatsNewVersionKey
+        )
+    }
+
+    /// True when this build is newer than the one whose notes were last shown. Read
+    /// after `initializeWhatsNewBaselineIfNeeded`, so a fresh install is never treated
+    /// as an upgrade.
+    private var hasUnpresentedUpgrade: Bool {
+        WhatsNewPolicy.shouldPresent(
+            currentVersion: currentMarketingVersion,
+            storedVersion: UserDefaults.standard.string(
+                forKey: Self.lastPresentedWhatsNewVersionKey
+            )
         )
     }
 

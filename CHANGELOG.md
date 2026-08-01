@@ -39,6 +39,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- What's New now appears after an update actually installs. It was only ever shown when
+  the app was reopened from the Finder, and an update does not do that — it quits
+  Mectrics and starts it again. A menu bar app has no Dock icon to click either, so in
+  practice the release notes never appeared for anyone who upgraded.
 - Disk read and write throughput no longer reports an impossible figure after a volume
   is ejected. Throughput is the difference between two lifetime byte counters summed
   across every disk, so unplugging an external drive made the total go *backwards* and

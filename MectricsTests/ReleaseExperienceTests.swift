@@ -32,6 +32,45 @@ final class ReleaseExperienceTests: XCTestCase {
         )
     }
 
+    /// Sparkle installs an update by quitting the app and starting it again, so the
+    /// launch path — not reopen — is where an upgrade is noticed. A menu bar agent has
+    /// no Dock icon, so waiting for reopen meant the notes were never shown at all.
+    func testLaunchAfterAnUpgradePresentsWhatsNew() {
+        XCTAssertEqual(
+            StartupPresentationPolicy.presentation(
+                hasCompletedOnboarding: true,
+                hasPendingRoutes: false,
+                hasUpgraded: true
+            ),
+            .whatsNew
+        )
+    }
+
+    /// A `mectrics://` link is an errand the user asked for; release notes are not.
+    func testAnOpenedLinkOutranksTheUpgradeNotes() {
+        XCTAssertEqual(
+            StartupPresentationPolicy.presentation(
+                hasCompletedOnboarding: true,
+                hasPendingRoutes: true,
+                hasUpgraded: true
+            ),
+            .routes
+        )
+    }
+
+    /// A first install has no previous version to have upgraded from, and onboarding
+    /// owns that launch regardless.
+    func testFirstInstallNeverShowsUpgradeNotes() {
+        XCTAssertEqual(
+            StartupPresentationPolicy.presentation(
+                hasCompletedOnboarding: false,
+                hasPendingRoutes: false,
+                hasUpgraded: true
+            ),
+            .onboarding
+        )
+    }
+
     func testWhatsNewDoesNotInterruptAFirstInstall() {
         XCTAssertFalse(
             WhatsNewPolicy.shouldPresent(
