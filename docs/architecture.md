@@ -58,8 +58,10 @@ flowchart LR
 | Updates | **Sparkle** | The standard for directly distributed macOS apps. |
 | Login item | **`SMAppService`** | The modern launch-at-login API. |
 
-**Minimum target:** macOS 15 Sequoia, Apple Silicon. Modern APIs (`@Observable`, current
-WidgetKit) are therefore freely usable.
+**Minimum target:** macOS 15 Sequoia, on Apple silicon and Intel. Modern APIs
+(`@Observable`, current WidgetKit) are therefore freely usable. Intel support is not a
+separate code path — it lives in the providers, which read whichever SMC key family and
+accelerator driver the machine happens to expose.
 
 ## MetricsKit
 
@@ -144,9 +146,15 @@ sampling, so Mectrics eases off on exactly the states it would report.
 - Each item renders text plus an optional sparkline into an `NSImage` assigned to the button.
   This avoids subview layout, is pixel-precise, and adapts correctly to light and dark.
 - **Width stability is a hard rule.** Each component reserves a fixed text width from a
-  worst-case template (`MetricStatusItem.template(for:)`) and right-aligns monospaced digits
-  inside it. An item must never change width because a value gained a digit.
-- Redraw follows store updates and is throttled when the item is not visible.
+  worst-case template (`MenuBarComponent.template(for:)`) and right-aligns monospaced digits
+  inside it. An item must never change width because a value gained a digit. Digits are
+  monospaced but unit letters are not, so a template is sized for the widest *letter* a
+  formatter can emit — `MenuBarTemplateTests` checks every component against its real
+  formatter output rather than leaving the rule to a draw-time assertion.
+- Redraw is skipped when an item's render inputs are unchanged: handing AppKit an image
+  invalidates the status item and round trips to the window server, which costs far more
+  than drawing it did. Reducing work when nobody can see the menu bar happens a layer
+  lower, in Energy Guard's sampling policy.
 - ⌘-drag reordering is native; `NSStatusItem.autosaveName` preserves position.
 
 ## Compact Health
@@ -209,7 +217,10 @@ the widget is positioned as "at a glance" while the menu bar carries the real-ti
 - Providers copy the single IORegistry property they need rather than a whole property
   dictionary, and anything that reaches a system daemon (reclaimable disk space) runs on
   its own slow cadence.
-- Targets: under 60 MB RAM, low and steady CPU, "Energy Impact: Low" in Activity Monitor.
+- Targets: under 60 MB memory, low and steady CPU, "Energy Impact: Low" in Activity
+  Monitor. Memory means `phys_footprint` — what Activity Monitor's "Memory" column
+  reports — and not `ps rss`, which counts shared framework pages every SwiftUI app maps
+  and reads about three times higher. A Release build idles around 24 MB.
 
 ## Privacy and distribution
 
@@ -237,7 +248,7 @@ the widget is positioned as "at a glance" while the menu bar carries the real-ti
 mectrics/
 ├── project.yml               # XcodeGen definition — the source of the Xcode project
 ├── AGENTS.md                 # conventions (source of truth for contributors)
-├── docs/                     # this document and the release procedure
+├── docs/                     # this document, its assets, and the folder index
 ├── Mectrics/                 # menu bar app (SwiftUI + AppKit)
 │   ├── App/                  # AppDelegate, AppModel, login item, widget snapshots
 │   ├── MenuBar/              # NSStatusItem controllers + live sparkline drawing
@@ -260,5 +271,6 @@ mectrics/
 │   └── Tests/
 └── scripts/
     ├── release.sh            # archive → sign → DMG → notarize → staple
+    ├── uninstall.sh          # manual removal for a Mectrics that will not open
     └── generate-banner.py    # regenerates the README banner pair
 ```

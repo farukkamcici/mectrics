@@ -4,9 +4,11 @@ import MetricsKit
 /// Menu bar tab of the settings window.
 ///
 /// The pane reads top-down: a read-only preview of the menu bar as it will look, one
-/// row per module for choosing what that module shows, then appearance. A module owns
-/// at most one item, so this is a list of choices rather than a grid of toggles, and
-/// the whole pane fits without scrolling.
+/// row per module for choosing what that module shows, then appearance. Each row is a
+/// set of independent chips rather than a single choice, because a module can put
+/// several items in the menu bar at once — Battery can show its icon and its health
+/// side by side. Every chip draws the real thing it will add, so the choice is made
+/// from what can actually be seen.
 struct MenuBarBuilderView: View {
     @Bindable var model: AppModel
     @Environment(\.colorSchemeContrast) private var contrast

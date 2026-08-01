@@ -98,7 +98,14 @@ Do **not** commit: `Mectrics.xcodeproj/`, `DerivedData/`, `.build/` (see `.gitig
 - Adaptive sampling: faster on AC, slower on battery; pause work that isn't visible —
   a sleeping display, a locked screen, and a switched-away session all count as invisible.
 - Keep the hot path allocation-free (the ring buffer is pre-allocated).
-- Targets: < 60 MB RAM, low/steady CPU, "Energy Impact: Low" in Activity Monitor.
+- Targets: < 60 MB memory, low/steady CPU, "Energy Impact: Low" in Activity Monitor.
+- **Memory is measured as `phys_footprint`, never as `ps rss`.** Run
+  `footprint -p $(pgrep -x Mectrics)` on a **Release** build and quote its
+  `phys_footprint`. That is the figure Activity Monitor's "Memory" column shows and the
+  one the budget above refers to. `ps rss` counts shared framework pages that every
+  SwiftUI app maps and no app pays for individually; on this app it reads roughly three
+  times higher and makes Mectrics look far heavier than it is. Quoting RSS in a README,
+  an issue, or a launch thread understates the product against its own budget.
 - `cost` decides how often a provider runs: `.light` every base cycle, `.medium`
   (battery, disk) and `.heavy` (SMC/GPU/sensors) thinned by `SamplingRuntimePolicy`.
 - **Never hand AppKit a menu bar image that has not changed.** Assigning `button.image`
