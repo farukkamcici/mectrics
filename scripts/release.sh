@@ -36,6 +36,7 @@ xcodebuild archive \
   -configuration Release \
   -archivePath "$archive_path" \
   -destination "generic/platform=macOS" \
+  ENABLE_CODE_COVERAGE=NO \
   DEVELOPMENT_TEAM="$MECTRICS_TEAM_ID" \
   CODE_SIGN_STYLE=Automatic \
   -allowProvisioningUpdates
@@ -57,6 +58,15 @@ cli_path="$app_path/Contents/Helpers/mectrics"
 [[ -x "$cli_path" ]]
 codesign --verify --strict --verbose=2 "$cli_path"
 codesign --verify --deep --strict --verbose=2 "$app_path"
+"$cli_path" --version
+"$cli_path" --help >/dev/null
+if "$cli_path" invalid-release-smoke-command >/dev/null 2>&1; then
+  echo "CLI smoke test unexpectedly accepted an invalid command" >&2
+  exit 1
+else
+  cli_usage_status=$?
+fi
+[[ "$cli_usage_status" -eq 64 ]]
 
 rm -rf "$staging_path"
 mkdir -p "$staging_path"

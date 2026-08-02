@@ -6,16 +6,26 @@ public enum MetricsKit {
     /// no fans on a fanless machine) are filtered out by the engine at registration
     /// time.
     public static func coreProviders() -> [MetricProvider] {
-        [
-            CPUProvider(),       // Phase 1
-            MemoryProvider(),    // Phase 1
-            BatteryProvider(),   // Phase 1
-            NetworkProvider(),   // Phase 2
-            DiskProvider(),      // Phase 2
-            GPUProvider(),       // Phase 3
-            SensorsProvider(),   // Phase 3
-            FansProvider()       // Phase 3
-        ]
+        coreProviders(for: Set(MetricID.allCases))
+    }
+
+    /// Builds only the requested providers. Hardware-backed provider initializers may
+    /// probe IOKit or enumerate SMC keys, so callers that need a subset must not build
+    /// every provider merely to discard most of them afterward.
+    public static func coreProviders(for ids: Set<MetricID>) -> [MetricProvider] {
+        MetricID.allCases.compactMap { id in
+            guard ids.contains(id) else { return nil }
+            switch id {
+            case .cpu: return CPUProvider()
+            case .memory: return MemoryProvider()
+            case .battery: return BatteryProvider()
+            case .network: return NetworkProvider()
+            case .disk: return DiskProvider()
+            case .gpu: return GPUProvider()
+            case .sensors: return SensorsProvider()
+            case .fans: return FansProvider()
+            }
+        }
     }
 
     /// Builds an engine wired with the core providers, ready to start.

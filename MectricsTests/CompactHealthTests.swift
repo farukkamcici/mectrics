@@ -126,6 +126,7 @@ final class CompactHealthTests: XCTestCase {
         }
     }
 
+    @MainActor
     func testMenuBarSlotHasOneInvariantLength() {
         XCTAssertEqual(CompactHealthStatusItem.fixedLength, 26)
         XCTAssertTrue(

@@ -303,6 +303,22 @@ final class AlertMonitorTests: XCTestCase {
         XCTAssertEqual(condition?.comparison, .atOrAbove)
     }
 
+    func testThermalPressureHasNoProviderDependency() {
+        let configuration = AlertConfiguration(
+            thresholdRules: [:],
+            systemRules: [
+                .thermalPressure: SystemAlertRule(
+                    enabled: true,
+                    thresholdValue: Double(ThermalPressureLevel.serious.rawValue)
+                )
+            ]
+        )
+
+        XCTAssertTrue(configuration.requiredMetricIDs.isEmpty)
+        XCTAssertNil(SystemAlertSignal.thermalPressure.samplingMetricID)
+        XCTAssertEqual(SystemAlertSignal.thermalPressure.metricID, .cpu)
+    }
+
     func testSystemConditionSourceReadsEveryNativeSignal() {
         let readings = SystemConditionSource.readings(
             latest: [

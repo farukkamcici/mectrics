@@ -186,6 +186,19 @@ mectrics alerts watch --json
 recovers, then writes that event to the Terminal as one JSON line. Use `check --json` when
 the current state is needed immediately.
 
+For a supervised, long-running stream, add a heartbeat interval:
+
+```bash
+mectrics alerts watch --json --heartbeat 60
+```
+
+Heartbeat mode uses tagged NDJSON records. It writes a `ready` record immediately, periodic
+`heartbeat` records, `alert` records for activation and recovery, and `status` records when
+sampling coverage becomes degraded or recovers. Each heartbeat includes the latest sample
+time and any unavailable conditions or stale metrics, so a consumer can distinguish a quiet
+Mac from a live process whose sensor sampling has stopped. Without `--heartbeat`, the original
+version 1 alert-event JSON remains unchanged.
+
 A known crossed limit takes priority over an unavailable reading. `check` is immediate, so
 a crossed limit means the corresponding sustained rule would enter its pending state now;
 `alerts watch` remains the source for actual activation and recovery events.
@@ -194,6 +207,18 @@ JSON output goes to standard output. Startup information and errors go to standa
 so pipes stay machine-readable. The CLI samples only the metrics needed for the requested
 operation and makes no network requests. It does not include the app's live dashboard,
 settings, widgets, or history.
+
+Invalid commands and flags exit with `64`; corrupt saved configuration exits with `78`; an
+internal output failure exits with `70`. These are separate from `check`'s `0` / `1` / `2`
+health result. Run `mectrics doctor` (or `mectrics doctor --json`) to validate the executable,
+saved rules, available alert coverage, installed command link, and current power source.
+
+Run the CLI as the same macOS user who configured Mectrics. A root-owned cron job reads root's
+preferences instead. Cron also commonly has a restricted `PATH`, so use
+`/usr/local/bin/mectrics check` or set `PATH` explicitly. `check` is the command for cron and
+other one-shot probes; `alerts watch` is a persistent stream and should be run under a process
+supervisor rather than launched repeatedly by cron. A watch session takes a snapshot of the
+enabled rules when it starts, so restart it after changing rules in the app.
 
 ### Uninstall
 

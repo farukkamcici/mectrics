@@ -7,6 +7,32 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `mectrics alerts watch --json --heartbeat <seconds>` now provides a tagged NDJSON stream
+  with immediate readiness, periodic liveness and freshness information, alert events, and
+  sampling-coverage transitions.
+- `mectrics doctor` validates saved rules, hardware coverage, the executable and optional
+  command link, and emits the same diagnosis as versioned JSON with `--json`.
+- End-to-end CLI contract tests now execute the real binary with isolated preferences and
+  lock down exit codes, stream separation, sampling failures, and version 1 JSON fixtures.
+
+### Changed
+
+- CLI commands use typed subcommand parsing with command-specific help and conventional
+  usage (`64`), software (`70`), and configuration (`78`) exit codes while preserving the
+  published `check` health codes `0`, `1`, and `2`.
+- Alert checks construct only the providers their enabled rules require. Thermal-pressure
+  rules use the native system state directly, and watch sampling adapts to AC or battery.
+
+### Fixed
+
+- A watch session no longer evaluates a cached metric after that provider fails. Repeated
+  failures and stale readings now degrade explicit coverage instead of leaving a stream
+  silently healthy or allowing an old violation to become an alert.
+- A partially unavailable watch reports the missing conditions in machine-readable status
+  and heartbeat records rather than exposing the loss only as a standard-error warning.
+
 ## [1.4.0] — 2026-08-01
 
 ### Added
@@ -138,7 +164,8 @@ roughly one idle wake per second.
 - Automatic update checks are disabled; the Sparkle appcast is fetched only on an explicit
   **Check for Updates…** and verified against a pinned EdDSA public key.
 
-[Unreleased]: https://github.com/farukkamcici/mectrics/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/farukkamcici/mectrics/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/farukkamcici/mectrics/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/farukkamcici/mectrics/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/farukkamcici/mectrics/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/farukkamcici/mectrics/compare/v1.0.0...v1.1.0

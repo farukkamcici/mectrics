@@ -56,7 +56,15 @@ swift run mectrics --help               # read-only user automation interface
 swift run mectrics check --json         # alert-rule check with a script-friendly exit code
 swift run mectrics snapshot --json      # one current reading from every available module
 swift run mectrics alerts watch --json  # saved app rules as an NDJSON event stream
+swift run mectrics alerts watch --json --heartbeat 60
+swift run mectrics doctor --json        # configuration and sampling-coverage diagnosis
 ```
+
+CLI contract tests live in `Tests/MectricsCLITests`. They exercise typed parsing, exact exit
+codes, stdout/stderr separation, versioned JSON fixtures, injected provider failures, and the
+real built executable. Add or update a fixture deliberately when changing a public JSON
+schema. Valid version 1 `check`, `snapshot`, rule-list, and untagged alert-event output is a
+compatibility contract.
 
 For app-layer changes:
 
@@ -128,8 +136,8 @@ back after a user pointed out that a hot sensor and a throttled machine are not 
 thing. A reversal is a decision about a moment, not a permanent verdict; argue with one if
 you have the case for it.
 
-This is a side project maintained around a full-time job. Issues and pull requests may sit
-for a week or two. That is not disinterest, and a polite nudge is welcome.
+Issues and pull requests may take time to review. A polite nudge after a week or two is
+welcome.
 
 ## Code of Conduct
 

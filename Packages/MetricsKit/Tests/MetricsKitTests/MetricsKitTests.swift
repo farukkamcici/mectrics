@@ -2,6 +2,13 @@ import XCTest
 @testable import MetricsKit
 
 final class MetricsKitTests: XCTestCase {
+    func testProviderFactoryBuildsOnlyRequestedProviders() {
+        XCTAssertEqual(
+            MetricsKit.coreProviders(for: [.cpu, .disk]).map(\.id),
+            [.cpu, .disk]
+        )
+    }
+
 
     // MARK: - RingBuffer / MetricStore
 

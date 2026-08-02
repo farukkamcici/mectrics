@@ -135,6 +135,18 @@ public enum SystemAlertSignal: String, Codable, CaseIterable, Hashable, Sendable
         }
     }
 
+    /// The provider needed to read this condition, independent of the module used to
+    /// present it. Thermal pressure comes directly from `ProcessInfo` and therefore
+    /// has no sampling dependency.
+    public var samplingMetricID: MetricID? {
+        switch self {
+        case .thermalPressure: return nil
+        case .memoryPressure: return .memory
+        case .diskAvailableCapacity: return .disk
+        case .batteryService: return .battery
+        }
+    }
+
     public var unit: MetricUnit {
         switch self {
         case .diskAvailableCapacity: return .bytes
@@ -199,7 +211,7 @@ public struct AlertConfiguration: Equatable, Sendable {
             rule.enabled ? id : nil
         }
         let systemIDs = systemRules.compactMap { signal, rule in
-            rule.enabled ? signal.metricID : nil
+            rule.enabled ? signal.samplingMetricID : nil
         }
         return Set(thresholdIDs + systemIDs)
     }

@@ -35,7 +35,7 @@ flowchart LR
     end
 
     WG["<b>MectricsWidget</b><br/><i>WidgetKit extension</i>"]
-    CLI["<b>mectrics CLI</b><br/><i>check · snapshot · events · rules</i>"]
+    CLI["<b>mectrics CLI</b><br/><i>check · snapshot · watch · doctor</i>"]
 
     EG -->|"sampling policy"| SS
     ST -->|"snapshot"| AM
@@ -185,6 +185,27 @@ limit is crossed, and `2` means unconfigured or indeterminate because a reading 
 unavailable. A known crossed limit takes priority over an unavailable reading. Both the app
 and CLI use the same UI-independent alert models and evaluators from MetricsKit.
 
+Process and health failures occupy separate exit-code namespaces. Invalid syntax uses
+`EX_USAGE` (`64`), an internal serialization failure uses `EX_SOFTWARE` (`70`), and corrupt
+saved rules use `EX_CONFIG` (`78`). The published health meanings of `0`, `1`, and `2` do not
+change. Normal machine-readable data is written only to standard output; startup and
+diagnostic messages use standard error.
+
+The default JSON watch stream remains version 1 activation and recovery events. Opting into
+`--heartbeat` switches to a tagged stream with `ready`, `heartbeat`, `alert`, and `status`
+records. Heartbeats report both process liveness and data freshness. The watch consumes full
+sampling-cycle reports: a failed provider never advances an alert from a cached reading, three
+consecutive failures degrade coverage, and a reading older than the shared stale interval is
+reported as stale. Coverage recovery is also emitted. Provider-backed and native conditions
+are scheduled separately, so thermal pressure is read directly from `ProcessInfo` without
+constructing or sampling a CPU provider.
+
+The CLI constructs providers lazily from the enabled rules instead of initializing every
+hardware source and filtering afterward. Long-running watch sampling follows the current AC
+or battery interval and notices power-source changes. A watch session intentionally freezes
+its rule configuration at startup; changing rules in the app requires restarting the session.
+This keeps incident state transitions deterministic and is stated in the public help.
+
 The executable remains inside the signed app bundle. The optional **Install CLI…** action
 creates `/usr/local/bin/mectrics` as a symbolic link to that executable, so app updates also
 update the command. It downloads no second binary and installs no background service. The
@@ -237,6 +258,9 @@ the widget is positioned as "at a glance" while the menu bar carries the real-ti
 - `MetricsKitTests` covers computation correctness (Δbytes/Δt, CPU percentages), alert
   state transitions and JSON contracts, and store behaviour including concurrent reads
   and writes.
+- `MectricsCLITests` covers typed parsing, public exit codes, golden JSON fixtures,
+  provider-failure freshness, stdout/stderr separation, and actual executable processes
+  with isolated preferences.
 - `MectricsTests` covers app-layer logic: alert rules, Energy Guard, the Attention Log,
   diagnostics export redaction, menu bar layout presets, and URL routing.
 - Hardware coverage is inherently manual: fanless machines, external displays, low battery,
@@ -266,9 +290,10 @@ mectrics/
 ├── MectricsTests/            # app-layer unit tests
 ├── Packages/MetricsKit/      # the metric engine (SwiftPM)
 │   ├── Sources/MetricsKit/   # providers, scheduler, store, alerts, engine, sharing
+│   ├── Sources/MectricsCLICore/ # testable command parsing, sampling, output contracts
 │   ├── Sources/MectricsCLI/  # read-only user automation interface
 │   ├── Sources/MetricsKitDemo/ # internal live provider readout
-│   └── Tests/
+│   └── Tests/                # engine and CLI contract suites
 └── scripts/
     ├── release.sh            # archive → sign → DMG → notarize → staple
     ├── uninstall.sh          # manual removal for a Mectrics that will not open

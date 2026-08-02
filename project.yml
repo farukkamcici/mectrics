@@ -23,6 +23,9 @@ packages:
   Sparkle:
     url: https://github.com/sparkle-project/Sparkle
     exactVersion: 2.9.4
+  ArgumentParser:
+    url: https://github.com/apple/swift-argument-parser
+    exactVersion: 1.8.2
 
 targets:
   Mectrics:
@@ -132,14 +135,18 @@ targets:
     platform: macOS
     sources:
       - path: Packages/MetricsKit/Sources/MectricsCLI
+      - path: Packages/MetricsKit/Sources/MectricsCLICore
     dependencies:
       - package: MetricsKit
         product: MetricsKit
+      - package: ArgumentParser
+        product: ArgumentParser
     settings:
       base:
         PRODUCT_NAME: mectrics
         PRODUCT_BUNDLE_IDENTIFIER: com.mectrics.cli
         SWIFT_VERSION: "6.0"
+        ENABLE_CODE_COVERAGE: NO
         CODE_SIGN_STYLE: Automatic
         SKIP_INSTALL: YES
       configs:

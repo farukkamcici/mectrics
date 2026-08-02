@@ -285,6 +285,8 @@ struct AlertsSettingsTab: View {
                         mectrics check --json
                         mectrics snapshot --json
                         mectrics alerts watch --json
+                        mectrics alerts watch --json --heartbeat 60
+                        mectrics doctor --json
                         """
                     )
                     .font(.system(.caption, design: .monospaced))

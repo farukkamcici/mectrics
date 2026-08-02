@@ -25,6 +25,8 @@ may write in Turkish). Nothing from that chat leaks into the repo in another lan
     readout).
   - `swift run mectrics` runs the read-only user CLI. It reads alert configuration from
     the app and offers `check`, `snapshot`, event streaming, and rule listing.
+    `Tests/MectricsCLITests` owns its process, exit-code, JSON-fixture, and failure-path
+    contracts.
   - Builds in the **Swift 6 language mode** and must stay warning-free. `MetricProvider`
     requires `Sendable`; providers are `@unchecked Sendable` because the engine samples
     them on one serial queue. Guard anything read outside that queue with a lock.
@@ -79,6 +81,14 @@ Do **not** commit: `Mectrics.xcodeproj/`, `DerivedData/`, `.build/` (see `.gitig
   standard output pipe-safe. `check` and alert streaming sample only the metrics they need;
   `snapshot` samples every available module once. It is read-only; alert configuration
   remains in the app.
+- Keep `check` exit codes stable: `0` healthy, `1` limit crossed, `2` unconfigured or
+  indeterminate. Usage, internal software, and corrupt-configuration failures are `64`, `70`,
+  and `78` respectively. Valid version 1 JSON fields do not change without an explicit schema
+  migration and fixture update.
+- A watch must never evaluate a failed or stale cached sample. Default JSON remains alert and
+  recovery events only; opt-in heartbeat mode uses tagged `ready`, `heartbeat`, `alert`, and
+  `status` records that expose sampling coverage and freshness. Watch rules are frozen at
+  startup and the process must be restarted after an app-side rule change.
 - The optional CLI installation is a symbolic link at `/usr/local/bin/mectrics` pointing
   into the signed app bundle. Never download or copy a second binary, overwrite an unrelated
   command at that path, or install a daemon. App removal also removes a Mectrics-owned link.

@@ -1,5 +1,4 @@
 import AppKit
-import IOKit.ps
 import MetricsKit
 
 enum StartupPresentation: Equatable {
@@ -482,10 +481,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Uses the system's providing power source, not battery charging state. A fully
     /// charged Mac connected to AC therefore remains on the faster AC policy.
     private static func isOnBattery() -> Bool {
-        guard let snapshot = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
-              let sourceType = IOPSGetProvidingPowerSourceType(snapshot)?.takeUnretainedValue()
-        else { return false }
-        return sourceType as String == kIOPSBatteryPowerValue
+        SystemPowerSource.isOnBattery
     }
 
     private func setDetail(_ id: MetricID, visible: Bool) {

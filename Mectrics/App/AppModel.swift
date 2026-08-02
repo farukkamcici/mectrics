@@ -251,8 +251,8 @@ final class AppModel {
     private static let menuBarIconsKey = "showMenuBarIcons"
     private static let compactHealthEnabledKey = "compactHealthEnabled"
     private static let adaptMonitoringKey = "adaptMonitoringToEnergyState"
-    private static let alertsKey = "alertRules"
-    private static let systemAlertsKey = "systemAlertRules"
+    private static let alertsKey = AlertConfigurationStorage.thresholdRulesKey
+    private static let systemAlertsKey = AlertConfigurationStorage.systemRulesKey
     private static let moduleComponentsKey = "moduleComponents"
     private static let legacyStylesKey = "moduleStyles"
 
@@ -391,7 +391,9 @@ final class AppModel {
             active.insert(id)
         }
         for (signal, rule) in systemAlertRules where rule.enabled {
-            active.insert(signal.metricID)
+            if let samplingMetricID = signal.samplingMetricID {
+                active.insert(samplingMetricID)
+            }
         }
         engine.setActiveMetrics(active)
     }
