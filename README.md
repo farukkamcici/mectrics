@@ -262,6 +262,9 @@ Forks are welcome to disagree with every line of this. That is what the MIT lice
 
 Contributions are welcome — new hardware coverage and translations especially.
 
+If Mectrics is useful to you, you can [support its ongoing development through GitHub
+Sponsors](https://github.com/sponsors/farukkamcici).
+
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — setup, the development loop, how to add a metric
   provider or a translation
 - [`AGENTS.md`](AGENTS.md) — the conventions this repository enforces, and the source of
