@@ -5,17 +5,17 @@ import SwiftUI
 @MainActor
 final class AttentionLogWindowController: NSObject, NSWindowDelegate {
     private let store: AttentionLogStore
-    private let onClose: () -> Void
+    private let dock: DockPresence
     private var window: NSWindow?
 
-    init(store: AttentionLogStore, onClose: @escaping () -> Void = {}) {
+    init(store: AttentionLogStore, dock: DockPresence) {
         self.store = store
-        self.onClose = onClose
+        self.dock = dock
         super.init()
     }
 
     func show() {
-        NSApp.setActivationPolicy(.regular)
+        dock.windowDidOpen(self)
         if window == nil {
             window = makeWindow()
         }
@@ -25,7 +25,7 @@ final class AttentionLogWindowController: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
-        onClose()
+        dock.windowWillClose(self)
     }
 
     private func makeWindow() -> NSWindow {

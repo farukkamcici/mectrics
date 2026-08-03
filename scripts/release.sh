@@ -3,6 +3,7 @@
 # Builds a release: archive with Hardened Runtime, export with a Developer ID Application
 # signature, verify it, create a drag-to-Applications DMG, sign and notarize the DMG, and
 # staple the ticket. The result is build/release/Mectrics.dmg (local output, not committed).
+# The release-candidate wrapper redirects the output and skips appcast generation.
 #
 #   MECTRICS_TEAM_ID=... MECTRICS_NOTARY_PROFILE=... ./scripts/release.sh
 #
@@ -11,7 +12,20 @@
 set -euo pipefail
 
 repo_root=${0:A:h:h}
-release_root="$repo_root/build/release"
+release_root=${MECTRICS_RELEASE_ROOT:-$repo_root/build/release}
+release_root=${release_root:A}
+skip_appcast=${MECTRICS_SKIP_APPCAST:-0}
+
+# Archive and staging directories are replaced below. Keep every destructive target
+# inside one explicit build subdirectory even when an override is supplied.
+if [[ "$release_root" != "$repo_root/build/"* || "$release_root" == "$repo_root/build" ]]; then
+  echo "MECTRICS_RELEASE_ROOT must be a subdirectory of $repo_root/build" >&2
+  exit 64
+fi
+if [[ "$skip_appcast" != 0 && "$skip_appcast" != 1 ]]; then
+  echo "MECTRICS_SKIP_APPCAST must be 0 or 1" >&2
+  exit 64
+fi
 archive_path="$release_root/Mectrics.xcarchive"
 export_path="$release_root/export"
 export_options_path="$release_root/ExportOptions.plist"
@@ -92,6 +106,17 @@ xcrun notarytool submit "$dmg_path" \
   --wait
 xcrun stapler staple "$dmg_path"
 xcrun stapler validate "$dmg_path"
+
+if [[ "$skip_appcast" == 1 ]]; then
+  version=$(defaults read "$app_path/Contents/Info" CFBundleShortVersionString)
+  echo
+  echo "Private candidate ready: $dmg_path"
+  echo "Version:                 $version"
+  echo "Appcast:                 unchanged"
+  echo
+  echo "This candidate is signed, notarized, and stapled, but it has not been published."
+  exit 0
+fi
 
 # ---- appcast
 #

@@ -9,9 +9,12 @@ import AppKit
 @MainActor
 enum MectricsMain {
     // NSApplication.delegate is unretained — keep the delegate alive here.
-    private static let delegate = AppDelegate()
+    private static var retainedDelegate: AppDelegate?
 
     static func main() {
+        PerformanceSignposts.beginLaunch()
+        let delegate = AppDelegate()
+        retainedDelegate = delegate
         let app = NSApplication.shared
         app.delegate = delegate
         app.run()

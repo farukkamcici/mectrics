@@ -62,10 +62,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     )
     private var energyGuard: EnergyGuardController!
     private let widgetSnapshots = WidgetSnapshotPublisher()
+    private let dock = DockPresence()
     private var powerSourceRunLoopSource: CFRunLoopSource?
     private var pendingRoutes: [ApplicationRoute] = []
     private var isReadyForRoutes = false
     private var visibleDetailMetricIDs: Set<MetricID> = []
+    private var hasRecordedFirstSample = false
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         NSAppleEventManager.shared().setEventHandler(
@@ -88,6 +90,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         menuBar = MenuBarController(model: model)
         menuBar.rebuild()
+        PerformanceSignposts.menuBarReady()
         energyGuard = EnergyGuardController(model: model)
         menuBar.onDetailVisibilityChanged = { [weak self] id, visible in
             self?.setDetail(id, visible: visible)
@@ -107,34 +110,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         // Settings window (manual controller — no SwiftUI Settings scene).
-        settings = SettingsWindowController(model: model) { [weak self] in
-            self?.updateActivationPolicyAfterClosingAWindow()
-        }
+        settings = SettingsWindowController(model: model, dock: dock)
         metricDetail = MetricDetailWindowController(
             model: model,
-            onClose: { [weak self] in
-                self?.updateActivationPolicyAfterClosingAWindow()
-            },
+            dock: dock,
             onVisibilityChanged: { [weak self] id, visible in
                 self?.setDetail(id, visible: visible)
             }
         )
         attentionLog = AttentionLogWindowController(
-            store: model.attentionLog
-        ) { [weak self] in
-            self?.updateActivationPolicyAfterClosingAWindow()
-        }
-        diagnostics = DiagnosticsWindowController(
-            model: model
-        ) { [weak self] in
-            self?.updateActivationPolicyAfterClosingAWindow()
-        }
-        aboutWindow = AboutWindowController { [weak self] in
-            self?.updateActivationPolicyAfterClosingAWindow()
-        }
-        whatsNewWindow = WhatsNewWindowController { [weak self] in
-            self?.updateActivationPolicyAfterClosingAWindow()
-        }
+            store: model.attentionLog,
+            dock: dock
+        )
+        diagnostics = DiagnosticsWindowController(model: model, dock: dock)
+        aboutWindow = AboutWindowController(dock: dock)
+        whatsNewWindow = WhatsNewWindowController(dock: dock)
         model.onOpenSettings = { [weak self] in
             self?.settings.show()
         }
@@ -192,11 +182,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 rules: self.model.systemAlertRules
             )
             self.widgetSnapshots.publish(from: self.model)
+            if !self.hasRecordedFirstSample && !report.samples.isEmpty {
+                self.hasRecordedFirstSample = true
+                PerformanceSignposts.firstSample(
+                    metricCount: report.samples.count
+                )
+            }
         }
 
         // Energy-friendly: sample more slowly on battery.
         let onBattery = Self.isOnBattery()
         model.engine.start(onBattery: onBattery)
+        PerformanceSignposts.engineStarted()
         DiagnosticLogStore.shared.record(.samplingStarted)
         energyGuard.start(onBattery: onBattery)
         refreshEnergyGuardVisibility()
@@ -283,6 +280,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             settings.show(pane: .general)
         case .metric(let metricID):
             metricDetail.show(metricID: metricID)
+        case .menuBar:
+            settings.show(pane: .menuBar)
         case .alerts:
             settings.show(pane: .alerts)
         case .attentionLog:
@@ -308,19 +307,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func showOnboarding() {
         if onboarding == nil {
-            onboarding = OnboardingWindowController(model: model) { [weak self] in
+            onboarding = OnboardingWindowController(
+                model: model,
+                dock: dock
+            ) { [weak self] in
                 self?.onboarding = nil
-                self?.updateActivationPolicyAfterClosingAWindow()
             }
         }
         onboarding?.show()
     }
 
-    private var currentMarketingVersion: String {
-        Bundle.main.object(
-            forInfoDictionaryKey: "CFBundleShortVersionString"
-        ) as? String ?? "0"
-    }
+    private var currentMarketingVersion: String { Bundle.main.marketingVersion }
 
     private func initializeWhatsNewBaselineIfNeeded() {
         let defaults = UserDefaults.standard
@@ -347,7 +344,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             currentVersion: currentMarketingVersion,
             storedVersion: UserDefaults.standard.string(
                 forKey: Self.lastPresentedWhatsNewVersionKey
-            )
+            ),
+            hasNotes: !ReleaseHighlights.current.isEmpty
         )
     }
 
@@ -358,7 +356,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         guard WhatsNewPolicy.shouldPresent(
             currentVersion: currentMarketingVersion,
-            storedVersion: storedVersion
+            storedVersion: storedVersion,
+            hasNotes: !ReleaseHighlights.current.isEmpty
         ) else {
             return false
         }
@@ -367,18 +366,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
-    /// A menu bar app only needs a Dock presence while it owns a standard window.
-    /// Deferring one run-loop pass lets AppKit finish removing the closing window.
-    private func updateActivationPolicyAfterClosingAWindow() {
-        DispatchQueue.main.async {
-            let hasVisibleStandardWindow = NSApp.windows.contains { window in
-                window.isVisible && !(window is NSPanel)
-            }
-            if !hasVisibleStandardWindow {
-                NSApp.setActivationPolicy(.accessory)
-            }
-        }
-    }
+    // The Dock icon follows `DockPresence`, which the window controllers report to
+    // directly. Scanning `NSApp.windows` cannot answer the question: it also contains
+    // the window behind every status item, so the app looked like it always had a
+    // window open and the icon never went away after Settings was closed.
 
     /// Installs the standard Mac commands because this AppKit-only app has no
     /// SwiftUI scene to synthesize a main menu.
@@ -490,6 +481,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             visibleDetailMetricIDs.remove(id)
         }
+        // A popover or detail window is where a temperature is read, so it decides
+        // whether the SMC is sampled at all as well as how often.
+        model.setDetailVisible(id, visible)
         refreshEnergyGuardVisibility()
     }
 

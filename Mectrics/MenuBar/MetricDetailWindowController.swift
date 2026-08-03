@@ -13,7 +13,7 @@ private final class MetricDetailWindow: NSWindow {
 @MainActor
 final class MetricDetailWindowController: NSObject, NSWindowDelegate {
     private let model: AppModel
-    private let onClose: () -> Void
+    private let dock: DockPresence
     private let onVisibilityChanged: (MetricID, Bool) -> Void
     private var window: NSWindow?
     private var currentMetricID: MetricID?
@@ -24,11 +24,11 @@ final class MetricDetailWindowController: NSObject, NSWindowDelegate {
 
     init(
         model: AppModel,
-        onClose: @escaping () -> Void = {},
+        dock: DockPresence,
         onVisibilityChanged: @escaping (MetricID, Bool) -> Void = { _, _ in }
     ) {
         self.model = model
-        self.onClose = onClose
+        self.dock = dock
         self.onVisibilityChanged = onVisibilityChanged
         super.init()
         NotificationCenter.default.addObserver(
@@ -40,7 +40,7 @@ final class MetricDetailWindowController: NSObject, NSWindowDelegate {
     }
 
     func show(metricID: MetricID) {
-        NSApp.setActivationPolicy(.regular)
+        dock.windowDidOpen(self)
         if window == nil {
             window = makeWindow()
         }
@@ -60,10 +60,10 @@ final class MetricDetailWindowController: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
+        dock.windowWillClose(self)
         if let currentMetricID {
             onVisibilityChanged(currentMetricID, false)
         }
-        onClose()
     }
 
     private func makeWindow() -> NSWindow {

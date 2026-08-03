@@ -8,7 +8,9 @@ public struct SamplingPolicy: Sendable {
     public var onACInterval: TimeInterval
     /// Interval while on battery (seconds).
     public var onBatteryInterval: TimeInterval
-    /// Medium providers (battery, disk) are sampled once every N base cycles.
+    /// Medium providers (battery, disk) are sampled once every N base cycles. Their
+    /// readings move on the scale of minutes and each costs an IOKit round trip, so
+    /// the default is deliberately slower than the base cycle.
     public var mediumEveryNCycles: Int
     /// Heavy providers (sensors/GPU) are sampled once every N base cycles.
     public var heavyEveryNCycles: Int
@@ -16,7 +18,7 @@ public struct SamplingPolicy: Sendable {
     public init(
         onACInterval: TimeInterval = 1.0,
         onBatteryInterval: TimeInterval = 2.0,
-        mediumEveryNCycles: Int = 1,
+        mediumEveryNCycles: Int = 2,
         heavyEveryNCycles: Int = 3
     ) {
         self.onACInterval = onACInterval
@@ -39,7 +41,7 @@ public struct SamplingRuntimePolicy: Sendable, Equatable {
 
     public init(
         intervalMultiplier: Double = 1,
-        mediumEveryNCycles: Int = 1,
+        mediumEveryNCycles: Int = 2,
         heavyEveryNCycles: Int = 3,
         pausedMetricIDs: Set<MetricID> = []
     ) {

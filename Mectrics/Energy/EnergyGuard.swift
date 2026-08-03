@@ -182,9 +182,13 @@ final class EnergyGuardStateMachine {
         let policy: SamplingRuntimePolicy
         switch mode {
         case .normal:
+            // Battery charge and disk capacity move on the scale of minutes, and both
+            // cost an IOKit round trip, so reading them on every base cycle buys a
+            // number nobody can see change. Every second cycle is 2 s on AC and 4 s on
+            // battery — well inside `MetricDataState`'s 15-second staleness budget.
             policy = SamplingRuntimePolicy(
                 intervalMultiplier: 1,
-                mediumEveryNCycles: 1,
+                mediumEveryNCycles: 2,
                 heavyEveryNCycles: 3
             )
         case .reduced:

@@ -157,6 +157,33 @@ sampling, so Mectrics eases off on exactly the states it would report.
   lower, in Energy Guard's sampling policy.
 - ⌘-drag reordering is native; `NSStatusItem.autosaveName` preserves position.
 
+## Windows and the Dock
+
+Mectrics is an `LSUIElement` agent: it launches with no Dock icon and no main window. It
+becomes a regular application only while one of its own standard windows is on screen —
+Settings, the Attention Log, Diagnostics, a metric detail, About, What's New, onboarding —
+and drops back to `.accessory` when the last of them closes.
+
+[`DockPresence`](../Mectrics/App/DockPresence.swift) owns that decision and every window
+controller reports to it. The question cannot be answered from `NSApplication.windows`:
+that collection also holds the window behind each status item, which is visible for the
+whole life of the app, so "any visible window" is permanently true and the icon never goes
+away once shown. Close ordering is a second trap — `windowWillClose` runs before the window
+stops being visible — so the policy is applied one run-loop turn later, after AppKit has
+finished. Because the decision is a plain object rather than an AppKit query, it is unit
+tested, including a real window that is genuinely closed.
+
+Settings drops its window on close rather than keeping it for the session. It is the app's
+heaviest surface — a SwiftUI window's working set is most of the footprint a menu bar agent
+is budgeted for, about 35 MB on the reference Mac — and the selected pane and frame are
+restored from preferences when it opens again.
+
+What's New is keyed by version. `ReleaseHighlights` maps a marketing version to the two or
+three things worth telling someone about, and the window shows the running build's entry;
+before that it was one hardcoded list, so every upgrade was greeted with news from an older
+release. A version with no entry presents nothing rather than something stale, and a test
+fails if the current version has no notes.
+
 ## Compact Health
 
 The always-on-top floating panel that once existed was removed: it duplicated the menu bar
@@ -233,7 +260,13 @@ the widget is positioned as "at a glance" while the menu bar carries the real-ti
   asleep.
 - Cost classes are the scheduler's dial: `.light` runs on every base cycle, `.medium`
   (battery, disk) and `.heavy` (SMC, GPU, sensors) are thinned by the intervals in
-  `SamplingRuntimePolicy`, which Energy Guard widens as conditions tighten.
+  `SamplingRuntimePolicy`, which Energy Guard widens as conditions tighten. Battery and
+  disk are read every second base cycle even in normal mode: both move on the scale of
+  minutes and each costs an IOKit round trip.
+- What is on screen decides which providers run at all, not only how often. The SMC is
+  sampled only where a temperature is actually shown — a `.temperature` menu bar
+  component, an open popover or detail window for CPU/Memory/GPU, the menu bar builder,
+  or a rule that watches the CPU temperature directly.
 - The hot path is allocation-free: the ring buffer is pre-allocated.
 - Providers copy the single IORegistry property they need rather than a whole property
   dictionary, and anything that reaches a system daemon (reclaimable disk space) runs on
@@ -241,7 +274,106 @@ the widget is positioned as "at a glance" while the menu bar carries the real-ti
 - Targets: under 60 MB memory, low and steady CPU, "Energy Impact: Low" in Activity
   Monitor. Memory means `phys_footprint` — what Activity Monitor's "Memory" column
   reports — and not `ps rss`, which counts shared framework pages every SwiftUI app maps
-  and reads about three times higher. A Release build idles around 24 MB.
+  and reads about three times higher. A Release build with the default four menu bar items
+  measures a 27 MB `phys_footprint` p95 over a 31-minute run; the same build with the
+  Settings window left open measures 62 MB, because a SwiftUI window's working set is most
+  of that figure. The 60 MB budget
+  describes the menu bar's steady state, which is what the app spends its life in.
+- Local points-of-interest signposts cover provider discovery, menu bar readiness, engine
+  start, the first live sample, and popover presentation. They are visible to
+  Instruments but are neither persisted nor transmitted.
+- `scripts/performance/measure.sh` launches an isolated Release app or attaches to an
+  explicit PID, records time-series CPU, `phys_footprint`, and connections, and evaluates
+  p50/p95 plus long-run memory slope. `measure-cli.sh` benchmarks the real embedded CLI and
+  can compare its p95 with an accepted local baseline. Results stay in ignored build output.
+- Baselines run without Instruments or `powermetrics`; those tools are attached only to
+  diagnose a failed budget because observation has its own cost.
+- A gate covers two workloads, because they fail for different reasons: the menu bar on its
+  own, and Settings deliberately open. `--profile` declares the rules and layout under
+  measurement, `--settings <pane>` sends the app a `mectrics://` route so the window that
+  is being measured is the one that was asked for.
+
+### Where the cost actually is
+
+Three things dominate, and none of them is arithmetic on a sample:
+
+1. **Handing AppKit a new status item image.** Every assignment is a window-server round
+   trip: the status item's scene settings are updated inside a Core Animation commit, and
+   AppKit then redraws the item's replicant snapshot by caching the button view into a
+   bitmap. An item whose render inputs are unchanged costs nothing, which is why
+   `MetricStatusItem` compares them first — a menu bar of items that never change measures
+   at 0% CPU. The price is per *changed* item per cycle, so the honest way to reduce it is
+   to change fewer things, not to sample less often.
+2. **Rebuilding the menu bar.** `MenuBarController.rebuild()` destroys and re-creates every
+   `NSStatusItem`, and each one is a window the server has to register. This belongs to a
+   change in *which* items exist, never to a change in their values, so component
+   availability only grows within a session (see AGENTS.md §5).
+3. **Re-rendering a Settings pane on every sample.** SwiftUI re-evaluating a pane rebuilds
+   the tooltips and hover regions inside it; AppKit responds to a tracking-area change by
+   re-resolving the pointer for the window, and on macOS 27 that re-resolution regenerates
+   the accessibility cursor image — a Gaussian-blurred draw — each time. Left running, the
+   pane's cost climbs rather than staying flat. The structural answer is the one already
+   used in the menu bar: values live in small leaf views that reserve a fixed width, so a
+   new reading repaints a caption instead of re-laying out and re-tracking the window.
+
+The engine's own contribution is small by comparison. A Release app with ten enabled alert
+rules and no menu bar items at all measures well under 1% CPU, so a sampling cadence is
+worth tuning for energy — battery and disk are read every second base cycle because their
+readings move on the scale of minutes — but it is not where a CPU budget is won or lost.
+
+Measured on the reference Mac (M2 Air, macOS 27 beta, AC, ten enabled rules, Release build
+with no debugger), the shape of the cost is:
+
+| Configuration | CPU median |
+|---|---|
+| Ten rules, no menu bar items | 0.4% |
+| One item whose value never changes | 0.0% |
+| One item redrawing every second | 1.6% |
+| Four items redrawing every second | 2.6% |
+
+The first redraw of a cycle carries most of the price; further items are comparatively
+cheap. That is the shape of a fixed per-cycle window-server cost, not of arithmetic, and it
+is why the budget is defended by *not redrawing* rather than by sampling less.
+
+An unresolved observation belongs here rather than in a release note: on macOS 27 beta this
+app is bimodal. Long runs sit at roughly 3.5% and then spend 20–60 seconds at a noticeably
+higher level before returning, and one 31-minute run entered a ~55% state and stayed there
+with memory flat. Pointer position, the measurement tools themselves, and a stray window
+have each been ruled out by experiment. It has not been reproduced in runs shorter than
+about twenty minutes, and it is not understood.
+
+### Where 1.5.0 actually stands
+
+The gate is a gate, so what it currently reports is recorded rather than remembered. Both
+runs below are 31 measured minutes after a five-minute warm-up, five-second sampling, on
+AC power, on the reference Mac, with `scripts/performance/profiles/alerts-ac.json` — ten
+enabled rules over the four menu bar items a clean install ships with.
+
+| Gate | Budget | Menu bar only | Settings open |
+|---|---|---|---|
+| CPU median | ≤ 3% | 3.72% ✗ | 4.31% ✗ |
+| CPU p95 | ≤ 5% | 8.22% ✗ | 8.63% ✗ |
+| Sustained above 10% | none | 0 s ✓ | 5 s ✗ |
+| `phys_footprint` p95 | ≤ 60 MB | 27.0 MB ✓ | 62.1 MB ✗ |
+| Memory slope | ≤ 1 MB/h | +4.65 ✗ | +2.86 ✗ |
+| Idle connections | 0 | 0 ✓ | 0 ✓ |
+
+These budgets are targets this project set for itself, deliberately tighter than "you would
+never notice"; missing the CPU one by well under a percentage point is a thing to keep
+working on, not an alarm. What the two columns actually say is more useful than the pass
+marks. The Settings column moved from a 74.9% median, 1422 seconds above 10%, and a 122 MB
+footprint growing at 21 MB/hour, so the pathology described above is gone. The menu bar
+column did *not* move: 3.72% against 3.72% on the same machine before the change. Sampling
+cadence and provider gating were not where that cost lived — the remaining distance is the
+per-redraw window-server price plus the bimodality noted above, and that is where the next
+attempt should look.
+
+Public performance claims are deliberately narrower than the raw tooling. The 27 MB figure
+is a reference Release measurement, not a promise that every hardware and module
+combination will produce the same number. CPU is reported as a post-warm-up distribution and
+a sustained-spike duration because a launch or popover sample can briefly be high; macOS
+counts 100% process CPU as one fully occupied logical core. A run shorter than 30 measured
+minutes does not qualify the memory-growth gate and cannot be described as a soak result.
 
 ## Privacy and distribution
 
@@ -251,6 +383,9 @@ the widget is positioned as "at a glance" while the menu bar carries the real-ti
   sandboxed.
 - Releases are produced by [`../scripts/release.sh`](../scripts/release.sh), which archives,
   signs, packages a DMG, notarizes, and staples in one pass.
+- Private distribution-equivalent candidates use
+  [`../scripts/release-candidate.sh`](../scripts/release-candidate.sh); they use a separate,
+  versioned output directory and deliberately leave the appcast unchanged.
 - See [`../PRIVACY.md`](../PRIVACY.md) for the privacy statement.
 
 ## Testing
@@ -263,6 +398,9 @@ the widget is positioned as "at a glance" while the menu bar carries the real-ti
   with isolated preferences.
 - `MectricsTests` covers app-layer logic: alert rules, Energy Guard, the Attention Log,
   diagnostics export redaction, menu bar layout presets, and URL routing.
+- XCTest microbenchmarks cover the ring-buffer hot path, menu bar formatting, and Energy
+  Guard decisions. Whole-process release gates remain external so the test runner and
+  debugger do not contaminate CPU, memory, or wakeup measurements.
 - Hardware coverage is inherently manual: fanless machines, external displays, low battery,
   and machines whose SMC key set differs.
 
@@ -296,6 +434,8 @@ mectrics/
 │   └── Tests/                # engine and CLI contract suites
 └── scripts/
     ├── release.sh            # archive → sign → DMG → notarize → staple
+    ├── release-candidate.sh  # private notarized candidate, no appcast mutation
+    ├── performance/          # Release process and CLI measurement gates
     ├── uninstall.sh          # manual removal for a Mectrics that will not open
     └── generate-banner.py    # regenerates the README banner pair
 ```

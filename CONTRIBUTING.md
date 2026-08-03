@@ -76,14 +76,127 @@ xcodebuild -project Mectrics.xcodeproj -scheme Mectrics -configuration Debug bui
 mectrics is an `LSUIElement` agent — no Dock icon, no main window. Verify visual changes in
 the menu bar and popover directly.
 
+## Performance validation
+
+Performance numbers come from an optimized Release app without Xcode, a debugger, code
+coverage, or sanitizers attached. Build an unsigned local candidate for development, then
+measure it directly:
+
+```bash
+xcodegen generate
+xcodebuild build \
+  -project Mectrics.xcodeproj \
+  -scheme Mectrics \
+  -configuration Release \
+  -destination 'platform=macOS' \
+  -derivedDataPath build/performance/DerivedData \
+  ENABLE_CODE_COVERAGE=NO \
+  CODE_SIGNING_ALLOWED=NO \
+  CODE_SIGNING_REQUIRED=NO \
+  CODE_SIGN_IDENTITY="" \
+  CODE_SIGN_ENTITLEMENTS="" \
+  DEVELOPMENT_TEAM=""
+
+./scripts/performance/measure.sh \
+  --app build/performance/DerivedData/Build/Products/Release/Mectrics.app \
+  --scenario idle-ac
+
+./scripts/performance/measure-cli.sh \
+  --app build/performance/DerivedData/Build/Products/Release/Mectrics.app
+
+xcodebuild test \
+  -project Mectrics.xcodeproj \
+  -scheme MectricsPerformance \
+  -destination 'platform=macOS'
+```
+
+### The two workloads a release is gated on
+
+The menu bar and an open Settings window fail for different reasons, so both are measured.
+Run them back to back on a quiet Mac, on AC power, with nothing else launched:
+
+```bash
+./scripts/performance/measure.sh \
+  --app build/performance/DerivedData/Build/Products/Release/Mectrics.app \
+  --profile scripts/performance/profiles/alerts-ac.json \
+  --scenario alerts-ac-menu-only
+```
+
+```bash
+./scripts/performance/measure.sh \
+  --app build/performance/DerivedData/Build/Products/Release/Mectrics.app \
+  --profile scripts/performance/profiles/alerts-ac.json \
+  --settings menu-bar \
+  --scenario alerts-ac-settings-open
+```
+
+A profile is a small JSON file under `scripts/performance/profiles/` declaring the alert
+rules and the menu bar layout to measure. The launcher encodes it as old-style plist data
+on the app's own command line, so a declared workload still never touches the contributor's
+preferences. `--settings <general|menu-bar|alerts>` opens a pane by sending the running app
+a `mectrics://` route, which is why the run refuses to start next to another Mectrics: a
+second copy would answer the route instead.
+
+Every run records `power-source.csv` beside its samples. Adaptive sampling makes a run that
+slipped onto battery a different measurement, so check that file before quoting a number.
+
+`measure.sh` launches the app with isolated preferences, excludes a five-minute warm-up,
+then records CPU, `phys_footprint`, and open connections every five seconds. It enforces the
+60 MB memory budget, idle CPU and network gates, and memory growth on runs long enough to
+make a slope meaningful. Pass `--pid` to observe an already-running CLI watch. Optional
+`--powermetrics` output is diagnostic and requires existing administrator authorization;
+it is not part of the clean baseline.
+
+The launcher uses process-only argument defaults, disables window restoration, and restores
+an exact snapshot of the preferences domain after the app exits. Framework bookkeeping is
+therefore removed along with the test setup, including a domain that did not exist before
+the run — cfprefsd can flush a departing process's writes after it is gone, so the removal
+is retried until it stays gone. A restored Settings window would measure a different
+workload and can also expose operating-system UI regressions.
+
+Running the app-layer XCTest suite is not covered by any of this: the test host *is* the
+app, so it launches with your real preferences and leaves its own bookkeeping behind. Run
+the gates before the tests, or clear the domain in between.
+
+The default idle CPU gates are a 3% median, 5% p95, and no interval above 10% sustained for
+more than 30 seconds. CPU percentage comes from process CPU-time deltas, not `ps`'s smoothed
+display value. Override a budget through the documented `MECTRICS_MAX_*` environment
+variables only when defining a deliberate hardware-specific baseline.
+
+Results are local JSON and CSV under ignored `build/performance/`. Compare p50 and p95 on
+the same Mac, OS, power source, settings, and sampling scenario. A single Activity Monitor
+refresh is not a baseline, and RSS is never the product memory number.
+
+When reporting a result, include the app version and configuration, warm-up and measured
+duration, power source, scenario, and enabled modules. Quote CPU median and p95 together;
+quote post-warm-up `phys_footprint` p95 for memory. State whether the 30-minute memory-slope
+gate ran. A short smoke run may validate the sampler and the immediate budgets, but it must
+not be presented as evidence of long-run stability or as a universal result for every Mac.
+Activity Monitor's process CPU scale assigns 100% to one logical core, so preserve the
+measurement window when comparing its display with a gate report.
+
+The `MectricsPerformance` scheme uses an optimized `Performance` configuration with
+testability enabled. The shipping `Release` configuration stays non-testable. Ordinary app
+logic tests use the Debug `Mectrics` scheme; CI runs those tests in addition to building the
+app.
+
+For a private distribution-equivalent candidate, use `scripts/release-candidate.sh` with
+the same signing and notary environment variables as `scripts/release.sh`. It writes under
+`build/candidate/<version>/`, signs, notarizes, and staples the DMG without changing the
+appcast or publishing anything.
+
 ## Before you open a pull request
 
 - [ ] `swift test` passes in `Packages/MetricsKit`.
 - [ ] `xcodebuild ... build` succeeds and produces no new warnings. MetricsKit builds in the
       Swift 6 language mode and must stay warning-free.
+- [ ] Performance-sensitive changes pass the Release process and CLI gates on the same
+      baseline machine.
 - [ ] New or changed user-facing strings go through `String(localized:)` / SwiftUI `Text`.
 - [ ] If you added or removed files, `xcodegen generate` was run and `project.yml` reflects it.
 - [ ] If you added a menu bar component or changed a format, its width template is updated.
+- [ ] If you bumped `MARKETING_VERSION`, `ReleaseHighlights` has notes for the new version
+      and they are translated in both string catalogs.
 - [ ] Commit messages are English with an imperative subject and a body explaining the *why*.
 
 ## Adding a metric provider

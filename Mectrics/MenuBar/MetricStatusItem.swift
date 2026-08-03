@@ -77,6 +77,15 @@ final class MetricStatusItem: NSObject {
             button.target = self
             button.action = #selector(clicked)
             button.imagePosition = .imageOnly
+            // The label names the module and the look, neither of which can change
+            // for the life of the item — so it is set once instead of being rebuilt
+            // from the string catalog on every sampling cycle.
+            button.setAccessibilityLabel(
+                String(
+                    localized: "menuBar.component.accessibilityLabel",
+                    defaultValue: "\(id.localizedName), \(component.localizedName)"
+                )
+            )
         }
     }
 
@@ -127,12 +136,6 @@ final class MetricStatusItem: NSObject {
             reservedTextWidth: reservedTextWidth,
             icon: (showIcon && !component.drawsModuleGlyph) ? iconSymbol : nil,
             appearance: appearance
-        )
-        button.setAccessibilityLabel(
-            String(
-                localized: "menuBar.component.accessibilityLabel",
-                defaultValue: "\(id.localizedName), \(component.localizedName)"
-            )
         )
         button.setAccessibilityValue(Self.accessibilityValue(for: visual, state: state))
     }

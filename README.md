@@ -40,8 +40,19 @@ It is built around three commitments:
 | | |
 |---|---|
 | 🔒 **Private by construction** | Zero telemetry. No analytics, no identifiers, no crash reports. The only network request the app can make is an update check you trigger yourself — automatic checks are off by default. |
-| 🪶 **Light on the machine** | Sampling slows down on battery and backs off under Low Power Mode and thermal pressure. A release build idles at about **24 MB** against a 60 MB budget — that is `phys_footprint`, the same number Activity Monitor's Memory column shows — with roughly one wake per second. |
+| 🪶 **Light on the machine** | About **27 MB** of memory and **a few percent of one CPU core** while it sits in your menu bar — the same memory number Activity Monitor shows you. Sampling slows down on battery and backs off in Low Power Mode and when your Mac runs hot. |
 | 📐 **Stable in the menu bar** | Items reserve a fixed width, so values change without anything shifting sideways. |
+
+Those numbers come from half-hour runs of the shipping build, not from one glance at
+Activity Monitor, and they are checked before a release rather than assumed. What you see
+will differ with your Mac, how many items you put in the menu bar, and whether you are on
+battery — more items means more work, because each one redraws every second.
+
+The project holds itself to deliberately tight internal budgets — 60 MB of memory and 3% of
+a core — and publishes where it stands against them rather than only the flattering half.
+Memory is comfortably inside; CPU currently sits just above. The
+[measurements and the reasoning](docs/architecture.md#power-and-performance) are written
+down, and so is [how to run them yourself](CONTRIBUTING.md#performance-validation).
 
 <div align="center">
   <a href="https://github.com/farukkamcici/mectrics/releases/latest/download/Mectrics.dmg"><b>⬇︎ Download Mectrics 1.4.0</b></a><br>

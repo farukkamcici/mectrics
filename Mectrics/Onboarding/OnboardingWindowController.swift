@@ -12,17 +12,23 @@ private final class OnboardingWindow: NSWindow {
 @MainActor
 final class OnboardingWindowController: NSObject, NSWindowDelegate {
     private let model: AppModel
+    private let dock: DockPresence
     private let onFinished: () -> Void
     private var window: NSWindow?
 
-    init(model: AppModel, onFinished: @escaping () -> Void = {}) {
+    init(
+        model: AppModel,
+        dock: DockPresence,
+        onFinished: @escaping () -> Void = {}
+    ) {
         self.model = model
+        self.dock = dock
         self.onFinished = onFinished
     }
 
     func show() {
         if let window {
-            NSApp.setActivationPolicy(.regular)
+            dock.windowDidOpen(self)
             NSApp.activate(ignoringOtherApps: true)
             positionAtVisibleScreenCenter(window)
             window.makeKeyAndOrderFront(nil)
@@ -53,7 +59,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         window.delegate = self
         self.window = window
 
-        NSApp.setActivationPolicy(.regular)
+        dock.windowDidOpen(self)
         NSApp.activate(ignoringOtherApps: true)
         positionAtVisibleScreenCenter(window)
         window.makeKeyAndOrderFront(nil)
@@ -74,6 +80,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
+        dock.windowWillClose(self)
         model.hasCompletedOnboarding = true
         model.endOnboardingPreview()
         window = nil

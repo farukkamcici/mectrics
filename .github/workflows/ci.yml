@@ -59,6 +59,22 @@ jobs:
             CODE_SIGN_ENTITLEMENTS="" \
             DEVELOPMENT_TEAM=""
 
+      - name: Test app logic
+        run: |
+          xcodebuild test \
+            -project Mectrics.xcodeproj \
+            -scheme Mectrics \
+            -destination 'platform=macOS' \
+            ENABLE_CODE_COVERAGE=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            DEVELOPMENT_TEAM=""
+
+      - name: Performance gate contracts
+        run: ./scripts/performance/test.sh
+
   hygiene:
     name: Repository hygiene
     runs-on: ubuntu-latest

@@ -203,19 +203,81 @@ final class AppModel {
     /// Component choices worth offering for a module. Battery health and cycle count
     /// and temperatures are hidden when this Mac does not report them, so the
     /// builder never offers a look that can only ever render a dash.
+    ///
+    /// The answer is derived from the sample details but changes only when a reading
+    /// appears or disappears, so it is cached rather than recomputed from `latest`.
+    /// Settings rows read this instead of `latest` and therefore keep their view
+    /// identity while values tick — see `componentOptions`.
     func availableComponents(for id: MetricID) -> [MenuBarComponent] {
+        componentOptions[id] ?? Self.componentOptions(for: id, detail: nil, temperature: nil)
+    }
+
+    /// Cached per-module component availability. Updated only when it changes.
+    private(set) var componentOptions: [MetricID: [MenuBarComponent]] = [:]
+
+    private static func componentOptions(
+        for id: MetricID,
+        detail: [String: Double]?,
+        temperature: Double?
+    ) -> [MenuBarComponent] {
         let components = MenuBarComponent.available(for: id)
-        guard let detail = latest[id]?.detail else {
+        guard let detail else {
             return components.filter { $0 != .temperature }
         }
         return components.filter { component in
             switch component {
             case .health: return detail["healthPercent"] != nil
             case .cycles: return detail["cycleCount"] != nil
-            case .temperature: return temperature(for: id) != nil
+            case .temperature: return temperature != nil
             default:      return true
             }
         }
+    }
+
+    /// System signals this Mac can actually report. Like `componentOptions`, this is
+    /// derived from sample details but changes only when a reading appears, so Settings
+    /// can list its rules without depending on `latest`.
+    private(set) var availableSystemAlertSignals: Set<SystemAlertSignal> = Set(
+        SystemAlertSignal.allCases.filter { $0 != .batteryService }
+    )
+
+    /// Recomputes the cached option lists. Returns true when the menu bar's own list
+    /// of items changed and it therefore has to be rebuilt.
+    ///
+    /// Availability only ever grows within a session. A sensor that reads out of range
+    /// for one cycle — an idle GPU reporting nothing is routine — is a failed read, not
+    /// hardware that disappeared, and the item already knows how to render a dash for a
+    /// missing value. Recomputing from scratch instead let a flapping key add and
+    /// remove a menu bar item every few seconds, and every rebuild tears down and
+    /// re-creates every status item.
+    @discardableResult
+    private func refreshComponentOptions() -> Bool {
+        let previousItems = enabledItemKeys
+        var options = componentOptions
+        for id in availableModules {
+            let discovered = Self.componentOptions(
+                for: id,
+                detail: latest[id]?.detail,
+                temperature: temperature(for: id)
+            )
+            let known = componentOptions[id] ?? []
+            options[id] = MenuBarComponent.available(for: id).filter {
+                discovered.contains($0) || known.contains($0)
+            }
+        }
+        // macOS only reports a service recommendation on Macs whose battery has one.
+        if latest[.battery]?.detail["serviceRecommended"] != nil,
+           !availableSystemAlertSignals.contains(.batteryService) {
+            availableSystemAlertSignals.insert(.batteryService)
+        }
+        guard options != componentOptions else { return false }
+        componentOptions = options
+        return enabledItemKeys != previousItems
+    }
+
+    /// Identity of every menu bar item, in display order.
+    private var enabledItemKeys: [String] {
+        orderedEnabledItems.map { "\($0.module.rawValue)|\($0.component.rawValue)" }
     }
 
     /// Temperature belonging to a hardware-domain module, if the SMC exposes a
@@ -241,6 +303,22 @@ final class AppModel {
     func endBuilderPreview() {
         builderPreviewActive = false
         refreshActiveMetrics()
+    }
+
+    /// Modules whose popover or detail window is on screen. Those surfaces show a
+    /// temperature, so the SMC is worth reading while one of them is open.
+    private var visibleDetailModules: Set<MetricID> = []
+
+    func setDetailVisible(_ id: MetricID, _ visible: Bool) {
+        let updated = visible
+            ? visibleDetailModules.union([id])
+            : visibleDetailModules.subtracting([id])
+        guard updated != visibleDetailModules else { return }
+        visibleDetailModules = updated
+        refreshActiveMetrics()
+        // A newly opened surface should show a temperature immediately rather than
+        // waiting for the next heavy cycle.
+        if visible { engine.requestRefresh(includingHeavy: true) }
     }
 
     private let defaults = UserDefaults.standard
@@ -286,7 +364,9 @@ final class AppModel {
         self.systemAlertRules = Self.loadSystemAlertRules(from: defaults)
         self.enabledComponents = Self.loadEnabledComponents(
             from: defaults, available: available.filter { $0 != .sensors })
+        refreshComponentOptions()
         refreshActiveMetrics()
+        PerformanceSignposts.providersReady(count: availableProviders.count)
     }
 
     /// Modules in menu bar order (CPU, Memory, Battery ...).
@@ -314,7 +394,6 @@ final class AppModel {
     /// Applies one engine pass while preserving the last valid sample across short
     /// provider interruptions.
     func apply(_ report: SamplingCycleReport) {
-        let previousTemperatureModules = availableTemperatureModules
         for (id, sample) in report.samples {
             latest[id] = sample
             consecutiveSamplingFailures[id] = 0
@@ -322,15 +401,12 @@ final class AppModel {
         for id in report.failedMetricIDs {
             consecutiveSamplingFailures[id, default: 0] += 1
         }
-        if availableTemperatureModules != previousTemperatureModules {
+        // A component appearing or disappearing (a temperature this Mac only reports
+        // sometimes, a battery that starts reporting health) changes what belongs in
+        // the menu bar, so the items are rebuilt — but only then, not every cycle.
+        if refreshComponentOptions() {
             onModulesChanged?()
         }
-    }
-
-    private var availableTemperatureModules: Set<MetricID> {
-        Set([MetricID.cpu, .memory, .gpu].filter {
-            latest[$0] != nil && temperature(for: $0) != nil
-        })
     }
 
     /// Shared state resolver used by menu bar, popover, panel, and Settings preview.
@@ -379,12 +455,20 @@ final class AppModel {
         if builderPreviewActive {
             active.formUnion(availableModules)
         }
-        // Temperatures accompany a module that is on screen, because its popover and
-        // optional menu bar component show them. A rule watching that module needs no
-        // temperature of its own — the CPU temperature rule asks for `.sensors`
-        // directly, and thermal pressure comes from ProcessInfo, not the SMC. Reading
-        // the SMC is the most expensive thing this app does; nothing invisible earns it.
-        if !active.isDisjoint(with: [.cpu, .memory, .gpu]) {
+        // Reading the SMC is the most expensive thing this app does, so a temperature
+        // is sampled only where one is actually on screen: a `.temperature` menu bar
+        // component, an open popover or detail window for a hardware-domain module, or
+        // the builder previewing every module. A module merely *having* a menu bar item
+        // does not earn it — its popover is closed, and nothing in the item shows a
+        // temperature. A rule watching that module needs no temperature of its own
+        // either: the CPU temperature rule asks for `.sensors` directly, and thermal
+        // pressure comes from ProcessInfo, not the SMC.
+        let showsTemperature = [MetricID.cpu, .memory, .gpu].contains { id in
+            enabledComponents[id]?.contains(.temperature) ?? false
+        }
+        if showsTemperature
+            || !visibleDetailModules.isDisjoint(with: [.cpu, .memory, .gpu])
+            || builderPreviewActive {
             active.insert(.sensors)
         }
         for (id, rule) in alertRules where rule.enabled {

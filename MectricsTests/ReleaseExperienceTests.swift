@@ -94,4 +94,37 @@ final class ReleaseExperienceTests: XCTestCase {
             )
         )
     }
+
+    /// An upgrade with nothing written for it must not interrupt anyone. The window
+    /// previously showed one hardcoded list forever, so upgrading to any version was
+    /// greeted with news from an old one.
+    func testAnUpgradeWithoutNotesIsNotAnnounced() {
+        XCTAssertFalse(
+            WhatsNewPolicy.shouldPresent(
+                currentVersion: "9.9.9",
+                storedVersion: "1.0.0",
+                hasNotes: false
+            )
+        )
+    }
+
+    func testReleaseNotesBelongToTheVersionTheyShippedIn() {
+        XCTAssertFalse(ReleaseHighlights.notes(for: "1.5.0").isEmpty)
+        XCTAssertTrue(ReleaseHighlights.notes(for: "1.4.0").isEmpty)
+        XCTAssertTrue(ReleaseHighlights.notes(for: "0.0.0").isEmpty)
+    }
+
+    /// The notes shown are the running build's, so shipping a version without adding
+    /// notes for it is visible here rather than to a user after an update.
+    func testTheRunningVersionHasReleaseNotes() {
+        XCTAssertFalse(
+            ReleaseHighlights.current.isEmpty,
+            "Add release notes for \(Bundle.main.marketingVersion) to ReleaseHighlights"
+        )
+    }
+
+    func testReleaseNoteIdentifiersAreUnique() {
+        let ids = ReleaseHighlights.notes(for: "1.5.0").map(\.id)
+        XCTAssertEqual(ids.count, Set(ids).count)
+    }
 }

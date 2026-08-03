@@ -20,7 +20,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     }
 
     private let model: AppModel
-    private let onClose: () -> Void
+    private let dock: DockPresence
     private var window: NSWindow?
     private weak var tabController: SettingsTabViewController?
     private let defaults = UserDefaults.standard
@@ -36,9 +36,9 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     private static let menuBarIdentifier = NSToolbarItem.Identifier("mectrics.settings.menuBar")
     private static let alertsIdentifier = NSToolbarItem.Identifier("mectrics.settings.alerts")
 
-    init(model: AppModel, onClose: @escaping () -> Void = {}) {
+    init(model: AppModel, dock: DockPresence) {
         self.model = model
-        self.onClose = onClose
+        self.dock = dock
         super.init()
         NotificationCenter.default.addObserver(
             self,
@@ -55,7 +55,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     }
 
     func show(pane: Pane? = nil) {
-        NSApp.setActivationPolicy(.regular)
+        dock.windowDidOpen(self)
         if window == nil {
             window = makeWindow()
         }
@@ -74,7 +74,13 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
-        onClose()
+        dock.windowWillClose(self)
+        // Settings is the app's heaviest surface: a SwiftUI window's working set is most
+        // of the footprint a menu bar agent is budgeted for. Dropping it on close returns
+        // that memory instead of carrying it for the rest of the session; the pane and the
+        // frame are restored from preferences when it is opened again.
+        window = nil
+        tabController = nil
     }
 
     private func makeWindow() -> NSWindow {

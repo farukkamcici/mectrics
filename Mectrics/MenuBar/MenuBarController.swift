@@ -130,6 +130,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
             onDetailVisibilityChanged?(popoverModuleID, false)
         }
 
+        let signpostID = PerformanceSignposts.beginModulePopover()
         let content = DetailPopoverView(model: model, moduleID: id)
         let host = NSHostingController(rootView: content.quietFocusRing())
         // Content height varies (top-processes list expands/collapses) — let SwiftUI
@@ -143,6 +144,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
         popover.contentViewController?.view.window?.makeKey()
         popover.contentViewController?.view.window?.clearInitialFocus()
         onDetailVisibilityChanged?(id, true)
+        PerformanceSignposts.endModulePopover(signpostID)
     }
 
     private func toggleHealthPopover() {
@@ -156,6 +158,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
             onDetailVisibilityChanged?(popoverModuleID, false)
         }
 
+        let signpostID = PerformanceSignposts.beginHealthPopover()
         let host = NSHostingController(
             rootView: CompactHealthPopoverView(model: model).quietFocusRing()
         )
@@ -172,6 +175,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
         )
         popover.contentViewController?.view.window?.makeKey()
         popover.contentViewController?.view.window?.clearInitialFocus()
+        PerformanceSignposts.endHealthPopover(signpostID)
     }
 
     func popoverDidClose(_ notification: Notification) {

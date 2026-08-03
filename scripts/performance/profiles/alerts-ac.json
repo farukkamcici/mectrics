@@ -1,0 +1,28 @@
+{
+  "_comment": [
+    "Ten enabled alert rules over the menu bar a clean install ships with.",
+    "Thresholds are deliberately unreachable so a soak measures steady-state cost,",
+    "not alert delivery. `measure.sh --profile` passes these to the app as",
+    "process-only defaults; nothing is written to the contributor's own preferences."
+  ],
+  "alertRules": {
+    "cpu": {"enabled": true, "thresholdPercent": 100, "durationSeconds": 300, "cooldownSeconds": 900},
+    "memory": {"enabled": true, "thresholdPercent": 100, "durationSeconds": 300, "cooldownSeconds": 900},
+    "disk": {"enabled": true, "thresholdPercent": 100, "durationSeconds": 300, "cooldownSeconds": 900},
+    "gpu": {"enabled": true, "thresholdPercent": 100, "durationSeconds": 300, "cooldownSeconds": 900},
+    "battery": {"enabled": true, "thresholdPercent": 5, "durationSeconds": 300, "cooldownSeconds": 900},
+    "sensors": {"enabled": true, "thresholdPercent": 105, "durationSeconds": 300, "cooldownSeconds": 900}
+  },
+  "systemAlertRules": {
+    "thermalPressure": {"enabled": true, "thresholdValue": 3, "durationSeconds": 300, "cooldownSeconds": 900},
+    "memoryPressure": {"enabled": true, "thresholdValue": 4, "durationSeconds": 300, "cooldownSeconds": 900},
+    "diskAvailableCapacity": {"enabled": true, "thresholdValue": 5368709120, "durationSeconds": 300, "cooldownSeconds": 900},
+    "batteryService": {"enabled": true, "thresholdValue": 1, "durationSeconds": 300, "cooldownSeconds": 900}
+  },
+  "enabledComponents": {
+    "cpu": ["valueGraph"],
+    "memory": ["valueGraph"],
+    "battery": ["value"],
+    "network": ["netActivity"]
+  }
+}

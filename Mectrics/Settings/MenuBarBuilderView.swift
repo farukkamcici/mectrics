@@ -9,9 +9,16 @@ import MetricsKit
 /// several items in the menu bar at once — Battery can show its icon and its health
 /// side by side. Every chip draws the real thing it will add, so the choice is made
 /// from what can actually be seen.
+///
+/// **Live values are read only by the small leaf views at the bottom of this file.**
+/// Nothing in this view's own body touches `AppModel.latest`, so a new sample cannot
+/// invalidate the pane's structure. That is a performance contract, not a style
+/// preference: rebuilding the rows once a second means rebuilding every tooltip and
+/// hover region with them, and AppKit answers a tracking-area change by re-resolving
+/// the pointer — work that grows with how long the pane stays open. Keep every read of
+/// a changing value inside a leaf.
 struct MenuBarBuilderView: View {
     @Bindable var model: AppModel
-    @Environment(\.colorSchemeContrast) private var contrast
     @Environment(\.undoManager) private var undoManager
 
     var body: some View {
@@ -117,13 +124,15 @@ struct MenuBarBuilderView: View {
     private var previewStrip: some View {
         HStack(spacing: ExperienceSpacing.medium) {
             if model.compactHealthEnabled {
-                Image(systemName: model.compactHealthState.symbolName)
-                    .accessibilityLabel("Compact Health")
-                    .accessibilityValue(model.compactHealthState.localizedName)
+                CompactHealthPreview(model: model)
             }
             ForEach(model.orderedEnabledItems.indices, id: \.self) { index in
                 let entry = model.orderedEnabledItems[index]
-                previewItem(entry.module, entry.component)
+                MenuBarPreviewItem(
+                    model: model,
+                    id: entry.module,
+                    component: entry.component
+                )
             }
             if model.orderedEnabledItems.isEmpty && !model.compactHealthEnabled {
                 Text("Nothing in the menu bar yet. Pick a look for a module below.")
@@ -144,17 +153,53 @@ struct MenuBarBuilderView: View {
         )
     }
 
-    private func previewItem(
-        _ id: MetricID,
-        _ component: MenuBarComponent
-    ) -> some View {
+    // MARK: - Module rows
+
+    private func moduleRow(_ id: MetricID) -> some View {
+        LabeledContent {
+            HStack(spacing: ExperienceSpacing.small) {
+                Spacer(minLength: 0)
+                ForEach(model.availableComponents(for: id)) { component in
+                    MenuBarComponentChip(
+                        model: model,
+                        id: id,
+                        component: component
+                    )
+                }
+            }
+        } label: {
+            HStack(spacing: ExperienceSpacing.small) {
+                Label(
+                    id.localizedName,
+                    systemImage: MetricSymbol.name(for: id)
+                )
+                ModuleHealthBadge(model: model, id: id)
+            }
+        }
+        .accessibilityElement(children: .contain)
+    }
+}
+
+// MARK: - Leaves that read live values
+
+/// One menu bar preview chip in the strip at the top of the pane.
+private struct MenuBarPreviewItem: View {
+    let model: AppModel
+    let id: MetricID
+    let component: MenuBarComponent
+
+    var body: some View {
         HStack(spacing: ExperienceSpacing.xSmall) {
             if model.showMenuBarIcons && !component.drawsModuleGlyph {
                 Image(systemName: MetricSymbol.name(for: id))
                     .font(.system(size: 10.5, weight: .semibold))
                     .foregroundStyle(model.accentColor)
             }
-            preview(id, component)
+            MenuBarComponentPreview(
+                model: model,
+                id: id,
+                component: component
+            )
         }
         .help(id.localizedName)
         .accessibilityElement(children: .combine)
@@ -165,48 +210,31 @@ struct MenuBarBuilderView: View {
             )
         )
     }
+}
 
-    // MARK: - Module rows
+/// One look for one module. Chips are independent: a module can put several items
+/// in the menu bar at once, and each chip shows the real thing it will draw.
+///
+/// The chip's own body reads only the choice — never a sample — so the button, its
+/// tooltip, and its hover region survive untouched while the preview inside ticks.
+private struct MenuBarComponentChip: View {
+    let model: AppModel
+    let id: MetricID
+    let component: MenuBarComponent
+    @Environment(\.colorSchemeContrast) private var contrast
 
-    private func moduleRow(_ id: MetricID) -> some View {
-        let state = previewState(id)
-        return LabeledContent {
-            HStack(spacing: ExperienceSpacing.small) {
-                Spacer(minLength: 0)
-                ForEach(model.availableComponents(for: id)) { component in
-                    componentChip(id, component)
-                }
-            }
-        } label: {
-            HStack(spacing: ExperienceSpacing.small) {
-                Label(
-                    id.localizedName,
-                    systemImage: MetricSymbol.name(for: id)
-                )
-                // Only genuine problems earn a badge. "Not in the menu bar" is
-                // already visible in the chips themselves.
-                if Self.isProblem(state) {
-                    MetricStatusBadge(state: state)
-                        .help(state.reason)
-                }
-            }
-        }
-        .accessibilityElement(children: .contain)
-    }
-
-    /// One look for one module. Chips are independent: a module can put several items
-    /// in the menu bar at once, and each chip shows the real thing it will draw.
-    private func componentChip(
-        _ id: MetricID,
-        _ component: MenuBarComponent
-    ) -> some View {
+    var body: some View {
         let isActive = model.isComponentEnabled(component, for: id)
-        return Button {
+        Button {
             model.toggleComponent(component, for: id)
         } label: {
             VStack(spacing: 3) {
-                preview(id, component)
-                    .frame(height: 16)
+                MenuBarComponentPreview(
+                    model: model,
+                    id: id,
+                    component: component
+                )
+                .frame(height: 16)
                 Text(component.localizedName)
                     .font(.caption2)
                     .foregroundStyle(isActive ? .primary : .secondary)
@@ -265,6 +293,22 @@ struct MenuBarBuilderView: View {
                             : String(localized: "builder.inactive", defaultValue: "Not in menu bar"))
         .accessibilityAddTraits(isActive ? .isSelected : [])
     }
+}
+
+/// Only genuine problems earn a badge. "Not in the menu bar" is already visible in
+/// the chips themselves. Kept separate so a module's data health can change without
+/// rebuilding the row it belongs to.
+private struct ModuleHealthBadge: View {
+    let model: AppModel
+    let id: MetricID
+
+    var body: some View {
+        let state = model.metricState(for: id, isEnabled: true)
+        if Self.isProblem(state) {
+            MetricStatusBadge(state: state)
+                .help(state.reason)
+        }
+    }
 
     private static func isProblem(_ state: MetricDataState) -> Bool {
         switch state {
@@ -274,15 +318,46 @@ struct MenuBarBuilderView: View {
             return true
         }
     }
+}
 
-    // MARK: - Live previews (SwiftUI mirror of the menu bar renderer)
+private struct CompactHealthPreview: View {
+    let model: AppModel
+
+    var body: some View {
+        let state = model.compactHealthState
+        Image(systemName: state.symbolName)
+            .accessibilityLabel("Compact Health")
+            .accessibilityValue(state.localizedName)
+    }
+}
+
+/// SwiftUI mirror of the menu bar renderer for one (module, component) pair.
+///
+/// This is the only view in the pane that reads a live sample, and it reserves a fixed
+/// width from the same worst-case template the real item uses. The menu bar reserves
+/// that width so items never shift as digits come and go (see `MetricStatusItem`); here
+/// it does the same job twice over — the chips stop jiggling, and a new value cannot
+/// resize anything, so SwiftUI has no reason to lay the pane out again or hand AppKit a
+/// changed hover region.
+private struct MenuBarComponentPreview: View {
+    let model: AppModel
+    let id: MetricID
+    let component: MenuBarComponent
+
+    var body: some View {
+        content
+            .frame(
+                width: Self.reservedWidth(for: component, module: id),
+                alignment: .trailing
+            )
+    }
 
     @ViewBuilder
-    private func preview(_ id: MetricID, _ component: MenuBarComponent) -> some View {
+    private var content: some View {
         if model.latest[id] != nil {
-            componentPreview(id, component)
+            componentPreview
         } else {
-            let state = previewState(id)
+            let state = model.metricState(for: id, isEnabled: true)
             Image(systemName: state.symbolName)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(state.tint)
@@ -290,40 +365,85 @@ struct MenuBarBuilderView: View {
         }
     }
 
+    // MARK: - Reserved width
+
+    private static let previewFont = NSFont.monospacedDigitSystemFont(
+        ofSize: 11,
+        weight: .medium
+    )
+    private static let sparklineWidth: CGFloat = 26
+    private static let sparklineGap = ExperienceSpacing.xSmall
+
+    private static func reservedWidth(
+        for component: MenuBarComponent,
+        module: MetricID
+    ) -> CGFloat {
+        switch component {
+        case .coreBars:         return 36
+        case .ring:             return 14
+        case .batteryIcon:      return 18
+        // Body + gap + terminal nub, as drawn by `labelledBatteryPreview`.
+        case .batteryIconValue: return 27
+        case .valueGraph:
+            return textWidth(component, module) + sparklineGap + sparklineWidth
+        default:
+            return textWidth(component, module)
+        }
+    }
+
+    private static func textWidth(
+        _ component: MenuBarComponent,
+        _ module: MetricID
+    ) -> CGFloat {
+        // The stacked network item is drawn on one line here, so its template is the
+        // two rates side by side rather than the single line the menu bar reserves.
+        let template = component == .netActivity
+            ? "↓999M ↑999M"
+            : component.template(for: module)
+        let measured = (template as NSString)
+            .size(withAttributes: [.font: previewFont])
+            .width
+        // Never narrower than the health glyph shown while a module has no sample.
+        return max(ceil(measured), 16)
+    }
+
     @ViewBuilder
-    private func componentPreview(_ id: MetricID, _ component: MenuBarComponent) -> some View {
+    private var componentPreview: some View {
         switch component {
         case .valueGraph:
             HStack(spacing: ExperienceSpacing.xSmall) {
-                previewLabel(id, component)
-                SparklineView(values: previewSamples(id), accent: model.accentColor)
-                    .frame(width: 26, height: 13)
+                previewLabel
+                SparklineView(
+                    values: model.history(id, count: 30),
+                    accent: model.accentColor
+                )
+                .frame(width: 26, height: 13)
             }
         case .coreBars:
-            CoreBarsView(values: coreValues(id), accent: model.accentColor)
+            CoreBarsView(values: coreValues, accent: model.accentColor)
                 .frame(width: 36, height: 14)
         case .ring:
             if let sample = model.latest[id] {
                 ringPreview(fraction: sample.value)
             }
         case .batteryIcon:
-            Image(systemName: batterySymbol(id))
+            Image(systemName: batterySymbol)
                 .font(.system(size: 13))
         case .batteryIconValue:
-            labelledBatteryPreview(id)
+            labelledBatteryPreview
         default:
-            previewLabel(id, component)
+            previewLabel
         }
     }
 
-    private func previewLabel(_ id: MetricID, _ component: MenuBarComponent) -> some View {
-        Text(previewText(id, component))
+    private var previewLabel: some View {
+        Text(previewText)
             .font(.system(size: 11, weight: .medium))
             .monospacedDigit()
             .lineLimit(1)
     }
 
-    private func previewText(_ id: MetricID, _ component: MenuBarComponent) -> String {
+    private var previewText: String {
         guard let sample = model.latest[id] else { return "–" }
         if case .text(let text) = MenuBarText.visual(
             for: id,
@@ -358,7 +478,7 @@ struct MenuBarBuilderView: View {
     }
 
     /// SwiftUI mirror of the menu bar's labelled battery: body, fill, charge inside.
-    private func labelledBatteryPreview(_ id: MetricID) -> some View {
+    private var labelledBatteryPreview: some View {
         let sample = model.latest[id]
         let level = min(max(sample?.value ?? 0, 0), 1)
         let charging = (sample?.detail["charging"] ?? 0) > 0
@@ -393,12 +513,11 @@ struct MenuBarBuilderView: View {
         }
     }
 
-    private func batterySymbol(_ id: MetricID) -> String {
+    private var batterySymbol: String {
         guard let sample = model.latest[id] else { return "battery.0percent" }
         let charging = (sample.detail["charging"] ?? 0) > 0
         if charging { return "battery.100percent.bolt" }
-        let level = sample.value
-        switch level {
+        switch sample.value {
         case ..<0.125:  return "battery.0percent"
         case ..<0.375:  return "battery.25percent"
         case ..<0.625:  return "battery.50percent"
@@ -407,19 +526,9 @@ struct MenuBarBuilderView: View {
         }
     }
 
-    private func coreValues(_ id: MetricID) -> [Double] {
+    private var coreValues: [Double] {
         guard let d = model.latest[id]?.detail else { return [] }
         let cores = Int(d["coreCount"] ?? 0)
         return (0..<cores).compactMap { d["core\($0)"] }
-    }
-
-    private func previewSamples(_ id: MetricID) -> [Double] {
-        model.history(id, count: 30)
-    }
-
-    /// The module's own data health, independent of whether it currently has a menu
-    /// bar item — the builder previews every available module.
-    private func previewState(_ id: MetricID) -> MetricDataState {
-        model.metricState(for: id, isEnabled: true)
     }
 }

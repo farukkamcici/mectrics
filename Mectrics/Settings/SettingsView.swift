@@ -171,12 +171,30 @@ struct GeneralSettingsTab: View {
     }
 }
 
+/// A rule is either a percentage threshold on a module or a native system signal.
+enum AlertRuleKey: Hashable, Identifiable {
+    case metric(MetricID)
+    case system(SystemAlertSignal)
+
+    var id: String {
+        switch self {
+        case .metric(let id): return "metric.\(id.rawValue)"
+        case .system(let signal): return "system.\(signal.rawValue)"
+        }
+    }
+}
+
 /// Alerts tab of the settings window.
 ///
 /// Percentage thresholds and native system conditions are two implementations of the
 /// same idea, so they share one list and one row anatomy. The primary line carries the
 /// decision — what it watches, its limit, on or off — and the secondary line carries
 /// live state plus the fine tuning.
+///
+/// As in `MenuBarBuilderView`, live readings are read only by leaf views
+/// (`AlertRuleLiveLine`, `AlertRuleSummary`). This body must stay independent of
+/// `AppModel.latest` so a new sample cannot rebuild the whole list of steppers,
+/// pickers, and toggles once a second.
 struct AlertsSettingsTab: View {
     @Bindable var model: AppModel
     @State private var notificationAccess = NotificationAccessState.unknown
@@ -184,18 +202,7 @@ struct AlertsSettingsTab: View {
     @State private var cliInstallation = CLIInstaller.installationState()
     @State private var cliInstallationFailed = false
 
-    /// A rule is either a percentage threshold on a module or a native system signal.
-    private enum RuleKey: Hashable, Identifiable {
-        case metric(MetricID)
-        case system(SystemAlertSignal)
-
-        var id: String {
-            switch self {
-            case .metric(let id): return "metric.\(id.rawValue)"
-            case .system(let signal): return "system.\(signal.rawValue)"
-            }
-        }
-    }
+    private typealias RuleKey = AlertRuleKey
 
     var body: some View {
         Form {
@@ -208,10 +215,7 @@ struct AlertsSettingsTab: View {
                 HStack {
                     Text("Rules")
                     Spacer()
-                    Text(ruleSummary)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
+                    AlertRuleSummary(model: model, keys: ruleKeys)
                 }
             } footer: {
                 Text("When a rule alerts it notifies you, marks the Compact Health item, and is recorded in the Attention Log. A rule rests for 15 minutes after it alerts.")
@@ -411,23 +415,7 @@ struct AlertsSettingsTab: View {
 
     private func isSignalAvailable(_ signal: SystemAlertSignal) -> Bool {
         // The battery service signal only exists on Macs whose battery reports one.
-        signal != .batteryService
-            || model.systemConditionReadings[.batteryService] != nil
-    }
-
-    private var ruleSummary: String {
-        let enabled = ruleKeys.filter { isEnabled($0) }.count
-        guard enabled > 0 else {
-            return String(
-                localized: "alerts.summary.none",
-                defaultValue: "No rules on"
-            )
-        }
-        let alerting = ruleKeys.filter { state(for: $0) == .active }.count
-        return String(
-            localized: "alerts.summary",
-            defaultValue: "\(enabled) on · \(alerting) alerting"
-        )
+        model.availableSystemAlertSignals.contains(signal)
     }
 
     /// A closed rule dims its limit control rather than moving or dropping it, so the
@@ -448,16 +436,8 @@ struct AlertsSettingsTab: View {
             }
             // Secondary line: how it is behaving right now and the fine tuning.
             if enabled {
-                let ruleState = state(for: key)
                 HStack(spacing: ExperienceSpacing.small) {
-                    Label(
-                        ruleState.localizedName,
-                        systemImage: ruleState.symbolName
-                    )
-                    .foregroundStyle(ruleState.tint)
-                    Text("·")
-                    Text(currentReading(key))
-                        .monospacedDigit()
+                    AlertRuleLiveLine(model: model, key: key)
                     Spacer()
                     durationPicker(key)
                 }
@@ -633,47 +613,6 @@ struct AlertsSettingsTab: View {
         }
     }
 
-    private func currentReading(_ key: RuleKey) -> String {
-        switch key {
-        case .metric(let id):
-            guard let sample = model.latest[id] else {
-                return String(
-                    localized: "state.unavailable",
-                    defaultValue: "Unavailable"
-                )
-            }
-            if sample.unit == .celsius {
-                return String(format: "%.1f°C", sample.value)
-            }
-            return MetricFormat.percent(sample.value, decimals: 1)
-        case .system(let signal):
-            guard let reading = model.systemConditionReadings[signal] else {
-                return String(
-                    localized: "state.unavailable",
-                    defaultValue: "Unavailable"
-                )
-            }
-            switch signal {
-            case .thermalPressure:
-                return SystemSignalFormat.thermal(reading.value)
-            case .memoryPressure:
-                return SystemSignalFormat.pressure(reading.value)
-            case .diskAvailableCapacity:
-                return MetricFormat.bytes(reading.value)
-            case .batteryService:
-                return reading.value >= 1
-                    ? String(
-                        localized: "battery.service.recommended",
-                        defaultValue: "Service recommended"
-                    )
-                    : String(
-                        localized: "battery.service.normal",
-                        defaultValue: "Normal"
-                    )
-            }
-        }
-    }
-
     // MARK: - Rule state
 
     private func isEnabled(_ key: RuleKey) -> Bool {
@@ -682,45 +621,6 @@ struct AlertsSettingsTab: View {
             return model.alertRules[id]?.enabled ?? false
         case .system(let signal):
             return model.systemAlertRules[signal]?.enabled ?? false
-        }
-    }
-
-    private func destinations(for key: RuleKey) -> Set<AlertDestination> {
-        switch key {
-        case .metric(let id):
-            return model.alertRules[id]?.destinations ?? []
-        case .system(let signal):
-            return model.systemAlertRules[signal]?.destinations ?? []
-        }
-    }
-
-    private func state(for key: RuleKey) -> AlertConditionState {
-        switch key {
-        case .metric(let id):
-            guard let rule = model.alertRules[id],
-                  rule.enabled,
-                  let sample = model.latest[id]
-            else { return .normal }
-            let measured = sample.unit == .celsius
-                ? sample.value
-                : sample.value * 100
-            let violating = ThresholdMonitor.isBelowRule(id)
-                ? measured <= Double(rule.thresholdPercent)
-                : measured >= Double(rule.thresholdPercent)
-            guard violating else { return .normal }
-            return model.alertConditionStates[id] == .active ? .active : .pending
-        case .system(let signal):
-            guard let rule = model.systemAlertRules[signal],
-                  rule.enabled,
-                  let reading = model.systemConditionReadings[signal],
-                  SystemConditionMonitor.isViolating(
-                      reading,
-                      threshold: rule.thresholdValue
-                  )
-            else { return .normal }
-            return model.systemConditionStates[signal] == .active
-                ? .active
-                : .pending
         }
     }
 
@@ -838,24 +738,135 @@ struct AlertsSettingsTab: View {
     }
 }
 
-private extension AlertDestination {
-    var localizedName: String {
-        switch self {
-        case .notification:
+// MARK: - Leaves that read live values
+
+/// How a rule is behaving right now. Kept in its own view so a new sample repaints
+/// one caption instead of rebuilding every stepper, picker, and toggle in the list.
+private struct AlertRuleLiveLine: View {
+    let model: AppModel
+    let key: AlertRuleKey
+
+    var body: some View {
+        let state = AlertRuleReading.state(model: model, key: key)
+        Label(state.localizedName, systemImage: state.symbolName)
+            .foregroundStyle(state.tint)
+        Text("·")
+        Text(AlertRuleReading.currentReading(model: model, key: key))
+            .monospacedDigit()
+    }
+}
+
+/// "3 on · 1 alerting" beside the section header.
+private struct AlertRuleSummary: View {
+    let model: AppModel
+    let keys: [AlertRuleKey]
+
+    var body: some View {
+        Text(summary)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .monospacedDigit()
+    }
+
+    private var summary: String {
+        let enabled = keys.filter { AlertRuleReading.isEnabled(model: model, key: $0) }
+            .count
+        guard enabled > 0 else {
             return String(
-                localized: "alerts.destination.notification",
-                defaultValue: "Notification"
+                localized: "alerts.summary.none",
+                defaultValue: "No rules on"
             )
-        case .compactHealth:
-            return String(
-                localized: "alerts.destination.compactHealth",
-                defaultValue: "Compact Health item"
-            )
-        case .attentionLog:
-            return String(
-                localized: "alerts.destination.attentionLog",
-                defaultValue: "Attention Log"
-            )
+        }
+        let alerting = keys.filter {
+            AlertRuleReading.state(model: model, key: $0) == .active
+        }.count
+        return String(
+            localized: "alerts.summary",
+            defaultValue: "\(enabled) on · \(alerting) alerting"
+        )
+    }
+}
+
+/// Shared resolution of a rule's live state and reading.
+@MainActor
+private enum AlertRuleReading {
+    static func isEnabled(model: AppModel, key: AlertRuleKey) -> Bool {
+        switch key {
+        case .metric(let id):
+            return model.alertRules[id]?.enabled ?? false
+        case .system(let signal):
+            return model.systemAlertRules[signal]?.enabled ?? false
+        }
+    }
+
+    static func state(model: AppModel, key: AlertRuleKey) -> AlertConditionState {
+        switch key {
+        case .metric(let id):
+            guard let rule = model.alertRules[id],
+                  rule.enabled,
+                  let sample = model.latest[id]
+            else { return .normal }
+            let measured = sample.unit == .celsius
+                ? sample.value
+                : sample.value * 100
+            let violating = ThresholdMonitor.isBelowRule(id)
+                ? measured <= Double(rule.thresholdPercent)
+                : measured >= Double(rule.thresholdPercent)
+            guard violating else { return .normal }
+            return model.alertConditionStates[id] == .active ? .active : .pending
+        case .system(let signal):
+            guard let rule = model.systemAlertRules[signal],
+                  rule.enabled,
+                  let reading = model.systemConditionReadings[signal],
+                  SystemConditionMonitor.isViolating(
+                      reading,
+                      threshold: rule.thresholdValue
+                  )
+            else { return .normal }
+            return model.systemConditionStates[signal] == .active
+                ? .active
+                : .pending
+        }
+    }
+
+    static func currentReading(model: AppModel, key: AlertRuleKey) -> String {
+        switch key {
+        case .metric(let id):
+            guard let sample = model.latest[id] else {
+                return String(
+                    localized: "state.unavailable",
+                    defaultValue: "Unavailable"
+                )
+            }
+            if sample.unit == .celsius {
+                return String(format: "%.1f°C", sample.value)
+            }
+            return MetricFormat.percent(sample.value, decimals: 1)
+        case .system(let signal):
+            guard let reading = model.systemConditionReadings[signal] else {
+                return String(
+                    localized: "state.unavailable",
+                    defaultValue: "Unavailable"
+                )
+            }
+            switch signal {
+            case .thermalPressure:
+                return SystemSignalFormat.thermal(reading.value)
+            case .memoryPressure:
+                return SystemSignalFormat.pressure(reading.value)
+            case .diskAvailableCapacity:
+                return MetricFormat.bytes(reading.value)
+            case .batteryService:
+                return reading.value >= 1
+                    ? String(
+                        localized: "battery.service.recommended",
+                        defaultValue: "Service recommended"
+                    )
+                    : String(
+                        localized: "battery.service.normal",
+                        defaultValue: "Normal"
+                    )
+            }
         }
     }
 }

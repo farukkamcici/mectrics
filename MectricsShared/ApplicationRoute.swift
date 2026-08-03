@@ -10,6 +10,7 @@ enum ApplicationRoute: Equatable, Sendable {
 
     case overview
     case metric(MetricID)
+    case menuBar
     case alerts
     case attentionLog
     case about
@@ -37,6 +38,8 @@ enum ApplicationRoute: Equatable, Sendable {
                 return nil
             }
             self = .metric(metricID)
+        case ("menu-bar", []):
+            self = .menuBar
         case ("alerts", []):
             self = .alerts
         case ("attention-log", []):
@@ -58,6 +61,8 @@ enum ApplicationRoute: Equatable, Sendable {
             "\(Self.scheme)://overview"
         case .metric(let metricID):
             "\(Self.scheme)://metric/\(metricID.rawValue)"
+        case .menuBar:
+            "\(Self.scheme)://menu-bar"
         case .alerts:
             "\(Self.scheme)://alerts"
         case .attentionLog:

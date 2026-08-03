@@ -81,6 +81,18 @@ Do **not** commit: `Mectrics.xcodeproj/`, `DerivedData/`, `.build/` (see `.gitig
   standard output pipe-safe. `check` and alert streaming sample only the metrics they need;
   `snapshot` samples every available module once. It is read-only; alert configuration
   remains in the app.
+- Every Settings pane is reachable by a `mectrics://` route (`overview`, `menu-bar`,
+  `alerts`), so a destination the app can show is a destination it can be sent to.
+- **The Dock icon belongs to `DockPresence`, not to a window scan.** The app launches as
+  `.accessory` and becomes `.regular` only while one of its own standard windows is on
+  screen; every window controller reports opening and closing to that one object. Never
+  decide this from `NSApplication.windows` — it also contains the window behind every
+  status item, so "is any window visible" is true for the app's whole life and the icon
+  never goes away.
+- **Release notes belong to the version that shipped them.** `ReleaseHighlights` is keyed
+  by marketing version and What's New shows the running build's entry; a version with no
+  entry shows no window rather than someone else's news. Shipping a version means adding
+  its notes — `ReleaseExperienceTests` fails if the current version has none.
 - Keep `check` exit codes stable: `0` healthy, `1` limit crossed, `2` unconfigured or
   indeterminate. Usage, internal software, and corrupt-configuration failures are `64`, `70`,
   and `78` respectively. Valid version 1 JSON fields do not change without an explicit schema
@@ -109,6 +121,9 @@ Do **not** commit: `Mectrics.xcodeproj/`, `DerivedData/`, `.build/` (see `.gitig
   a sleeping display, a locked screen, and a switched-away session all count as invisible.
 - Keep the hot path allocation-free (the ring buffer is pre-allocated).
 - Targets: < 60 MB memory, low/steady CPU, "Energy Impact: Low" in Activity Monitor.
+- Memory is reported in the decimal megabytes Activity Monitor uses (10⁶ bytes), which is
+  what `summarize.sh` divides by. A figure computed in MiB is about 5% smaller and is not
+  comparable with anything else quoted here.
 - **Memory is measured as `phys_footprint`, never as `ps rss`.** Run
   `footprint -p $(pgrep -x Mectrics)` on a **Release** build and quote its
   `phys_footprint`. That is the figure Activity Monitor's "Memory" column shows and the
@@ -118,9 +133,49 @@ Do **not** commit: `Mectrics.xcodeproj/`, `DerivedData/`, `.build/` (see `.gitig
   an issue, or a launch thread understates the product against its own budget.
 - `cost` decides how often a provider runs: `.light` every base cycle, `.medium`
   (battery, disk) and `.heavy` (SMC/GPU/sensors) thinned by `SamplingRuntimePolicy`.
+- Performance baselines use a Release app with no debugger, coverage, or sanitizer. Run
+  `scripts/performance/measure.sh` for whole-process gates and
+  `scripts/performance/measure-cli.sh` for the embedded CLI. Raw, machine-local results
+  stay under ignored `build/performance/`; never commit hardware identifiers or traces.
+- Treat Instruments and optional `powermetrics` capture as diagnostic tools after a clean
+  baseline fails. Their observer cost does not belong in the baseline number.
+- Release memory means the post-warm-up `phys_footprint` p95. The 60 MB budget is a gate,
+  not a one-off screenshot. Long runs also gate sustained growth. The budget describes the
+  menu bar's steady state; an open Settings window adds most of a SwiftUI window's working
+  set on top and measures above it, which is a fact about the surface, not a leak.
+- Public performance claims name the Release version, workload, warm-up, measured duration,
+  and power state. Report CPU median and p95 together, and say whether the memory-slope gate
+  ran. Never generalize a short smoke run into a soak result or a guarantee for every Mac.
+- Performance launchers use process-only preference overrides, suppress saved-window
+  restoration, and restore the exact preferences snapshot after the process exits. A run
+  must leave the contributor's real Mectrics preferences unchanged. A domain that did not
+  exist before a run must not exist after it, and the removal is retried because cfprefsd
+  can flush a departing process's writes after it has gone.
+- A gate covers **two** workloads, because they fail differently: the menu bar alone, and
+  Settings deliberately open. Both use `scripts/performance/profiles/`, so the rules and
+  the layout under measurement are declared rather than remembered.
 - **Never hand AppKit a menu bar image that has not changed.** Assigning `button.image`
   invalidates the status item and round trips to the window server; it costs far more
-  than drawing the image did. Status items compare their render inputs first.
+  than drawing the image did. Status items compare their render inputs first. Per-cycle
+  item work must also stay free of string-catalog lookups: an accessibility label that
+  names the module and the look never changes, so it is set once at construction.
+- **The menu bar is rebuilt only when its list of items changes.** `onModulesChanged`
+  tears down and re-creates every `NSStatusItem`, which means new windows and new
+  structural regions in the window server. Component availability therefore only grows
+  within a session: a sensor that reads out of range for one cycle is a failed read, not
+  hardware that vanished, and the item already renders a dash for a missing value.
+- **A Settings pane's own body must never read a value that changes every cycle.**
+  Live readings belong to small leaf views (`MenuBarComponentPreview`, `AlertRuleLiveLine`,
+  `AlertRuleSummary`), and those leaves reserve a fixed width from the same template the
+  real menu bar item uses. A pane rebuilt once a second rebuilds every tooltip and hover
+  region with it, and AppKit answers a tracking-area change by re-resolving the pointer —
+  cost that grows the longer the window stays open. This is why `AppModel` caches what a
+  view needs but a sample does not change (`componentOptions`,
+  `availableSystemAlertSignals`).
+- **Reading the SMC is the most expensive thing this app does**, so it is sampled only
+  where a temperature is actually on screen: a `.temperature` menu bar component, an open
+  popover or detail window for CPU/Memory/GPU, the menu bar builder, or a rule that asks
+  for `.sensors` directly. A module merely having a menu bar item does not earn it.
 - Prefer `IORegistryEntryCreateCFProperty` over `IORegistryEntryCreateCFProperties`:
   copying a driver's whole property dictionary to read one key is orders of magnitude
   more expensive.
@@ -152,6 +207,11 @@ xcodebuild -project Mectrics.xcodeproj -scheme Mectrics -configuration Debug bui
   `Co-Authored-By:` trailers, `Generated with` lines, or any AI attribution. Commits are
   authored solely by the human contributor.
 - Commit or push only when the user asks. Branch before committing on `main` if unsure.
+
+Private signed candidates use `scripts/release-candidate.sh`. It writes to the versioned
+`build/candidate/` tree, signs, notarizes, and staples the DMG, but never edits the appcast,
+creates a tag, or publishes a GitHub release. `scripts/release.sh` remains the publishing
+preparation path.
 
 ## 9. Product decisions (fixed)
 

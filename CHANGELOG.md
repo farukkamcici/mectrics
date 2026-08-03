@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.5.0] — 2026-08-04
+
 ### Added
 
 - `mectrics alerts watch --json --heartbeat <seconds>` now provides a tagged NDJSON stream
@@ -16,6 +18,23 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   command link, and emits the same diagnosis as versioned JSON with `--json`.
 - End-to-end CLI contract tests now execute the real binary with isolated preferences and
   lock down exit codes, stream separation, sampling failures, and version 1 JSON fixtures.
+- A local performance harness now records Release CPU, `phys_footprint`, open connections,
+  long-run memory growth, and embedded CLI latency with machine-local JSON/CSV reports. It
+  runs declared workloads from `scripts/performance/profiles/`, can open a Settings pane so
+  that window is measured too, and logs the power source alongside every sample.
+- `mectrics://menu-bar` opens the Menu Bar pane of Settings, completing a route table that
+  already covered the overview and alerts.
+- Points-of-interest signposts and XCTest microbenchmarks cover launch-to-first-sample,
+  popover presentation, menu bar formatting, Energy Guard decisions, and the ring-buffer
+  hot path.
+- A private release-candidate workflow now signs, notarizes, and staples a versioned DMG
+  without changing the appcast or publishing a tag or GitHub release.
+- Public performance guidance now explains the Release-only measurement method, the
+  Activity Monitor CPU and memory scales, and the difference between a smoke gate and a
+  long-run stability result.
+- Explicit app test and optimized performance schemes now run the app-layer suite instead
+  of relying on an implicit build-only scheme; the embedded CLI also uses a distinct Swift
+  module name while preserving its lowercase executable.
 
 ### Changed
 
@@ -24,12 +43,40 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   published `check` health codes `0`, `1`, and `2`.
 - Alert checks construct only the providers their enabled rules require. Thermal-pressure
   rules use the native system state directly, and watch sampling adapts to AC or battery.
+- Temperatures are sampled only where one is actually on screen — a temperature item, an
+  open popover or detail window, the menu bar builder, or a rule that watches the CPU
+  temperature. A module simply having a menu bar item no longer keeps the SMC busy.
+- Battery and disk are read every second base cycle rather than every cycle. Both move on
+  the scale of minutes and each costs an IOKit round trip, and the new cadence stays well
+  inside the staleness budget that decides when a reading is shown as out of date.
 
 ### Fixed
 
 - A watch session no longer evaluates a cached metric after that provider fails. Repeated
   failures and stale readings now degrade explicit coverage instead of leaving a stream
   silently healthy or allowing an old violation to become an alert.
+- Release performance launches no longer leave test or framework bookkeeping in the user's
+  real preferences domain or restore a previously open Settings window. A preferences
+  domain that did not exist before a run is now removed reliably after it.
+- Leaving Settings open no longer costs a large and growing amount of CPU and memory. The
+  Menu Bar and Alerts panes rebuilt themselves on every sample, which rebuilt every tooltip
+  and hover region with them; live values now live in small fixed-width leaf views, so a new
+  reading repaints a caption instead of re-laying out the window. On the reference Mac a
+  31-minute run with Settings open went from a 74.9% CPU median to 4.3%, from 1422 seconds
+  spent above 10% to 5, and from a 122 MB memory p95 growing at 21 MB/hour to 62 MB growing
+  at 2.9 MB/hour.
+- A temperature sensor that reads out of range for a moment no longer adds and removes a
+  menu bar item, which rebuilt every status item each time it flickered. What a module can
+  show is now settled once it has been seen.
+- The menu bar previews in Settings reserve the same fixed width as the real items, so
+  chips no longer resize as values change.
+- The Dock icon now goes away when you close the last Mectrics window. It was decided by
+  scanning every window the app owned, which always found the window behind a status item,
+  so once the icon appeared it stayed for the rest of the session.
+- Closing Settings now releases the window instead of holding it for the session, returning
+  roughly 35 MB — more than half of what a menu bar agent is budgeted in total.
+- What's New shows the release you just installed. It listed the same three features
+  regardless of version, so an upgrade was announced with news from an older release.
 - A partially unavailable watch reports the missing conditions in machine-readable status
   and heartbeat records rather than exposing the loss only as a standard-error warning.
 
@@ -164,7 +211,8 @@ roughly one idle wake per second.
 - Automatic update checks are disabled; the Sparkle appcast is fetched only on an explicit
   **Check for Updates…** and verified against a pinned EdDSA public key.
 
-[Unreleased]: https://github.com/farukkamcici/mectrics/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/farukkamcici/mectrics/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/farukkamcici/mectrics/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/farukkamcici/mectrics/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/farukkamcici/mectrics/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/farukkamcici/mectrics/compare/v1.1.0...v1.2.0

@@ -445,17 +445,17 @@ enum DiagnosticsRedactor {
 @MainActor
 final class DiagnosticsWindowController: NSObject, NSWindowDelegate {
     private let model: AppModel
-    private let onClose: () -> Void
+    private let dock: DockPresence
     private var window: NSWindow?
 
-    init(model: AppModel, onClose: @escaping () -> Void = {}) {
+    init(model: AppModel, dock: DockPresence) {
         self.model = model
-        self.onClose = onClose
+        self.dock = dock
         super.init()
     }
 
     func show() {
-        NSApp.setActivationPolicy(.regular)
+        dock.windowDidOpen(self)
         if window == nil {
             window = makeWindow()
         }
@@ -465,7 +465,7 @@ final class DiagnosticsWindowController: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
-        onClose()
+        dock.windowWillClose(self)
     }
 
     private func makeWindow() -> NSWindow {

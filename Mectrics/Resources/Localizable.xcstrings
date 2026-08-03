@@ -150,40 +150,6 @@
         }
       }
     },
-    "A calmer view of Mac health": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Una forma más tranquila de ver el estado del Mac"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Une vue plus sereine de l’état de votre Mac"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Uma visão mais tranquila do estado do Mac"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Спокойный и понятный обзор состояния Mac"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mac’inizin durumunu sakin ve anlaşılır biçimde izleyin"
-          }
-        }
-      }
-    },
     "A lightweight, private system monitor for Mac.": {
       "localizations": {
         "es": {
@@ -2342,129 +2308,6 @@
         }
       }
     },
-    "alerts.destination.attentionLog": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Attention Log"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Uyarı Geçmişi"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Historique des alertes"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Histórico de Alertas"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Historial de alertas"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Журнал предупреждений"
-          }
-        }
-      }
-    },
-    "alerts.destination.compactHealth": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Compact Health item"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Сводка состояния"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Resumen de estado"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Résumé de l’état"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Durum Özeti öğesi"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Resumo do Estado"
-          }
-        }
-      }
-    },
-    "alerts.destination.notification": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Notification"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Notificación"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Notification"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bildirim"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Notificação"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Уведомление"
-          }
-        }
-      }
-    },
     "alerts.state.active": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -4018,40 +3861,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "A pressão de memória permaneceu em %1$@ por %2$lld segundos"
-          }
-        }
-      }
-    },
-    "Automatic Energy Guard": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Otomatik Enerji Koruması"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Автоматическое энергосбережение"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Protection énergétique automatique"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Protección energética automática"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Proteção de Energia Automática"
           }
         }
       }
@@ -7443,40 +7252,6 @@
         }
       }
     },
-    "Explainable alerts and Attention Log": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Понятные предупреждения и журнал событий"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Alertes claires et historique des alertes"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Alertas claras e historial de alertas"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Alertas claros e Histórico de Alertas"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Açıklanabilir uyarılar ve Uyarı Geçmişi"
-          }
-        }
-      }
-    },
     "Export Preview": {
       "localizations": {
         "es": {
@@ -9233,40 +9008,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mectrics yalnızca anlamlı uyarıları ve normale dönüşleri bu Mac’te kaydeder."
-          }
-        }
-      }
-    },
-    "Mectrics reduces expensive monitoring when power or thermal headroom is limited.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "При ограничении питания или повышенной температуре Mectrics реже выполняет ресурсоёмкие измерения."
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Güç ya da sıcaklık sınırına yaklaşıldığında Mectrics, yoğun kaynak kullanan ölçümleri azaltır."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mectrics reduce las mediciones que más recursos consumen cuando hay poca energía disponible o el Mac se calienta."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mectrics réduit les mesures les plus gourmandes lorsque l’alimentation est limitée ou que le Mac chauffe."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "O Mectrics reduz as medições que mais consomem recursos quando a energia é limitada ou o Mac esquenta."
           }
         }
       }
@@ -12887,40 +12628,6 @@
         }
       }
     },
-    "Rules show their live state and meaningful incidents remain available locally.": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kurallar canlı durumlarını gösterir; önemli olaylar yerel olarak erişilebilir kalır."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Правила показывают текущее состояние, а значимые события остаются доступными локально."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Les règles affichent leur état en direct et les incidents importants restent disponibles localement."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "As regras mostram o estado em tempo real, e os incidentes relevantes continuam disponíveis localmente."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Las reglas muestran su estado en directo y los incidentes importantes siguen disponibles localmente."
-          }
-        }
-      }
-    },
     "Save Diagnostics…": {
       "localizations": {
         "es": {
@@ -13592,40 +13299,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kurulumu Atla"
-          }
-        }
-      }
-    },
-    "Small, medium, and large widgets share live local readings with Mectrics.": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Küçük, orta ve büyük araç takımları Mectrics’in canlı yerel ölçümlerini gösterir."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Малые, средние и большие виджеты показывают актуальные локальные данные Mectrics."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Los widgets pequeños, medianos y grandes muestran las mediciones locales de Mectrics en tiempo real."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Les petits, moyens et grands widgets affichent les mesures locales de Mectrics en temps réel."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Widgets pequenos, médios e grandes mostram as medições locais do Mectrics em tempo real."
           }
         }
       }
@@ -15261,6 +14934,252 @@
         }
       }
     },
+    "whatsNew.1_5_0.doctor.description": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "mectrics doctor explains a silent watch — permissions, configuration, and the update channel — as text or JSON."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "mectrics doctor, sessiz kalan bir izlemeyi — izinler, yapılandırma ve güncelleme kanalı — metin ya da JSON olarak açıklıyor."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "mectrics doctor объясняет молчащее наблюдение — разрешения, конфигурацию и канал обновлений — текстом или в JSON."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "mectrics doctor explica una vigilancia en silencio —permisos, configuración y canal de actualizaciones— como texto o JSON."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "mectrics doctor explique une surveillance silencieuse — autorisations, configuration et canal de mise à jour — en texte ou en JSON."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "mectrics doctor explica um monitoramento silencioso — permissões, configuração e canal de atualização — como texto ou JSON."
+          }
+        }
+      }
+    },
+    "whatsNew.1_5_0.doctor.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "A doctor for headless Macs"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ekransız Mac’ler için bir doktor"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доктор для Mac без монитора"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un doctor para Macs sin pantalla"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un docteur pour les Mac sans écran"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um doutor para Macs sem tela"
+          }
+        }
+      }
+    },
+    "whatsNew.1_5_0.settings.description": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Leaving the Settings window open used to make Mectrics work harder the longer it stayed there. It now costs little more than the menu bar on its own."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayarlar penceresi açık kaldıkça Mectrics giderek daha çok çalışıyordu. Artık tek başına menü çubuğundan biraz daha fazlasına mal oluyor."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Раньше открытое окно настроек нагружало Mectrics тем сильнее, чем дольше оставалось открытым. Теперь оно стоит немногим больше самой строки меню."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dejar abierta la ventana de ajustes hacía que Mectrics trabajara más cuanto más tiempo permanecía abierta. Ahora cuesta poco más que la propia barra de menús."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laisser la fenêtre des réglages ouverte faisait travailler Mectrics de plus en plus longtemps. Elle coûte désormais à peine plus que la barre des menus seule."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deixar a janela de ajustes aberta fazia o Mectrics trabalhar mais quanto mais tempo ficasse ali. Agora custa pouco mais que a própria barra de menus."
+          }
+        }
+      }
+    },
+    "whatsNew.1_5_0.settings.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Settings stays light while it is open"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayarlar açıkken de hafif kalıyor"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройки остаются лёгкими, пока открыты"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los ajustes siguen siendo ligeros mientras están abiertos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les réglages restent légers tant qu’ils sont ouverts"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os ajustes continuam leves enquanto estão abertos"
+          }
+        }
+      }
+    },
+    "whatsNew.1_5_0.watch.description": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "A reading that failed is no longer reported as healthy. Coverage and freshness are part of every status record."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Başarısız olan bir ölçüm artık sağlıklı diye bildirilmiyor. Kapsam ve tazelik her durum kaydının parçası."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Неудачное измерение больше не выдаётся за исправное. Охват и свежесть входят в каждую запись состояния."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una lectura fallida ya no se informa como correcta. La cobertura y la actualidad forman parte de cada registro de estado."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une lecture en échec n’est plus signalée comme saine. La couverture et la fraîcheur font partie de chaque enregistrement d’état."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uma leitura que falhou não é mais informada como saudável. Cobertura e atualidade fazem parte de cada registro de estado."
+          }
+        }
+      }
+    },
+    "whatsNew.1_5_0.watch.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Alerts admit what they cannot see"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uyarılar göremediklerini artık saklamıyor"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Оповещения признают то, чего не видят"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las alertas admiten lo que no pueden ver"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les alertes admettent ce qu’elles ne voient pas"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os alertas admitem o que não conseguem ver"
+          }
+        }
+      }
+    },
     "When a rule alerts it notifies you, marks the Compact Health item, and is recorded in the Attention Log. A rule rests for 15 minutes after it alerts.": {
       "localizations": {
         "ru": {
@@ -15291,40 +15210,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quando uma regra é ativada, o Mectrics envia uma notificação, sinaliza o Resumo do Estado e registra o evento no Histórico de Alertas. Depois, a regra fica em pausa por 15 minutos."
-          }
-        }
-      }
-    },
-    "Widgets that open the right metric": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "İlgili ölçümü açan araç takımları"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Виджеты с быстрым переходом к нужному показателю"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Des widgets qui ouvrent directement la bonne mesure"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Widgets que abrem diretamente a métrica certa"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Widgets que abren directamente el dato adecuado"
           }
         }
       }
@@ -15427,6 +15312,88 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ölçümleriniz bu Mac’te kalır. Mectrics telemetri kullanmaz."
+          }
+        }
+      }
+    },
+    "What changed in this update": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "What changed in this update"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu güncellemede neler değişti"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Что изменилось в этом обновлении"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qué ha cambiado en esta actualización"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce qui a changé dans cette mise à jour"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O que mudou nesta atualização"
+          }
+        }
+      }
+    },
+    "This update has no release notes.": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "This update has no release notes."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu güncellemenin sürüm notu yok."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "У этого обновления нет заметок о выпуске."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta actualización no tiene notas de versión."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cette mise à jour n’a pas de notes de version."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta atualização não tem notas de versão."
           }
         }
       }

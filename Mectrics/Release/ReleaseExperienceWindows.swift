@@ -4,25 +4,101 @@ import SwiftUI
 enum WhatsNewPolicy {
     static func shouldPresent(
         currentVersion: String,
-        storedVersion: String?
+        storedVersion: String?,
+        hasNotes: Bool = true
     ) -> Bool {
         guard let storedVersion else { return false }
+        guard hasNotes else { return false }
         return storedVersion != currentVersion
+    }
+}
+
+/// One line of release notes.
+struct ReleaseHighlight: Identifiable {
+    let id: String
+    let symbol: String
+    let title: String
+    let description: String
+}
+
+/// What each release is worth telling a person about, keyed by the version it shipped in.
+///
+/// This used to be a single hardcoded list, so every upgrade showed the same three items
+/// no matter how long ago they shipped — an upgrade to 1.5.0 was greeted with news from
+/// 1.2. Notes now belong to a version, and a version with nothing written for it shows no
+/// window rather than stale news.
+enum ReleaseHighlights {
+    static func notes(for version: String) -> [ReleaseHighlight] {
+        switch version {
+        case "1.5.0": return oneFiveZero
+        default:      return []
+        }
+    }
+
+    static var current: [ReleaseHighlight] {
+        notes(for: Bundle.main.marketingVersion)
+    }
+
+    private static var oneFiveZero: [ReleaseHighlight] {
+        [
+            ReleaseHighlight(
+                id: "settings",
+                symbol: "gauge.with.dots.needle.33percent",
+                title: String(
+                    localized: "whatsNew.1_5_0.settings.title",
+                    defaultValue: "Settings stays light while it is open"
+                ),
+                description: String(
+                    localized: "whatsNew.1_5_0.settings.description",
+                    defaultValue: "Leaving the Settings window open used to make Mectrics work harder the longer it stayed there. It now costs little more than the menu bar on its own."
+                )
+            ),
+            ReleaseHighlight(
+                id: "watch",
+                symbol: "eye.trianglebadge.exclamationmark",
+                title: String(
+                    localized: "whatsNew.1_5_0.watch.title",
+                    defaultValue: "Alerts admit what they cannot see"
+                ),
+                description: String(
+                    localized: "whatsNew.1_5_0.watch.description",
+                    defaultValue: "A reading that failed is no longer reported as healthy. Coverage and freshness are part of every status record."
+                )
+            ),
+            ReleaseHighlight(
+                id: "doctor",
+                symbol: "stethoscope",
+                title: String(
+                    localized: "whatsNew.1_5_0.doctor.title",
+                    defaultValue: "A doctor for headless Macs"
+                ),
+                description: String(
+                    localized: "whatsNew.1_5_0.doctor.description",
+                    defaultValue: "mectrics doctor explains a silent watch — permissions, configuration, and the update channel — as text or JSON."
+                )
+            )
+        ]
+    }
+}
+
+extension Bundle {
+    var marketingVersion: String {
+        object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
     }
 }
 
 @MainActor
 final class AboutWindowController: NSObject, NSWindowDelegate {
-    private let onClose: () -> Void
+    private let dock: DockPresence
     private var window: NSWindow?
 
-    init(onClose: @escaping () -> Void = {}) {
-        self.onClose = onClose
+    init(dock: DockPresence) {
+        self.dock = dock
         super.init()
     }
 
     func show() {
-        NSApp.setActivationPolicy(.regular)
+        dock.windowDidOpen(self)
         if window == nil {
             window = makeWindow()
         }
@@ -32,7 +108,7 @@ final class AboutWindowController: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
-        onClose()
+        dock.windowWillClose(self)
     }
 
     private func makeWindow() -> NSWindow {
@@ -56,16 +132,16 @@ final class AboutWindowController: NSObject, NSWindowDelegate {
 
 @MainActor
 final class WhatsNewWindowController: NSObject, NSWindowDelegate {
-    private let onClose: () -> Void
+    private let dock: DockPresence
     private var window: NSWindow?
 
-    init(onClose: @escaping () -> Void = {}) {
-        self.onClose = onClose
+    init(dock: DockPresence) {
+        self.dock = dock
         super.init()
     }
 
     func show() {
-        NSApp.setActivationPolicy(.regular)
+        dock.windowDidOpen(self)
         if window == nil {
             window = makeWindow()
         }
@@ -75,7 +151,7 @@ final class WhatsNewWindowController: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
-        onClose()
+        dock.windowWillClose(self)
     }
 
     private func makeWindow() -> NSWindow {
@@ -162,26 +238,29 @@ private struct AboutMectricsView: View {
 
 private struct WhatsNewView: View {
     let close: () -> Void
+    private let notes = ReleaseHighlights.current
+
+    init(close: @escaping () -> Void) {
+        self.close = close
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: ExperienceSpacing.large) {
-            Text("A calmer view of Mac health")
-                .font(.largeTitle.weight(.semibold))
-            feature(
-                "Widgets that open the right metric",
-                symbol: "rectangle.3.group",
-                description: "Small, medium, and large widgets share live local readings with Mectrics."
-            )
-            feature(
-                "Explainable alerts and Attention Log",
-                symbol: "exclamationmark.bubble",
-                description: "Rules show their live state and meaningful incidents remain available locally."
-            )
-            feature(
-                "Automatic Energy Guard",
-                symbol: "leaf",
-                description: "Mectrics reduces expensive monitoring when power or thermal headroom is limited."
-            )
+            VStack(alignment: .leading, spacing: ExperienceSpacing.xSmall) {
+                Text(verbatim: "Mectrics \(Bundle.main.marketingVersion)")
+                    .font(.largeTitle.weight(.semibold))
+                Text("What changed in this update")
+                    .foregroundStyle(.secondary)
+            }
+            if notes.isEmpty {
+                Text("This update has no release notes.")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(notes) { note in
+                    feature(note)
+                }
+            }
+            Spacer(minLength: 0)
             HStack {
                 Spacer()
                 Button("Continue", action: close)
@@ -191,20 +270,16 @@ private struct WhatsNewView: View {
         .padding(ExperienceSpacing.xLarge)
     }
 
-    private func feature(
-        _ title: LocalizedStringKey,
-        symbol: String,
-        description: LocalizedStringKey
-    ) -> some View {
+    private func feature(_ note: ReleaseHighlight) -> some View {
         HStack(alignment: .top, spacing: ExperienceSpacing.medium) {
-            Image(systemName: symbol)
+            Image(systemName: note.symbol)
                 .font(.title2)
                 .frame(width: 30)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: ExperienceSpacing.xSmall) {
-                Text(title)
+                Text(note.title)
                     .font(.headline)
-                Text(description)
+                Text(note.description)
                     .foregroundStyle(.secondary)
             }
         }

@@ -10,6 +10,12 @@
 # Leave it unset to build unsigned (what CI does) — the setting then resolves to empty.
 name: Mectrics
 
+configs:
+  Debug: debug
+  Release: release
+  # Release optimizations with testability enabled for deterministic microbenchmarks.
+  Performance: release
+
 options:
   bundleIdPrefix: com.mectrics
   deploymentTarget:
@@ -70,8 +76,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.mectrics.app
         PRODUCT_NAME: Mectrics
-        MARKETING_VERSION: "1.4.0"
-        CURRENT_PROJECT_VERSION: "5"
+        MARKETING_VERSION: "1.5.0"
+        CURRENT_PROJECT_VERSION: "7"
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
         INFOPLIST_KEY_NSHumanReadableCopyright: "© 2026 Mectrics"
@@ -92,6 +98,12 @@ targets:
           DEVELOPMENT_TEAM: ${MECTRICS_TEAM_ID}
           CODE_SIGN_ENTITLEMENTS: Mectrics/Mectrics.entitlements
           ENABLE_HARDENED_RUNTIME: YES
+        Performance:
+          DEVELOPMENT_TEAM: ${MECTRICS_TEAM_ID}
+          CODE_SIGN_ENTITLEMENTS: Mectrics/Mectrics.entitlements
+          ENABLE_HARDENED_RUNTIME: YES
+          ENABLE_TESTABILITY: YES
+          ENABLE_CODE_COVERAGE: NO
 
   MectricsWidget:
     type: app-extension
@@ -109,8 +121,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.mectrics.app.widget
         PRODUCT_NAME: MectricsWidget
-        MARKETING_VERSION: "1.4.0"
-        CURRENT_PROJECT_VERSION: "5"
+        MARKETING_VERSION: "1.5.0"
+        CURRENT_PROJECT_VERSION: "7"
         INFOPLIST_FILE: MectricsWidget/Info.plist
         CODE_SIGN_STYLE: Automatic
         SWIFT_VERSION: "5.0"
@@ -125,6 +137,11 @@ targets:
           CODE_SIGN_ENTITLEMENTS: MectricsWidget/MectricsWidget.entitlements
           ENABLE_APP_SANDBOX: YES
         Release:
+          DEVELOPMENT_TEAM: ${MECTRICS_TEAM_ID}
+          CODE_SIGN_ENTITLEMENTS: MectricsWidget/MectricsWidget.entitlements
+          ENABLE_APP_SANDBOX: YES
+          ENABLE_HARDENED_RUNTIME: YES
+        Performance:
           DEVELOPMENT_TEAM: ${MECTRICS_TEAM_ID}
           CODE_SIGN_ENTITLEMENTS: MectricsWidget/MectricsWidget.entitlements
           ENABLE_APP_SANDBOX: YES
@@ -144,6 +161,9 @@ targets:
     settings:
       base:
         PRODUCT_NAME: mectrics
+        # Keep the Swift module distinct from the case-insensitive app module output.
+        # The executable filename remains the lowercase public command.
+        PRODUCT_MODULE_NAME: MectricsCLI
         PRODUCT_BUNDLE_IDENTIFIER: com.mectrics.cli
         SWIFT_VERSION: "6.0"
         ENABLE_CODE_COVERAGE: NO
@@ -155,6 +175,10 @@ targets:
         Release:
           DEVELOPMENT_TEAM: ${MECTRICS_TEAM_ID}
           ENABLE_HARDENED_RUNTIME: YES
+        Performance:
+          DEVELOPMENT_TEAM: ${MECTRICS_TEAM_ID}
+          ENABLE_HARDENED_RUNTIME: YES
+          ENABLE_CODE_COVERAGE: NO
 
   MectricsTests:
     type: bundle.unit-test
@@ -168,3 +192,31 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.mectrics.app.tests
         GENERATE_INFOPLIST_FILE: YES
         SWIFT_VERSION: "5.0"
+
+schemes:
+  Mectrics:
+    build:
+      targets:
+        Mectrics: all
+        MectricsTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: false
+      targets:
+        - name: MectricsTests
+          parallelizable: false
+    archive:
+      config: Release
+  MectricsPerformance:
+    build:
+      targets:
+        Mectrics: all
+        MectricsTests: [test]
+    test:
+      config: Performance
+      gatherCoverageData: false
+      targets:
+        - name: MectricsTests
+          parallelizable: false
