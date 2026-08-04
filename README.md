@@ -55,7 +55,7 @@ Memory is comfortably inside; CPU currently sits just above. The
 down, and so is [how to run them yourself](CONTRIBUTING.md#performance-validation).
 
 <div align="center">
-  <a href="https://github.com/farukkamcici/mectrics/releases/latest/download/Mectrics.dmg"><b>⬇︎ Download Mectrics 1.5.0</b></a><br>
+  <a href="https://github.com/farukkamcici/mectrics/releases/latest/download/Mectrics.dmg"><b>⬇︎ Download Mectrics 1.6.0</b></a><br>
   <sub>macOS 15+ · signed and notarized · 5.4 MB</sub>
 </div>
 
