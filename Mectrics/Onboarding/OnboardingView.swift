@@ -12,16 +12,16 @@ struct OnboardingView: View {
     @State private var launchAtLogin = LoginItem.isEnabled
 
     static let contentSize = CGSize(width: 540, height: 430)
-    private static let stepCount = 2
+    private static let stepCount = 3
     private static let recommendedIDs: [MetricID] = [.cpu, .memory, .battery, .network]
 
     var body: some View {
         VStack(spacing: 0) {
             Group {
-                if step == 0 {
-                    welcomeStep
-                } else {
-                    choicesStep
+                switch step {
+                case 0:  welcomeStep
+                case 1:  choicesStep
+                default: optionalStep
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -178,8 +178,32 @@ struct OnboardingView: View {
                         }
                     }
                 }
+            }
+            .formStyle(.grouped)
+            .scrollContentBackground(.hidden)
+        }
+        .padding(ExperienceSpacing.xLarge)
+    }
 
-                Section("Optional") {
+    /// Two switches on their own step rather than under a scrolling module list.
+    /// The update question is a consent question — burying it below a fold that
+    /// grows with the number of modules a Mac happens to have is how it goes
+    /// unanswered.
+    private var optionalStep: some View {
+        VStack(alignment: .leading, spacing: ExperienceSpacing.large) {
+            ExperienceSectionHeader(
+                title: String(
+                    localized: "onboarding.optional.title",
+                    defaultValue: "Two things to decide"
+                ),
+                subtitle: String(
+                    localized: "onboarding.optional.subtitle",
+                    defaultValue: "Both are off unless you turn them on, and both live in Settings afterwards."
+                )
+            )
+
+            Form {
+                Section {
                     Toggle(isOn: $launchAtLogin) {
                         Text("Launch at login")
                         Text("Start Mectrics automatically after you sign in.")
@@ -196,7 +220,9 @@ struct OnboardingView: View {
                     .onChange(of: launchAtLogin) { _, enabled in
                         LoginItem.setEnabled(enabled)
                     }
+                }
 
+                Section {
                     Toggle(isOn: $model.automaticUpdateChecks) {
                         Text("Check for updates automatically")
                         Text("Asks the update server whether a newer version exists. It sends nothing about you or your Mac, and installs nothing on its own.")
@@ -211,6 +237,8 @@ struct OnboardingView: View {
             }
             .formStyle(.grouped)
             .scrollContentBackground(.hidden)
+
+            Spacer(minLength: 0)
         }
         .padding(ExperienceSpacing.xLarge)
     }
@@ -222,7 +250,7 @@ struct OnboardingView: View {
             } else {
                 Button("Back") {
                     withAnimation(ExperienceMotion.stateChange(reduceMotion: reduceMotion)) {
-                        step = 0
+                        step -= 1
                     }
                 }
             }
@@ -245,10 +273,10 @@ struct OnboardingView: View {
             )
             Spacer()
 
-            if step == 0 {
+            if step < Self.stepCount - 1 {
                 Button("Continue") {
                     withAnimation(ExperienceMotion.stateChange(reduceMotion: reduceMotion)) {
-                        step = 1
+                        step += 1
                     }
                 }
                 .keyboardShortcut(.defaultAction)

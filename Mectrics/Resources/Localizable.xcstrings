@@ -11429,6 +11429,88 @@
         }
       }
     },
+    "onboarding.optional.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Two things to decide"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Karar vermeniz gereken iki şey"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Два решения"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dos cosas que decidir"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deux choses à décider"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duas coisas para decidir"
+          }
+        }
+      }
+    },
+    "onboarding.optional.subtitle": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Both are off unless you turn them on, and both live in Settings afterwards."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İkisi de siz açmadıkça kapalıdır ve ikisi de sonrasında Ayarlar'da durur."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обе выключены, пока вы их не включите, и обе потом живут в настройках."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ambas están desactivadas salvo que las actives, y ambas quedan en los ajustes."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les deux sont désactivées tant que vous ne les activez pas, et se retrouvent ensuite dans les réglages."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ambas ficam desligadas até você ligá-las, e as duas moram nos ajustes depois."
+          }
+        }
+      }
+    },
     "onboarding.progress": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -15258,6 +15340,88 @@
           "stringUnit": {
             "state": "translated",
             "value": "As atualizações agora encontram você"
+          }
+        }
+      }
+    },
+    "whatsNew.1_6_1.onboarding.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "A clearer first run"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daha net bir ilk açılış"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Более понятный первый запуск"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un primer inicio más claro"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un premier lancement plus clair"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uma primeira execução mais clara"
+          }
+        }
+      }
+    },
+    "whatsNew.1_6_1.onboarding.description": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Launch at login and the update question now have a step of their own. They used to sit under the module list, where they fell below the fold on Macs with more hardware to report."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Açılışta başlat ve güncelleme sorusu artık kendi adımında. Önceden modül listesinin altındaydılar ve daha çok donanım bildiren Mac’lerde ekranın altında kalıyorlardı."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«Запускать при входе» и вопрос об обновлениях теперь на отдельном шаге. Раньше они стояли под списком модулей и на Mac с большим числом датчиков уходили за пределы экрана."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«Abrir al iniciar sesión» y la pregunta sobre actualizaciones ahora tienen su propio paso. Antes estaban bajo la lista de módulos, donde quedaban fuera de vista en Macs con más hardware que informar."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "« Ouvrir à la connexion » et la question des mises à jour ont désormais leur propre étape. Elles se trouvaient sous la liste des modules, où elles passaient sous la ligne de flottaison sur les Mac ayant plus de matériel à signaler."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«Abrir ao iniciar sessão» e a pergunta sobre atualizações agora têm um passo próprio. Antes ficavam sob a lista de módulos, onde caíam abaixo da dobra em Macs com mais hardware a relatar."
           }
         }
       }

@@ -93,6 +93,10 @@ Do **not** commit: `Mectrics.xcodeproj/`, `DerivedData/`, `.build/` (see `.gitig
   by marketing version and What's New shows the running build's entry; a version with no
   entry shows no window rather than someone else's news. Shipping a version means adding
   its notes — `ReleaseExperienceTests` fails if the current version has none.
+- **A patch release never stands alone.** It returns the minor release's notes followed by
+  its own, so 1.6.1 reads as what 1.6 brought plus what changed since, and someone who
+  skipped 1.6.0 still learns what it added. A fix is never presented as if it were the
+  whole release.
 - Keep `check` exit codes stable: `0` healthy, `1` limit crossed, `2` unconfigured or
   indeterminate. Usage, internal software, and corrupt-configuration failures are `64`, `70`,
   and `78` respectively. Valid version 1 JSON fields do not change without an explicit schema

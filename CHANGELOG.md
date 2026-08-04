@@ -7,6 +7,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.6.1] — 2026-08-04
+
+### Fixed
+
+- The optional switches in onboarding now have a step of their own. Launch at login and
+  the update question sat under the module list, and on a Mac that reports more hardware
+  they fell below the fold — so the one question the app asks about using the network
+  could be missed entirely by scrolling past it.
+
 ## [1.6.0] — 2026-08-04
 
 ### Added
@@ -223,7 +232,8 @@ roughly one idle wake per second.
 - Automatic update checks are disabled; the Sparkle appcast is fetched only on an explicit
   **Check for Updates…** and verified against a pinned EdDSA public key.
 
-[Unreleased]: https://github.com/farukkamcici/mectrics/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/farukkamcici/mectrics/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/farukkamcici/mectrics/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/farukkamcici/mectrics/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/farukkamcici/mectrics/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/farukkamcici/mectrics/compare/v1.3.0...v1.4.0

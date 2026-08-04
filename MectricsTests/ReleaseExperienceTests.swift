@@ -110,6 +110,7 @@ final class ReleaseExperienceTests: XCTestCase {
 
     func testReleaseNotesBelongToTheVersionTheyShippedIn() {
         XCTAssertFalse(ReleaseHighlights.notes(for: "1.6.0").isEmpty)
+        XCTAssertFalse(ReleaseHighlights.notes(for: "1.6.1").isEmpty)
         XCTAssertFalse(ReleaseHighlights.notes(for: "1.5.0").isEmpty)
         XCTAssertTrue(ReleaseHighlights.notes(for: "1.4.0").isEmpty)
         XCTAssertTrue(ReleaseHighlights.notes(for: "0.0.0").isEmpty)
@@ -124,8 +125,17 @@ final class ReleaseExperienceTests: XCTestCase {
         )
     }
 
+    /// A patch does not get a window of its own: it repeats what the minor release
+    /// brought and appends its own line, so skipping 1.6.0 does not mean missing it.
+    func testAPatchCarriesTheMinorReleaseNotesAndAddsToThem() {
+        let minor = ReleaseHighlights.notes(for: "1.6.0").map(\.id)
+        let patch = ReleaseHighlights.notes(for: "1.6.1").map(\.id)
+        XCTAssertEqual(Array(patch.prefix(minor.count)), minor)
+        XCTAssertGreaterThan(patch.count, minor.count)
+    }
+
     func testReleaseNoteIdentifiersAreUnique() {
-        for version in ["1.5.0", "1.6.0"] {
+        for version in ["1.5.0", "1.6.0", "1.6.1"] {
             let ids = ReleaseHighlights.notes(for: version).map(\.id)
             XCTAssertEqual(ids.count, Set(ids).count, version)
         }

@@ -27,9 +27,15 @@ struct ReleaseHighlight: Identifiable {
 /// no matter how long ago they shipped — an upgrade to 1.5.0 was greeted with news from
 /// 1.2. Notes now belong to a version, and a version with nothing written for it shows no
 /// window rather than stale news.
+///
+/// A patch release never stands alone. It carries the notes of the minor release it fixes
+/// and appends its own, so 1.6.1 reads as "what 1.6 brought, plus what changed since"
+/// rather than presenting a fix as if it were the whole release. Someone who skipped
+/// 1.6.0 still learns what it added.
 enum ReleaseHighlights {
     static func notes(for version: String) -> [ReleaseHighlight] {
         switch version {
+        case "1.6.1": return oneSixZero + oneSixOne
         case "1.6.0": return oneSixZero
         case "1.5.0": return oneFiveZero
         default:      return []
@@ -38,6 +44,23 @@ enum ReleaseHighlights {
 
     static var current: [ReleaseHighlight] {
         notes(for: Bundle.main.marketingVersion)
+    }
+
+    private static var oneSixOne: [ReleaseHighlight] {
+        [
+            ReleaseHighlight(
+                id: "onboarding",
+                symbol: "list.number",
+                title: String(
+                    localized: "whatsNew.1_6_1.onboarding.title",
+                    defaultValue: "A clearer first run"
+                ),
+                description: String(
+                    localized: "whatsNew.1_6_1.onboarding.description",
+                    defaultValue: "Launch at login and the update question now have a step of their own. They used to sit under the module list, where they fell below the fold on Macs with more hardware to report."
+                )
+            )
+        ]
     }
 
     private static var oneSixZero: [ReleaseHighlight] {
