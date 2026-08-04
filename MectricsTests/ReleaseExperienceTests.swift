@@ -127,4 +127,46 @@ final class ReleaseExperienceTests: XCTestCase {
         let ids = ReleaseHighlights.notes(for: "1.5.0").map(\.id)
         XCTAssertEqual(ids.count, Set(ids).count)
     }
+
+    // MARK: - Asking to use the network
+
+    /// The question belongs on a launch where Mectrics has nothing else to say.
+    func testTheUpdateQuestionWaitsForAQuietLaunch() {
+        XCTAssertTrue(
+            UpdatePermissionPolicy.shouldAsk(
+                presentation: .none, hasAnswered: false, isRunningTests: false
+            )
+        )
+        for presentation in [StartupPresentation.onboarding, .whatsNew, .routes] {
+            XCTAssertFalse(
+                UpdatePermissionPolicy.shouldAsk(
+                    presentation: presentation, hasAnswered: false, isRunningTests: false
+                ),
+                "\(presentation) already has the user's attention"
+            )
+        }
+    }
+
+    /// Declining is an answer. Asking again would make "no" mean "ask me every launch".
+    func testAnAnsweredQuestionIsNeverAskedAgain() {
+        XCTAssertFalse(
+            UpdatePermissionPolicy.shouldAsk(
+                presentation: .none, hasAnswered: true, isRunningTests: false
+            )
+        )
+    }
+
+    /// The XCTest host launches the real app. A modal question there blocks the whole
+    /// run instead of failing it, so the suite hangs and takes the screen with it.
+    func testTheQuestionIsNeverAskedUnderTest() {
+        XCTAssertFalse(
+            UpdatePermissionPolicy.shouldAsk(
+                presentation: .none, hasAnswered: false, isRunningTests: true
+            )
+        )
+        XCTAssertTrue(
+            UpdatePermissionPolicy.isRunningTests,
+            "This suite is running under XCTest, so the guard must see it"
+        )
+    }
 }

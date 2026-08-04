@@ -62,7 +62,11 @@ targets:
       properties:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # Off until the user is asked. Turning it on changes only when the appcast is
+        # fetched; system profiling stays off, so the request carries nothing about
+        # this Mac beyond the version being checked.
         SUEnableAutomaticChecks: false
+        SUEnableSystemProfiling: false
         SUFeedURL: https://raw.githubusercontent.com/farukkamcici/mectrics/main/appcast.xml
         SUPublicEDKey: 3waOnY63hGNluXrW0DoG+raMzWhoRH4gnvBW+KUG4qU=
         CFBundleURLTypes:

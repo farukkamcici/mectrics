@@ -196,6 +196,17 @@ struct OnboardingView: View {
                     .onChange(of: launchAtLogin) { _, enabled in
                         LoginItem.setEnabled(enabled)
                     }
+
+                    Toggle(isOn: $model.automaticUpdateChecks) {
+                        Text("Check for updates automatically")
+                        Text("Asks the update server whether a newer version exists. It sends nothing about you or your Mac, and installs nothing on its own.")
+                    }
+                    .accessibilityHint(
+                        String(
+                            localized: "onboarding.updates.hint",
+                            defaultValue: "Look for new versions without being asked each time"
+                        )
+                    )
                 }
             }
             .formStyle(.grouped)

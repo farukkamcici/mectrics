@@ -5,8 +5,17 @@ metrics stay on the Mac and are stored locally only for the features the user en
 
 The app does not send hardware information, usage data, metric history, or alert
 settings to any server. It makes exactly one kind of network request: an update check
-against the published appcast, and only when the user chooses **Check for Updates…**.
-Automatic update checks are disabled.
+against the published appcast.
+
+Mectrics asks once whether it may make that check on its own, in onboarding or on a later
+launch, and the answer can be changed at any time in **Settings → General → Updates**. Until
+it is answered, and whenever the answer is no, the appcast is fetched only when the user
+chooses **Check for Updates…**.
+
+The request itself is the same either way. Sparkle's system profiling is disabled, so no
+hardware, version history or usage information is attached to it, and an update is never
+downloaded or installed without the user. What the update server can observe is what any
+web server observes from a fetch: an IP address and the time of the request.
 
 Widget snapshots, the Attention Log, and application logs are stored locally in the
 app's container or Application Support directory. Files leave the app only when the user

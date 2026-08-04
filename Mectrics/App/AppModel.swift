@@ -116,6 +116,27 @@ final class AppModel {
         }
     }
 
+    /// Whether Mectrics looks for a new version on its own.
+    ///
+    /// Off until the user is asked, because it is the only thing in the app that reaches
+    /// the network. Sparkle owns the stored value, so this reads and writes that same key
+    /// rather than keeping a second copy that could disagree with the updater.
+    var automaticUpdateChecks: Bool {
+        didSet {
+            guard automaticUpdateChecks != oldValue else { return }
+            onAutomaticUpdateChecksChanged?(automaticUpdateChecks)
+            hasAnsweredUpdateChecks = true
+        }
+    }
+
+    /// True once the user has answered the question either way, so it is asked once and
+    /// never again.
+    var hasAnsweredUpdateChecks: Bool {
+        didSet { defaults.set(hasAnsweredUpdateChecks, forKey: Self.answeredUpdateChecksKey) }
+    }
+
+    @ObservationIgnored var onAutomaticUpdateChecksChanged: ((Bool) -> Void)?
+
     /// Default-on adaptive monitoring preference.
     var adaptMonitoringToEnergyState: Bool {
         didSet {
@@ -329,6 +350,7 @@ final class AppModel {
     private static let menuBarIconsKey = "showMenuBarIcons"
     private static let compactHealthEnabledKey = "compactHealthEnabled"
     private static let adaptMonitoringKey = "adaptMonitoringToEnergyState"
+    private static let answeredUpdateChecksKey = "hasAnsweredAutomaticUpdateChecks"
     private static let alertsKey = AlertConfigurationStorage.thresholdRulesKey
     private static let systemAlertsKey = AlertConfigurationStorage.systemRulesKey
     private static let moduleComponentsKey = "moduleComponents"
@@ -360,6 +382,12 @@ final class AppModel {
         )
         self.adaptMonitoringToEnergyState =
             defaults.object(forKey: Self.adaptMonitoringKey) as? Bool ?? true
+        self.automaticUpdateChecks = defaults.bool(
+            forKey: UpdateController.automaticChecksKey
+        )
+        self.hasAnsweredUpdateChecks = defaults.bool(
+            forKey: Self.answeredUpdateChecksKey
+        )
         self.alertRules = Self.loadAlertRules(from: defaults, available: available)
         self.systemAlertRules = Self.loadSystemAlertRules(from: defaults)
         self.enabledComponents = Self.loadEnabledComponents(

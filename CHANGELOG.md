@@ -7,6 +7,16 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Mectrics can now check for updates on its own, if you let it. It asks once, in onboarding
+  or on a later launch where it has nothing else to say, and the answer is changeable in
+  **Settings → General → Updates**. Consent changes when the appcast is fetched, never what
+  the request carries: system profiling stays off, so nothing about you or the Mac is
+  attached, and an update is still never downloaded or installed without you. Until it is
+  answered, and whenever the answer is no, nothing reaches the network unless you press
+  **Check for Updates…**.
+
 ## [1.5.0] — 2026-08-04
 
 ### Added

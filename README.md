@@ -39,7 +39,7 @@ It is built around three commitments:
 
 | | |
 |---|---|
-| 🔒 **Private by construction** | Zero telemetry. No analytics, no identifiers, no crash reports. The only network request the app can make is an update check you trigger yourself — automatic checks are off by default. |
+| 🔒 **Private by construction** | Zero telemetry. No analytics, no identifiers, no crash reports. The only network request Mectrics ever makes is an update check, and it asks you once whether it may make that check on its own. The request carries nothing about you or your Mac, and an update is never installed without you. |
 | 🪶 **Light on the machine** | About **27 MB** of memory and **a few percent of one CPU core** while it sits in your menu bar — the same memory number Activity Monitor shows you. Sampling slows down on battery and backs off in Low Power Mode and when your Mac runs hot. |
 | 📐 **Stable in the menu bar** | Items reserve a fixed width, so values change without anything shifting sideways. |
 

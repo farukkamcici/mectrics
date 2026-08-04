@@ -8,6 +8,30 @@ enum StartupPresentation: Equatable {
     case none
 }
 
+enum UpdatePermissionPolicy {
+    /// Whether this launch should ask about automatic update checks.
+    ///
+    /// Only on a quiet launch. Someone who just walked through onboarding has already
+    /// answered it there, and someone reading release notes has just been talked to —
+    /// stacking a second question on either is how an app becomes tiresome. It waits
+    /// for a launch where Mectrics has nothing else to say, and it is asked once.
+    /// `isRunningTests` is not a detail. The XCTest host launches the real app, so a
+    /// modal question at startup blocks the test run forever rather than failing it,
+    /// which is how this was found.
+    static func shouldAsk(
+        presentation: StartupPresentation,
+        hasAnswered: Bool,
+        isRunningTests: Bool = Self.isRunningTests
+    ) -> Bool {
+        guard !isRunningTests else { return false }
+        return presentation == .none && !hasAnswered
+    }
+
+    static var isRunningTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
+}
+
 enum StartupPresentationPolicy {
     /// What a launch should put on screen, in order of who asked for it.
     ///
@@ -143,6 +167,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.onCheckForUpdates = { [weak self] in
             self?.updates.checkForUpdates(nil)
         }
+        model.onAutomaticUpdateChecksChanged = { [weak self] enabled in
+            self?.updates.checksAutomatically = enabled
+        }
         model.onEnergyGuardPreferenceChanged = { [weak self] in
             self?.energyGuard.preferenceChanged()
         }
@@ -158,17 +185,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         initializeWhatsNewBaselineIfNeeded()
 
-        switch StartupPresentationPolicy.presentation(
+        let presentation = StartupPresentationPolicy.presentation(
             hasCompletedOnboarding: model.hasCompletedOnboarding,
             hasPendingRoutes: !pendingRoutes.isEmpty,
             hasUpgraded: hasUnpresentedUpgrade
-        ) {
+        )
+        switch presentation {
         case .onboarding:
             showOnboarding()
         case .whatsNew:
             presentWhatsNewAfterUpgradeIfNeeded()
         case .routes, .none:
             break
+        }
+        if UpdatePermissionPolicy.shouldAsk(
+            presentation: presentation,
+            hasAnswered: model.hasAnsweredUpdateChecks
+        ) {
+            askAboutAutomaticUpdateChecks()
         }
 
         // Update the model and menu bar on every sampling cycle (main thread).
@@ -302,6 +336,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             open(route)
         } else if !pendingRoutes.contains(route) {
             pendingRoutes.append(route)
+        }
+    }
+
+    /// The one time Mectrics asks to use the network on its own.
+    ///
+    /// Existing users never saw the onboarding question, and leaving them on an old
+    /// build is how a fix reaches nobody. Both answers are recorded, so this is asked
+    /// once, and the choice stays changeable in Settings.
+    private func askAboutAutomaticUpdateChecks() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            let alert = NSAlert()
+            alert.messageText = String(
+                localized: "updates.ask.title",
+                defaultValue: "Check for updates automatically?"
+            )
+            alert.informativeText = String(
+                localized: "updates.ask.message",
+                defaultValue: "Mectrics can ask the update server whether a newer version exists. The request says nothing about you or your Mac, an update is never installed on its own, and you can change this later in Settings."
+            )
+            alert.addButton(withTitle: String(
+                localized: "updates.ask.enable",
+                defaultValue: "Check Automatically"
+            ))
+            alert.addButton(withTitle: String(
+                localized: "updates.ask.decline",
+                defaultValue: "Not Now"
+            ))
+            NSApp.activate(ignoringOtherApps: true)
+            let enabled = alert.runModal() == .alertFirstButtonReturn
+            self.model.automaticUpdateChecks = enabled
+            // A declined question is still an answered one.
+            self.model.hasAnsweredUpdateChecks = true
         }
     }
 

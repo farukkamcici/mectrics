@@ -73,13 +73,17 @@ struct GeneralSettingsTab: View {
 
             Section {
                 LabeledContent("Version", value: Self.versionString)
+                Toggle(isOn: $model.automaticUpdateChecks) {
+                    Text("Check for updates automatically")
+                    Text("Asks whether a newer version exists. Nothing about you or your Mac is sent.")
+                }
                 Button("Check for Updates…") {
                     model.onCheckForUpdates?()
                 }
             } header: {
                 Text("Updates")
             } footer: {
-                Text("Mectrics contacts the update server only when you ask, and installs nothing that fails its signature check.")
+                Text("An update is never downloaded or installed on its own, and nothing that fails its signature check is installed at all. With automatic checks off, Mectrics reaches the network only when you press the button.")
             }
 
             Section {

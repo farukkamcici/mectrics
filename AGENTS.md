@@ -115,8 +115,17 @@ Do **not** commit: `Mectrics.xcodeproj/`, `DerivedData/`, `.build/` (see `.gitig
 
 ## 5. Performance & privacy invariants
 
-- **Zero telemetry.** The only network calls allowed are (optional) update checks. No usage
-  or hardware data ever leaves the device.
+- **Zero telemetry.** The only network calls allowed are update checks. No usage or
+  hardware data ever leaves the device.
+- **The app never reaches the network without being asked first.** Automatic update checks
+  are off in Info.plist and turned on only by an explicit answer, given in onboarding or
+  once on a later quiet launch, and changeable in Settings. `SUEnableSystemProfiling` stays
+  false and updates are never downloaded or installed unattended, so consent changes *when*
+  the appcast is fetched and never *what* the request carries. `README.md` and `PRIVACY.md`
+  state this; changing the behaviour means changing both.
+- **Nothing modal on the launch path.** The XCTest host launches the real app, so a blocking
+  alert during startup hangs the whole suite instead of failing it. Anything that could
+  present one asks `UpdatePermissionPolicy.isRunningTests` first.
 - Adaptive sampling: faster on AC, slower on battery; pause work that isn't visible —
   a sleeping display, a locked screen, and a switched-away session all count as invisible.
 - Keep the hot path allocation-free (the ring buffer is pre-allocated).

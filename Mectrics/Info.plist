@@ -37,6 +37,8 @@
 	<string>© 2026 Mectrics</string>
 	<key>SUEnableAutomaticChecks</key>
 	<false/>
+	<key>SUEnableSystemProfiling</key>
+	<false/>
 	<key>SUFeedURL</key>
 	<string>https://raw.githubusercontent.com/farukkamcici/mectrics/main/appcast.xml</string>
 	<key>SUPublicEDKey</key>

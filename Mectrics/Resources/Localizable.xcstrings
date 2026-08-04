@@ -266,6 +266,47 @@
         }
       }
     },
+    "about.updates.automaticSigned": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Automatic, signature-verified checks"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otomatik, imzası doğrulanan denetim"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Автоматическая проверка с проверкой подписи"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprobaciones automáticas con firma verificada"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vérifications automatiques à signature vérifiée"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificações automáticas com assinatura verificada"
+          }
+        }
+      }
+    },
     "about.updates.unavailable": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -15394,6 +15435,375 @@
           "stringUnit": {
             "state": "translated",
             "value": "Esta atualização não tem notas de versão."
+          }
+        }
+      }
+    },
+    "Check for updates automatically": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Check for updates automatically"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Güncellemeleri otomatik denetle"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверять обновления автоматически"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar actualizaciones automáticamente"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher les mises à jour automatiquement"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificar atualizações automaticamente"
+          }
+        }
+      }
+    },
+    "Asks the update server whether a newer version exists. It sends nothing about you or your Mac, and installs nothing on its own.": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Asks the update server whether a newer version exists. It sends nothing about you or your Mac, and installs nothing on its own."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Güncelleme sunucusuna yeni bir sürüm olup olmadığını sorar. Sizin ya da Mac'inizle ilgili hiçbir şey göndermez ve kendi başına bir şey kurmaz."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Спрашивает сервер обновлений, есть ли более новая версия. Ничего о вас или вашем Mac не отправляется, и ничего не устанавливается само."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pregunta al servidor de actualizaciones si existe una versión más reciente. No envía nada sobre ti ni sobre tu Mac, y no instala nada por su cuenta."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demande au serveur de mise à jour s'il existe une version plus récente. Rien sur vous ou votre Mac n'est envoyé, et rien n'est installé tout seul."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pergunta ao servidor de atualizações se existe uma versão mais recente. Não envia nada sobre você ou seu Mac, e não instala nada sozinho."
+          }
+        }
+      }
+    },
+    "Asks whether a newer version exists. Nothing about you or your Mac is sent.": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Asks whether a newer version exists. Nothing about you or your Mac is sent."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni bir sürüm var mı diye sorar. Sizinle ya da Mac'inizle ilgili hiçbir şey gönderilmez."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Спрашивает, есть ли более новая версия. Ничего о вас или вашем Mac не отправляется."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pregunta si existe una versión más reciente. No se envía nada sobre ti ni sobre tu Mac."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demande s'il existe une version plus récente. Rien sur vous ou votre Mac n'est envoyé."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pergunta se existe uma versão mais recente. Nada sobre você ou seu Mac é enviado."
+          }
+        }
+      }
+    },
+    "An update is never downloaded or installed on its own, and nothing that fails its signature check is installed at all. With automatic checks off, Mectrics reaches the network only when you press the button.": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "An update is never downloaded or installed on its own, and nothing that fails its signature check is installed at all. With automatic checks off, Mectrics reaches the network only when you press the button."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir güncelleme asla kendi başına indirilmez ya da kurulmaz; imza denetiminden geçemeyen hiçbir şey de kurulmaz. Otomatik denetim kapalıyken Mectrics ağa yalnızca siz düğmeye bastığınızda çıkar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновление никогда не загружается и не устанавливается само, а то, что не прошло проверку подписи, не устанавливается вовсе. При выключенной автопроверке Mectrics обращается к сети только по нажатию кнопки."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una actualización nunca se descarga ni se instala por su cuenta, y nada que falle la comprobación de firma llega a instalarse. Con las comprobaciones automáticas desactivadas, Mectrics solo accede a la red cuando pulsas el botón."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une mise à jour n'est jamais téléchargée ni installée toute seule, et rien qui échoue à la vérification de signature n'est installé. Avec les vérifications automatiques désactivées, Mectrics n'accède au réseau que lorsque vous appuyez sur le bouton."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uma atualização nunca é baixada ou instalada sozinha, e nada que falhe na verificação de assinatura chega a ser instalado. Com as verificações automáticas desativadas, o Mectrics só acessa a rede quando você aperta o botão."
+          }
+        }
+      }
+    },
+    "onboarding.updates.hint": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Look for new versions without being asked each time"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her seferinde sormadan yeni sürümleri arar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Искать новые версии без запроса каждый раз"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar versiones nuevas sin preguntar cada vez"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher de nouvelles versions sans demander à chaque fois"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Procurar novas versões sem perguntar todas as vezes"
+          }
+        }
+      }
+    },
+    "updates.ask.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Check for updates automatically?"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Güncellemeler otomatik denetlensin mi?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверять обновления автоматически?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Buscar actualizaciones automáticamente?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher les mises à jour automatiquement ?"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificar atualizações automaticamente?"
+          }
+        }
+      }
+    },
+    "updates.ask.message": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Mectrics can ask the update server whether a newer version exists. The request says nothing about you or your Mac, an update is never installed on its own, and you can change this later in Settings."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mectrics, güncelleme sunucusuna yeni bir sürüm olup olmadığını sorabilir. Bu istek sizin ya da Mac'inizle ilgili hiçbir şey söylemez, hiçbir güncelleme kendi başına kurulmaz ve bu seçimi daha sonra Ayarlar'dan değiştirebilirsiniz."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mectrics может спрашивать сервер обновлений, есть ли более новая версия. Запрос ничего не сообщает о вас или вашем Mac, обновление никогда не устанавливается само, и это можно изменить позже в настройках."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mectrics puede preguntar al servidor de actualizaciones si existe una versión más reciente. La petición no dice nada sobre ti ni sobre tu Mac, una actualización nunca se instala sola y puedes cambiarlo después en los ajustes."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mectrics peut demander au serveur de mise à jour s'il existe une version plus récente. La requête ne dit rien sur vous ou votre Mac, une mise à jour n'est jamais installée toute seule, et vous pouvez changer cela plus tard dans les réglages."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Mectrics pode perguntar ao servidor de atualizações se existe uma versão mais recente. A requisição não diz nada sobre você ou seu Mac, uma atualização nunca é instalada sozinha, e você pode mudar isso depois nos ajustes."
+          }
+        }
+      }
+    },
+    "updates.ask.enable": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Check Automatically"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otomatik Denetle"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверять автоматически"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar automáticamente"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher automatiquement"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificar automaticamente"
+          }
+        }
+      }
+    },
+    "updates.ask.decline": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Not Now"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şimdi Değil"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не сейчас"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ahora no"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas maintenant"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agora não"
           }
         }
       }
