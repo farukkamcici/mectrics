@@ -30,6 +30,7 @@ struct ReleaseHighlight: Identifiable {
 enum ReleaseHighlights {
     static func notes(for version: String) -> [ReleaseHighlight] {
         switch version {
+        case "1.6.0": return oneSixZero
         case "1.5.0": return oneFiveZero
         default:      return []
         }
@@ -37,6 +38,23 @@ enum ReleaseHighlights {
 
     static var current: [ReleaseHighlight] {
         notes(for: Bundle.main.marketingVersion)
+    }
+
+    private static var oneSixZero: [ReleaseHighlight] {
+        [
+            ReleaseHighlight(
+                id: "updates",
+                symbol: "arrow.down.circle",
+                title: String(
+                    localized: "whatsNew.1_6_0.updates.title",
+                    defaultValue: "Updates can find you now"
+                ),
+                description: String(
+                    localized: "whatsNew.1_6_0.updates.description",
+                    defaultValue: "Mectrics can check whether a newer version exists instead of waiting for you to look. It asks first, the request says nothing about you or your Mac, and nothing installs on its own. Change it any time in Settings."
+                )
+            )
+        ]
     }
 
     private static var oneFiveZero: [ReleaseHighlight] {

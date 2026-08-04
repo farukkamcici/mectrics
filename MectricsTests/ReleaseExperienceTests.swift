@@ -109,6 +109,7 @@ final class ReleaseExperienceTests: XCTestCase {
     }
 
     func testReleaseNotesBelongToTheVersionTheyShippedIn() {
+        XCTAssertFalse(ReleaseHighlights.notes(for: "1.6.0").isEmpty)
         XCTAssertFalse(ReleaseHighlights.notes(for: "1.5.0").isEmpty)
         XCTAssertTrue(ReleaseHighlights.notes(for: "1.4.0").isEmpty)
         XCTAssertTrue(ReleaseHighlights.notes(for: "0.0.0").isEmpty)
@@ -124,8 +125,10 @@ final class ReleaseExperienceTests: XCTestCase {
     }
 
     func testReleaseNoteIdentifiersAreUnique() {
-        let ids = ReleaseHighlights.notes(for: "1.5.0").map(\.id)
-        XCTAssertEqual(ids.count, Set(ids).count)
+        for version in ["1.5.0", "1.6.0"] {
+            let ids = ReleaseHighlights.notes(for: version).map(\.id)
+            XCTAssertEqual(ids.count, Set(ids).count, version)
+        }
     }
 
     // MARK: - Asking to use the network

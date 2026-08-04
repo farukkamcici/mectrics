@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.6.0] — 2026-08-04
+
 ### Added
 
 - Mectrics can now check for updates on its own, if you let it. It asks once, in onboarding
@@ -221,7 +223,8 @@ roughly one idle wake per second.
 - Automatic update checks are disabled; the Sparkle appcast is fetched only on an explicit
   **Check for Updates…** and verified against a pinned EdDSA public key.
 
-[Unreleased]: https://github.com/farukkamcici/mectrics/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/farukkamcici/mectrics/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/farukkamcici/mectrics/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/farukkamcici/mectrics/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/farukkamcici/mectrics/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/farukkamcici/mectrics/compare/v1.2.0...v1.3.0

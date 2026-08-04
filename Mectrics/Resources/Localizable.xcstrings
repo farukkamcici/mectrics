@@ -15221,6 +15221,88 @@
         }
       }
     },
+    "whatsNew.1_6_0.updates.title": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Updates can find you now"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Güncellemeler artık sizi bulabilir"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновления теперь находят вас сами"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las actualizaciones ahora te encuentran"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les mises à jour viennent à vous"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As atualizações agora encontram você"
+          }
+        }
+      }
+    },
+    "whatsNew.1_6_0.updates.description": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Mectrics can check whether a newer version exists instead of waiting for you to look. It asks first, the request says nothing about you or your Mac, and nothing installs on its own. Change it any time in Settings."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mectrics, sizin bakmanızı beklemek yerine yeni bir sürüm olup olmadığını kendisi denetleyebilir. Önce size sorar, istek sizinle ya da Mac'inizle ilgili hiçbir şey söylemez ve hiçbir şey kendi başına kurulmaz. Ayarlar'dan istediğiniz zaman değiştirebilirsiniz."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mectrics может сам проверять, есть ли более новая версия, вместо того чтобы ждать, пока вы посмотрите. Сначала он спрашивает, запрос ничего не сообщает о вас или вашем Mac, и ничего не устанавливается само. Изменить можно в любой момент в настройках."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mectrics puede comprobar si existe una versión más reciente en lugar de esperar a que mires. Pregunta primero, la petición no dice nada sobre ti ni sobre tu Mac, y nada se instala solo. Cámbialo cuando quieras en los ajustes."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mectrics peut vérifier s'il existe une version plus récente au lieu d'attendre que vous regardiez. Il demande d'abord, la requête ne dit rien sur vous ou votre Mac, et rien ne s'installe tout seul. Modifiable à tout moment dans les réglages."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Mectrics pode verificar se existe uma versão mais recente em vez de esperar você olhar. Ele pergunta primeiro, a requisição não diz nada sobre você ou seu Mac, e nada se instala sozinho. Mude quando quiser nos ajustes."
+          }
+        }
+      }
+    },
     "When a rule alerts it notifies you, marks the Compact Health item, and is recorded in the Attention Log. A rule rests for 15 minutes after it alerts.": {
       "localizations": {
         "ru": {
