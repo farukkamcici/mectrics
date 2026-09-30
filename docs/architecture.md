@@ -606,6 +606,5 @@ mectrics/
     ├── release.sh            # archive → sign → DMG → notarize → staple
     ├── release-candidate.sh  # private notarized candidate, no appcast mutation
     ├── performance/          # Release process and CLI measurement gates
-    ├── uninstall.sh          # manual removal for a Mectrics that will not open
-    └── generate-banner.py    # regenerates the README banner pair
+    └── uninstall.sh          # manual removal for a Mectrics that will not open
 ```

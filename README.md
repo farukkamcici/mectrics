@@ -1,10 +1,6 @@
-<div align="center">
+https://github.com/user-attachments/assets/ecfecd3f-4611-45b5-9695-46e8ee4333fb
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="docs/assets/banner-light.svg">
-  <img alt="mectrics, a lightweight and private system monitor that lives in your macOS menu bar" src="docs/assets/banner-light.svg" width="100%">
-</picture>
+<div align="center">
 
 <p>
   <img alt="Platform: macOS 15+" src="https://img.shields.io/badge/macOS-15%2B-000000?style=flat-square&logo=apple&logoColor=white">
@@ -22,10 +18,6 @@ live in your menu bar, readable at a glance, and the bar never jumps around.</p>
 <p><a href="https://mectrics.app"><b>mectrics.app</b></a></p>
 
 <a href="https://www.producthunt.com/products/mectrics?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-mectrics" target="_blank" rel="noopener noreferrer"><img alt="mectrics - Your Mac's vitals in the menu bar. Free and open source. | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1210872&amp;theme=light&amp;t=1785433284857"></a>
-
-<br><br>
-
-<a href="https://mectrics.app/film/mectrics.mp4"><img alt="Watch the mectrics film: the menu bar, the dashboard, and what it promises, in 35 seconds with sound" src="docs/assets/film.jpg" width="100%"></a>
 
 </div>
 

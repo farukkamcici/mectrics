@@ -93,7 +93,7 @@ jobs:
           fail=0
           for file in $(git ls-files '*.md'); do
             dir=$(dirname "$file")
-            # Markdown links, plus the src/srcset of inline HTML (banner and screenshots).
+            # Markdown links, plus the src/srcset of inline HTML (screenshots).
             targets=$(
               { grep -oE '\]\([^) ]+\)' "$file" | sed -E 's/^\]\(//; s/\)$//'
                 grep -oE '(src|srcset)="[^"]+"' "$file" | sed -E 's/^(src|srcset)="//; s/"$//'

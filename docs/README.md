@@ -25,6 +25,4 @@ Where a document and the code disagree, the code wins and the document gets corr
 
 ## Assets
 
-[`assets/`](assets/) holds the README banner (`banner-light.svg`, `banner-dark.svg`),
-generated as a pair by [`scripts/generate-banner.py`](../scripts/generate-banner.py) so
-GitHub can serve the right one per theme via `<picture>`. Screenshots belong here too.
+[`assets/`](assets/) holds the screenshots the README shows.
