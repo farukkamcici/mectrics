@@ -23,6 +23,10 @@ live in your menu bar, readable at a glance, and the bar never jumps around.</p>
 
 <a href="https://www.producthunt.com/products/mectrics?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-mectrics" target="_blank" rel="noopener noreferrer"><img alt="mectrics - Your Mac's vitals in the menu bar. Free and open source. | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1210872&amp;theme=light&amp;t=1785433284857"></a>
 
+<br><br>
+
+<a href="https://mectrics.app/film/mectrics.mp4"><img alt="Watch the mectrics film: the menu bar, the dashboard, and what it promises, in 35 seconds with sound" src="docs/assets/film.jpg" width="100%"></a>
+
 </div>
 
 ---
