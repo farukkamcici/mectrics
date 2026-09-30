@@ -251,7 +251,7 @@ private struct DashboardItemRow: View {
 
     @ViewBuilder
     private var contents: some View {
-        HStack(spacing: ExperienceSpacing.small) {
+        HStack(alignment: .top, spacing: ExperienceSpacing.small) {
             if isEmpty {
                 Text(
                     String(
@@ -262,22 +262,28 @@ private struct DashboardItemRow: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             } else {
-                ForEach(grouped, id: \.self) { id in
-                    GroupedModuleChip(
-                        title: id.localizedName,
-                        symbol: MetricSymbol.name(for: id)
-                    ) {
-                        model.setPlacement(.off, for: id)
+                // Chips keep their natural width and wrap onto another line, so a full
+                // Dashboard never squeezes a name into a column of single letters.
+                ChipFlowLayout(spacing: ExperienceSpacing.xSmall) {
+                    ForEach(grouped, id: \.self) { id in
+                        GroupedModuleChip(
+                            title: id.localizedName,
+                            symbol: MetricSymbol.name(for: id)
+                        ) {
+                            model.setPlacement(.off, for: id)
+                        }
+                    }
+                    if model.showsDeviceCard {
+                        GroupedModuleChip(
+                            title: systemInfoTitle,
+                            symbol: "desktopcomputer"
+                        ) {
+                            model.showsDeviceCard = false
+                        }
                     }
                 }
-                if model.showsDeviceCard {
-                    GroupedModuleChip(
-                        title: systemInfoTitle,
-                        symbol: "desktopcomputer"
-                    ) {
-                        model.showsDeviceCard = false
-                    }
-                }
+                // Ahead of the spacer, so the chips fill the row before it takes any.
+                .layoutPriority(1)
             }
             Spacer(minLength: 0)
             if hasAnythingToAdd {
@@ -360,6 +366,7 @@ private struct GroupedModuleChip: View {
             Label(title, systemImage: symbol)
                 .labelStyle(.titleAndIcon)
                 .font(.caption)
+                .lineLimit(1)
             Button(action: onRemove) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.caption)
@@ -382,7 +389,73 @@ private struct GroupedModuleChip: View {
         .background(
             Capsule().fill(.secondary.opacity(ExperienceSurface.subtleFillOpacity))
         )
+        .fixedSize()
         .accessibilityElement(children: .contain)
+    }
+}
+
+/// Lays chips out left to right at their ideal size, starting a new line when the next
+/// one would not fit in the width offered.
+private struct ChipFlowLayout: Layout {
+    var spacing: CGFloat
+
+    func sizeThatFits(
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout ()
+    ) -> CGSize {
+        let lines = rows(for: subviews, in: proposal.width ?? .infinity)
+        let width = lines.map(\.width).max() ?? 0
+        let height = lines.map(\.height).reduce(0, +)
+            + spacing * CGFloat(max(lines.count - 1, 0))
+        return CGSize(width: width, height: height)
+    }
+
+    func placeSubviews(
+        in bounds: CGRect,
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout ()
+    ) {
+        var y = bounds.minY
+        for row in rows(for: subviews, in: bounds.width) {
+            var x = bounds.minX
+            for index in row.indices {
+                let size = subviews[index].sizeThatFits(.unspecified)
+                subviews[index].place(
+                    at: CGPoint(x: x, y: y + (row.height - size.height) / 2),
+                    proposal: ProposedViewSize(size)
+                )
+                x += size.width + spacing
+            }
+            y += row.height + spacing
+        }
+    }
+
+    private struct Row {
+        var indices: [Int] = []
+        var width: CGFloat = 0
+        var height: CGFloat = 0
+    }
+
+    private func rows(for subviews: Subviews, in maxWidth: CGFloat) -> [Row] {
+        var rows: [Row] = []
+        var current = Row()
+        for index in subviews.indices {
+            let size = subviews[index].sizeThatFits(.unspecified)
+            if !current.indices.isEmpty,
+               current.width + spacing + size.width > maxWidth {
+                rows.append(current)
+                current = Row()
+            }
+            current.width = current.indices.isEmpty
+                ? size.width
+                : current.width + spacing + size.width
+            current.height = max(current.height, size.height)
+            current.indices.append(index)
+        }
+        if !current.indices.isEmpty { rows.append(current) }
+        return rows
     }
 }
 
