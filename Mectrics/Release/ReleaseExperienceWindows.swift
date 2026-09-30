@@ -35,6 +35,7 @@ struct ReleaseHighlight: Identifiable {
 enum ReleaseHighlights {
     static func notes(for version: String) -> [ReleaseHighlight] {
         switch version {
+        case "1.9.1": return oneNineZero + oneNineOne
         case "1.9.0": return oneNineZero
         case "1.8.0": return oneEightZero
         case "1.7.0": return oneSevenZero
@@ -47,6 +48,23 @@ enum ReleaseHighlights {
 
     static var current: [ReleaseHighlight] {
         notes(for: Bundle.main.marketingVersion)
+    }
+
+    private static var oneNineOne: [ReleaseHighlight] {
+        [
+            ReleaseHighlight(
+                id: "dashboardChips",
+                symbol: "textformat.size",
+                title: String(
+                    localized: "whatsNew.1_9_1.dashboardChips.title",
+                    defaultValue: "Readings you can still read"
+                ),
+                description: String(
+                    localized: "whatsNew.1_9_1.dashboardChips.description",
+                    defaultValue: "With most readings grouped, the Dashboard row in Settings → Menu Bar squeezed their names into columns of single letters. They now keep their full width and wrap onto another line."
+                )
+            )
+        ]
     }
 
     private static var oneNineZero: [ReleaseHighlight] {

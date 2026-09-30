@@ -800,6 +800,100 @@
         }
       }
     },
+    "whatsNew.1_9_1.dashboardChips.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Readings you can still read"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adları yine okunuyor"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Названия снова читаются"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombres que se siguen leyendo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Des noms toujours lisibles"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nomes que continuam legíveis"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名称重新可读"
+          }
+        }
+      }
+    },
+    "whatsNew.1_9_1.dashboardChips.description": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With most readings grouped, the Dashboard row in Settings → Menu Bar squeezed their names into columns of single letters. They now keep their full width and wrap onto another line."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okumaların çoğu panele alındığında, Ayarlar → Menü Çubuğu’ndaki panel satırı adlarını tek harflik sütunlara sıkıştırıyordu. Artık tam genişliklerini koruyup alt satıra geçiyorlar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Когда на панель собрано большинство показателей, их строка в «Настройки → Строка меню» сжимала названия в столбики из отдельных букв. Теперь они сохраняют свою ширину и переносятся на следующую строку."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con la mayoría de las lecturas en el panel, su fila en Ajustes → Barra de menús apretaba los nombres hasta convertirlos en columnas de letras sueltas. Ahora mantienen su ancho completo y pasan a otra línea."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quand la plupart des mesures sont dans le tableau de bord, leur ligne dans Réglages → Barre des menus comprimait les noms en colonnes de lettres isolées. Ils gardent désormais toute leur largeur et passent à la ligne."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Com a maioria das leituras no painel, a linha delas em Ajustes → Barra de menus espremia os nomes em colunas de letras soltas. Agora eles mantêm a largura inteira e passam para outra linha."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当大多数读数都放进仪表板后，“设置 → 菜单栏”里的那一行会把它们的名称挤成一列单个字母。现在名称保持完整宽度，放不下时换到下一行。"
+          }
+        }
+      }
+    },
     "·": {
       "localizations": {
         "es": {

@@ -7,6 +7,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.9.1] — 2026-09-30
+
+### Fixed
+
+- The readings grouped into the Dashboard keep their names readable in **Settings → Menu
+  Bar**. Once most modules were grouped there was no longer room for them on a single row,
+  so each chip was squeezed until its name broke into a column of single letters. The chips
+  now keep their full width and wrap onto another line.
+
 ## [1.9.0] — 2026-09-29
 
 ### Added
